@@ -1,54 +1,64 @@
-<div align="center">
-  <h1 align="center"><a href="https://www.epicweb.dev/epic-stack">The Epic Stack 🚀</a></h1>
-  <strong align="center">
-    Ditch analysis paralysis and start shipping Epic Web apps.
-  </strong>
-  <p>
-    This is an opinionated project starter and reference that allows teams to
-    ship their ideas to production faster and on a more stable foundation based
-    on the experience of <a href="https://kentcdodds.com">Kent C. Dodds</a> and
-    <a href="https://github.com/epicweb-dev/epic-stack/graphs/contributors">contributors</a>.
-  </p>
-</div>
+# My Personal Portfolio & Blog
 
-```sh
-npx epicli
-```
+This project serves as a personal portfolio and blog to showcase my skills and experience as a modern full-stack web developer. The goal is to demonstrate proficiency in frontend and backend technologies, as well as deployment, scaling, and overall project/feature development for startups and various projects.
 
-[![The Epic Stack](https://github-production-user-asset-6210df.s3.amazonaws.com/1500684/246885449-1b00286c-aa3d-44b2-9ef2-04f694eb3592.png)](https://www.epicweb.dev/epic-stack)
+## Core Tenets
 
-[The Epic Stack](https://www.epicweb.dev/epic-stack)
+* **Modern Technologies:** Utilize cutting-edge frameworks and tools.
+* **Full-Stack Showcase:** Demonstrate capabilities across the entire development stack.
+* **Scalability & Performance:** Build with best practices for growth and speed.
+* **Clean Code & UX:** Prioritize readability, maintainability, and a seamless user experience.
 
-<hr />
+## Technologies to Showcase
 
-## Watch Kent's Introduction to The Epic Stack
+### Frontend
 
-[![Epic Stack Talk slide showing Flynn Rider with knives, the text "I've been around and I've got opinions" and Kent speaking in the corner](https://github-production-user-asset-6210df.s3.amazonaws.com/1500684/277818553-47158e68-4efc-43ae-a477-9d1670d4217d.png)](https://www.epicweb.dev/talks/the-epic-stack)
+* **Frameworks/Libraries:** React, Remix, Next.js
+* **Styling:** TailwindCSS, Shadcn/ui, Radix UI
+* **Languages:** TypeScript, JavaScript
+* **State Management:** Zustand, Jotai, or Remix Loaders/Actions
+* **Animation:** Framer Motion
 
-["The Epic Stack" by Kent C. Dodds](https://www.epicweb.dev/talks/the-epic-stack)
+### Backend
 
-## Docs
+* **Frameworks:** Node.js (Express.js, NestJS, or Remix actions/loaders)
+* **Databases:** PostgreSQL, MongoDB, SQLite (for local dev/simplicity)
+* **ORMs:** Prisma, Drizzle ORM
+* **Authentication:** Custom JWT, NextAuth.js, or Remix Auth
+* **APIs:** RESTful APIs, GraphQL (Apollo/Relay)
 
-[Read the docs](https://github.com/epicweb-dev/epic-stack/blob/main/docs)
-(please 🙏).
+### Deployment & DevOps
 
-## Support
+* **Platforms:** Vercel, Netlify, Fly.io, AWS (EC2, S3, Lambda, RDS)
+* **Containerization:** Docker
+* **CI/CD:** GitHub Actions
+* **Monitoring:** Sentry, LogRocket
 
-- 🆘 Join the
-  [discussion on GitHub](https://github.com/epicweb-dev/epic-stack/discussions)
-  and the [KCD Community on Discord](https://kcd.im/discord).
-- 💡 Create an
-  [idea discussion](https://github.com/epicweb-dev/epic-stack/discussions/new?category=ideas)
-  for suggestions.
-- 🐛 Open a [GitHub issue](https://github.com/epicweb-dev/epic-stack/issues) to
-  report a bug.
+## Key Features to Implement
 
-## Branding
+* **Hero Section:** Engaging introduction with a clear value proposition.
+* **About Me:** Personal background, skills, and passion for web development.
+* **Skills Showcase:** Detailed list of technologies and expertise, categorized (Frontend, Backend, DevOps, etc.).
+* **Project Portfolio:**
+  * Display various projects with descriptions, technologies used, and links (live demos, GitHub repos).
+  * Highlight challenges overcome and solutions implemented.
+* **Blog Section:**
+  * Articles on web development topics, tutorials, case studies, and insights.
+  * Markdown support for easy content creation.
+  * Categorization and tagging of posts.
+* **Testimonials/Recommendations (Optional):** Showcase positive feedback from clients or colleagues.
+* **Contact Form/Links:** Easy ways for visitors to get in touch (e.g., email, LinkedIn, GitHub).
+* **Responsive Design:** Ensure optimal viewing experience across all devices.
+* **Performance Optimization:** Fast load times and smooth interactions (e.g., image optimization, code splitting).
+* **Accessibility (a11y):** Adherence to WCAG guidelines for inclusivity.
+* **SEO:** Optimized for search engines.
 
-Want to talk about the Epic Stack in a blog post or talk? Great! Here are some
-assets you can use in your material:
-[EpicWeb.dev/brand](https://epicweb.dev/brand)
+## Future Enhancements
 
-## Thanks
+* **Interactive Demos:** Live, interactive examples of small projects or features.
+* **Detailed Case Studies:** In-depth explanations of complex projects.
+* **Dark Mode/Theme Switcher.**
+* **Newsletter Subscription.**
+* **Advanced Search Functionality for Blog/Projects.**
 
-You rock 🪨
+This README will be updated as the project progresses.
