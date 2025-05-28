@@ -290,23 +290,32 @@ function ContactSection() {
 					to hear from you.
 				</p>
 				<div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-					{socialLinks.map(({ href, icon, label, text }) => (
-						<Button key={href} asChild>
-							<a
-								href={href}
-								target={href.startsWith('mailto:') ? undefined : '_blank'}
-								rel={
-									href.startsWith('mailto:') ? undefined : 'noopener noreferrer'
-								}
-								className="inline-flex items-center gap-2 rounded-lg px-6 py-3 text-lg font-semibold transition"
-								aria-label={label}
-								tabIndex={0}
-							>
-								<Icon name={icon as IconName} />
-								<span>{text}</span>
-							</a>
-						</Button>
-					))}
+					<TooltipProvider>
+						{socialLinks.map(({ href, icon, label, text }) => (
+							<Tooltip key={href}>
+								<TooltipTrigger asChild>
+									<Button variant="ghost" asChild>
+										<a
+											href={href}
+											target={href.startsWith('mailto:') ? undefined : '_blank'}
+											rel={
+												href.startsWith('mailto:')
+													? undefined
+													: 'noopener noreferrer'
+											}
+											className="text-body-2xl"
+											aria-label={label}
+											tabIndex={0}
+										>
+											<Icon name={icon as IconName} />
+											<span className="sr-only">{text}</span>
+										</a>
+									</Button>
+								</TooltipTrigger>
+								<TooltipContent>{text}</TooltipContent>
+							</Tooltip>
+						))}
+					</TooltipProvider>
 				</div>
 			</div>
 		</section>
