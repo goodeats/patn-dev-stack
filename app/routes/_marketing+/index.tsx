@@ -66,31 +66,30 @@ const skillCategories: SkillCategory[] = [
 // Components
 function HeroSection() {
 	return (
-		<section className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800 px-4 py-16 text-center">
+		<section className="from-background to-muted flex min-h-screen flex-col items-center justify-center bg-gradient-to-br px-4 py-16 text-center">
 			<div className="animate-slide-top [animation-fill-mode:backwards]">
 				<h1
 					data-heading
-					className="text-5xl font-bold text-white md:text-6xl lg:text-7xl"
+					className="text-foreground text-5xl font-bold md:text-6xl lg:text-7xl"
 				>
 					Hi, I'm Pat
 				</h1>
 				<p
 					data-paragraph
-					className="mt-6 text-xl text-slate-300 md:text-2xl lg:text-3xl"
+					className="text-muted-foreground mt-6 text-xl md:text-2xl lg:text-3xl"
 				>
 					A Modern Full-Stack Web Developer
 				</p>
 				<p
 					data-paragraph
-					className="mt-4 max-w-2xl text-lg text-slate-400 md:text-xl"
+					className="text-muted-foreground mt-4 max-w-2xl text-lg md:text-xl"
 				>
-					I craft seamless and scalable web applications, transforming ideas
-					into reality from frontend magic to backend robustness and reliable
-					deployments.
+					I craft intuitive user experiences, interactive layouts, and APIs to
+					transform ideas into web applications.
 				</p>
 				<a
 					href="#skills"
-					className="mt-10 inline-block rounded-lg bg-blue-600 px-8 py-4 text-lg font-semibold text-white transition hover:bg-blue-700"
+					className="bg-primary text-primary-foreground hover:bg-primary/90 mt-10 inline-block rounded-lg px-8 py-4 text-lg font-semibold transition"
 					aria-label="View my skills"
 					tabIndex={0}
 					onKeyDown={(e) => {
@@ -106,11 +105,20 @@ function HeroSection() {
 
 function AboutSection() {
 	return (
-		<section id="about" className="px-4 py-20 text-center">
+		<section id="about" className="px-4 py-20 text-left">
 			<h2 className="text-4xl font-bold">About Me</h2>
 			<p className="text-muted-foreground mx-auto mt-4 max-w-2xl text-lg">
-				[A brief introduction about yourself, your passion for web development,
-				and your experience. Highlight what makes you unique.]
+				I am a senior full-stack software engineer with 10+ years of experience.
+				I have launched and/or contributed to projects that demonstrate AI
+				technology, messaging platforms, health tech, and e-commerce. I have
+				well-rounded expertise in frontend, backend, deployment, and everything
+				in between. I also enjoy growing my skills to keep up with current
+				trends like using LLMs for coding tools.
+			</p>
+			<p className="text-muted-foreground mx-auto mt-4 max-w-2xl text-lg">
+				I grew up in Maine and currently live in Brooklyn so I enjoy nature and
+				city life equally! For fun I like to follow professional sports, play
+				video games, and discovering new music to listen to.
 			</p>
 		</section>
 	)
@@ -119,7 +127,7 @@ function AboutSection() {
 function SkillCard({ skill }: { skill: Skill }) {
 	return (
 		<li key={skill.name} className="flex items-center">
-			<span className="mr-3 h-2 w-2 rounded-full bg-blue-500"></span>
+			<span className="bg-primary mr-3 h-2 w-2 rounded-full"></span>
 			<TooltipProvider>
 				<Tooltip>
 					<TooltipTrigger asChild>
@@ -138,16 +146,13 @@ function SkillCard({ skill }: { skill: Skill }) {
 
 function SkillsSection() {
 	return (
-		<section id="skills" className="bg-slate-100 px-4 py-20 dark:bg-slate-800">
+		<section id="skills" className="bg-muted px-4 py-20">
 			<div className="container mx-auto">
 				<h2 className="mb-12 text-center text-4xl font-bold">My Skillset</h2>
 				<div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-4">
 					{skillCategories.map((category) => (
-						<div
-							key={category}
-							className="bg-background rounded-lg p-6 shadow-lg dark:bg-slate-700"
-						>
-							<h3 className="mb-4 text-2xl font-semibold text-blue-600 dark:text-blue-400">
+						<div key={category} className="bg-card rounded-lg p-6 shadow-lg">
+							<h3 className="text-primary mb-4 text-2xl font-semibold">
 								{category}
 							</h3>
 							<ul className="space-y-3">
@@ -179,10 +184,8 @@ function ProjectCard({
 	technologies: string
 }) {
 	return (
-		<div className="transform rounded-lg bg-slate-50 p-6 shadow-lg transition duration-300 hover:scale-105 dark:bg-slate-800">
-			<h3 className="mb-3 text-2xl font-semibold text-blue-600 dark:text-blue-400">
-				{title}
-			</h3>
+		<div className="bg-card transform rounded-lg p-6 shadow-lg transition duration-300 hover:scale-105">
+			<h3 className="text-primary mb-3 text-2xl font-semibold">{title}</h3>
 			<p className="text-muted-foreground mb-4">{description}</p>
 			<p className="mb-4 text-sm">
 				<span className="font-semibold">Technologies:</span> {technologies}
@@ -190,7 +193,7 @@ function ProjectCard({
 			<div className="flex space-x-4">
 				<a
 					href="#"
-					className="text-blue-500 hover:underline"
+					className="text-primary hover:underline"
 					aria-label={`View project demo for ${title}`}
 					tabIndex={0}
 				>
@@ -198,7 +201,7 @@ function ProjectCard({
 				</a>
 				<a
 					href="#"
-					className="text-blue-500 hover:underline"
+					className="text-primary hover:underline"
 					aria-label={`View source code for ${title} on GitHub`}
 					tabIndex={0}
 				>
@@ -231,7 +234,7 @@ function ProjectsSection() {
 				<div className="mt-12 text-center">
 					<a
 						href="/projects"
-						className="rounded-lg bg-blue-600 px-6 py-3 text-lg font-semibold text-white transition hover:bg-blue-700"
+						className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg px-6 py-3 text-lg font-semibold transition"
 						aria-label="View all my projects"
 						tabIndex={0}
 					>
@@ -245,19 +248,19 @@ function ProjectsSection() {
 
 function ContactSection() {
 	return (
-		<section id="contact" className="bg-slate-900 px-4 py-20 text-white">
+		<section id="contact" className="bg-background text-foreground px-4 py-20">
 			<div className="container mx-auto text-center">
 				<h2 className="text-4xl font-bold">
 					Let's Build Something Amazing Together!
 				</h2>
-				<p className="mx-auto mt-6 max-w-xl text-lg text-slate-300">
+				<p className="text-muted-foreground mx-auto mt-6 max-w-xl text-lg">
 					Have a project in mind, a question, or just want to connect? I'd love
 					to hear from you.
 				</p>
 				<div className="mt-10 space-x-4">
 					<a
 						href="mailto:your.email@example.com"
-						className="rounded-lg bg-green-500 px-6 py-3 text-lg font-semibold text-white transition hover:bg-green-600"
+						className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg px-6 py-3 text-lg font-semibold transition"
 						aria-label="Send me an email"
 						tabIndex={0}
 					>
@@ -267,7 +270,7 @@ function ContactSection() {
 						href="https://www.linkedin.com/in/yourprofile/"
 						target="_blank"
 						rel="noopener noreferrer"
-						className="rounded-lg bg-sky-500 px-6 py-3 text-lg font-semibold text-white transition hover:bg-sky-600"
+						className="bg-accent text-accent-foreground hover:bg-accent/90 rounded-lg px-6 py-3 text-lg font-semibold transition"
 						aria-label="Connect with me on LinkedIn"
 						tabIndex={0}
 					>
@@ -277,7 +280,7 @@ function ContactSection() {
 						href="https://github.com/yourusername"
 						target="_blank"
 						rel="noopener noreferrer"
-						className="rounded-lg bg-gray-700 px-6 py-3 text-lg font-semibold text-white transition hover:bg-gray-600"
+						className="bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-lg px-6 py-3 text-lg font-semibold transition"
 						aria-label="View my work on GitHub"
 						tabIndex={0}
 					>
@@ -291,7 +294,7 @@ function ContactSection() {
 
 function Footer() {
 	return (
-		<footer className="bg-slate-950 px-4 py-8 text-center text-slate-400">
+		<footer className="bg-muted text-muted-foreground px-4 py-8 text-center">
 			<p>&copy; {new Date().getFullYear()} patn.dev. All rights reserved.</p>
 			<p className="text-sm">
 				Built with{' '}
