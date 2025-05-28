@@ -1,3 +1,4 @@
+import { Button } from '#app/components/ui/button'
 import {
 	Tooltip,
 	TooltipContent,
@@ -87,17 +88,6 @@ function HeroSection() {
 					I craft intuitive user experiences, interactive layouts, and APIs to
 					transform ideas into web applications.
 				</p>
-				<a
-					href="#skills"
-					className="bg-primary text-primary-foreground hover:bg-primary/90 mt-10 inline-block rounded-lg px-8 py-4 text-lg font-semibold transition"
-					aria-label="View my skills"
-					tabIndex={0}
-					onKeyDown={(e) => {
-						if (e.key === 'Enter') (e.target as HTMLAnchorElement).click()
-					}}
-				>
-					Discover My Expertise
-				</a>
 			</div>
 		</section>
 	)
@@ -105,9 +95,9 @@ function HeroSection() {
 
 function AboutSection() {
 	return (
-		<section id="about" className="px-4 py-20 text-left">
+		<section id="about" className="px-4 py-20 text-center">
 			<h2 className="text-4xl font-bold">About Me</h2>
-			<p className="text-muted-foreground mx-auto mt-4 max-w-2xl text-lg">
+			<p className="text-muted-foreground mx-auto mt-4 max-w-2xl text-left text-lg">
 				I am a senior full-stack software engineer with 10+ years of experience.
 				I have launched and/or contributed to projects that demonstrate AI
 				technology, messaging platforms, health tech, and e-commerce. I have
@@ -115,10 +105,11 @@ function AboutSection() {
 				in between. I also enjoy growing my skills to keep up with current
 				trends like using LLMs for coding tools.
 			</p>
-			<p className="text-muted-foreground mx-auto mt-4 max-w-2xl text-lg">
+			<p className="text-muted-foreground mx-auto mt-4 max-w-2xl text-left text-lg">
 				I grew up in Maine and currently live in Brooklyn so I enjoy nature and
-				city life equally! For fun I like to follow professional sports, play
-				video games, and discovering new music to listen to.
+				city life equally! For fun I like to follow professional sports, enjoy
+				the discourse on Twitter, play video games, discover new music to listen
+				to.
 			</p>
 		</section>
 	)
@@ -178,10 +169,14 @@ function ProjectCard({
 	title,
 	description,
 	technologies,
+	liveDemoUrl,
+	sourceCodeUrl,
 }: {
 	title: string
 	description: string
 	technologies: string
+	liveDemoUrl?: string
+	sourceCodeUrl?: string
 }) {
 	return (
 		<div className="bg-card transform rounded-lg p-6 shadow-lg transition duration-300 hover:scale-105">
@@ -191,22 +186,30 @@ function ProjectCard({
 				<span className="font-semibold">Technologies:</span> {technologies}
 			</p>
 			<div className="flex space-x-4">
-				<a
-					href="#"
-					className="text-primary hover:underline"
-					aria-label={`View project demo for ${title}`}
-					tabIndex={0}
-				>
-					Live Demo
-				</a>
-				<a
-					href="#"
-					className="text-primary hover:underline"
-					aria-label={`View source code for ${title} on GitHub`}
-					tabIndex={0}
-				>
-					GitHub
-				</a>
+				{liveDemoUrl && (
+					<Button asChild>
+						<a
+							href={liveDemoUrl}
+							className="text-primary hover:underline"
+							aria-label={`View project demo for ${title}`}
+							tabIndex={0}
+						>
+							Live Demo
+						</a>
+					</Button>
+				)}
+				{sourceCodeUrl && (
+					<Button asChild>
+						<a
+							href={sourceCodeUrl}
+							className="text-primary hover:underline"
+							aria-label={`View source code for ${title} on GitHub`}
+							tabIndex={0}
+						>
+							GitHub
+						</a>
+					</Button>
+				)}
 			</div>
 		</div>
 	)
@@ -221,25 +224,18 @@ function ProjectsSection() {
 				</h2>
 				<div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
 					<ProjectCard
-						title="[Project Title 1]"
-						description="[Brief description of the project, its purpose, and your role.]"
-						technologies="React, Node.js, TailwindCSS"
+						title="PPPAAATTT"
+						description="A fun, creative studio, closely resembling Figma, for assembling designs on a canvas."
+						technologies="Remix, TailwindCSS, SQLite, Fly.io"
+						liveDemoUrl="https://pppaaattt.xyz"
+						sourceCodeUrl="https://github.com/goodeats/epic-pppaaattt.xyz"
 					/>
 					<ProjectCard
-						title="[Project Title 2]"
-						description="[Brief description of the project, its purpose, and your role.]"
-						technologies="[List key technologies used]"
+						title="Choros App"
+						description="A messaging platform for planning or finding local activities and then matchmaking groups to meet up. This app is currently in a private beta, but
+            I would be happy to give a personal demo."
+						technologies="Remix, TailwindCSS, SQLite, Fly.io, PWA, XState"
 					/>
-				</div>
-				<div className="mt-12 text-center">
-					<a
-						href="/projects"
-						className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg px-6 py-3 text-lg font-semibold transition"
-						aria-label="View all my projects"
-						tabIndex={0}
-					>
-						See All Projects
-					</a>
 				</div>
 			</div>
 		</section>

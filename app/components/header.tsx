@@ -1,6 +1,7 @@
 import { Link } from 'react-router'
 import { useOptionalUser } from '#app/utils/user.ts'
 import { Logo } from './logo'
+import { NavLinks } from './nav-links'
 import { Button } from './ui/button'
 import { UserDropdown } from './user-dropdown'
 
@@ -12,6 +13,7 @@ export function Header() {
 			<nav className="flex flex-wrap items-center justify-between gap-4 sm:flex-nowrap md:gap-8">
 				<Logo />
 				<div className="flex items-center gap-10">
+					<NavLinks />
 					{user ? (
 						<UserDropdown />
 					) : (
