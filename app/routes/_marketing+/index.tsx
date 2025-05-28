@@ -294,7 +294,7 @@ function ContactSection() {
 						{socialLinks.map(({ href, icon, label, text }) => (
 							<Tooltip key={href}>
 								<TooltipTrigger asChild>
-									<Button variant="ghost" asChild>
+									<Button variant="ghost" size="icon" asChild>
 										<a
 											href={href}
 											target={href.startsWith('mailto:') ? undefined : '_blank'}
@@ -303,11 +303,10 @@ function ContactSection() {
 													? undefined
 													: 'noopener noreferrer'
 											}
-											className="text-body-2xl"
 											aria-label={label}
 											tabIndex={0}
 										>
-											<Icon name={icon as IconName} />
+											<Icon name={icon as IconName} size="lg" />
 											<span className="sr-only">{text}</span>
 										</a>
 									</Button>
