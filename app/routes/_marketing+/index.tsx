@@ -1,4 +1,5 @@
 import { Button } from '#app/components/ui/button'
+import { Icon, type IconName } from '#app/components/ui/icon'
 import {
 	Tooltip,
 	TooltipContent,
@@ -219,7 +220,7 @@ function ProjectCard({
 
 function ProjectsSection() {
 	return (
-		<section id="projects" className="px-4 py-20">
+		<section id="projects" className="bg-muted px-4 py-20">
 			<div className="container mx-auto">
 				<h2 className="mb-12 text-center text-4xl font-bold">
 					Featured Projects
@@ -245,6 +246,39 @@ function ProjectsSection() {
 }
 
 function ContactSection() {
+	const socialLinks = [
+		{
+			href: 'mailto:your.email@example.com',
+			icon: 'envelope-closed',
+			label: 'Send me an email',
+			text: 'Email Me',
+		},
+		{
+			href: 'https://www.linkedin.com/in/yourprofile/',
+			icon: 'linkedin-logo',
+			label: 'Connect with me on LinkedIn',
+			text: 'LinkedIn',
+		},
+		{
+			href: 'https://github.com/yourusername',
+			icon: 'github-logo',
+			label: 'View my work on GitHub',
+			text: 'GitHub',
+		},
+		{
+			href: 'https://twitter.com/yourusername',
+			icon: 'twitter-logo',
+			label: 'Follow me on Twitter',
+			text: 'Twitter',
+		},
+		{
+			href: 'https://instagram.com/yourusername',
+			icon: 'instagram-logo',
+			label: 'Follow me on Instagram',
+			text: 'Instagram',
+		},
+	] as const
+
 	return (
 		<section id="contact" className="bg-background text-foreground px-4 py-20">
 			<div className="container mx-auto text-center">
@@ -255,35 +289,24 @@ function ContactSection() {
 					Have a project in mind, a question, or just want to connect? I'd love
 					to hear from you.
 				</p>
-				<div className="mt-10 space-x-4">
-					<a
-						href="mailto:your.email@example.com"
-						className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg px-6 py-3 text-lg font-semibold transition"
-						aria-label="Send me an email"
-						tabIndex={0}
-					>
-						Email Me
-					</a>
-					<a
-						href="https://www.linkedin.com/in/yourprofile/"
-						target="_blank"
-						rel="noopener noreferrer"
-						className="bg-accent text-accent-foreground hover:bg-accent/90 rounded-lg px-6 py-3 text-lg font-semibold transition"
-						aria-label="Connect with me on LinkedIn"
-						tabIndex={0}
-					>
-						LinkedIn
-					</a>
-					<a
-						href="https://github.com/yourusername"
-						target="_blank"
-						rel="noopener noreferrer"
-						className="bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-lg px-6 py-3 text-lg font-semibold transition"
-						aria-label="View my work on GitHub"
-						tabIndex={0}
-					>
-						GitHub
-					</a>
+				<div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+					{socialLinks.map(({ href, icon, label, text }) => (
+						<Button key={href} asChild>
+							<a
+								href={href}
+								target={href.startsWith('mailto:') ? undefined : '_blank'}
+								rel={
+									href.startsWith('mailto:') ? undefined : 'noopener noreferrer'
+								}
+								className="inline-flex items-center gap-2 rounded-lg px-6 py-3 text-lg font-semibold transition"
+								aria-label={label}
+								tabIndex={0}
+							>
+								<Icon name={icon as IconName} />
+								<span>{text}</span>
+							</a>
+						</Button>
+					))}
 				</div>
 			</div>
 		</section>
