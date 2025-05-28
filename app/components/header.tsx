@@ -1,12 +1,10 @@
-import { Link } from 'react-router'
-import { useOptionalUser } from '#app/utils/user.ts'
+import { useRootLoaderData } from '#app/root.tsx'
+import { ThemeSwitch } from '#app/routes/resources+/theme-switch.tsx'
 import { Logo } from './logo'
 import { NavLinks } from './nav-links'
-import { Button } from './ui/button'
-import { UserDropdown } from './user-dropdown'
 
 export function Header() {
-	const user = useOptionalUser()
+	const { requestInfo } = useRootLoaderData()
 
 	return (
 		<header className="container py-6">
@@ -14,13 +12,7 @@ export function Header() {
 				<Logo />
 				<div className="flex items-center gap-10">
 					<NavLinks />
-					{user ? (
-						<UserDropdown />
-					) : (
-						<Button asChild variant="default" size="lg">
-							<Link to="/login">Log In</Link>
-						</Button>
-					)}
+					<ThemeSwitch userPreference={requestInfo.userPrefs.theme} />
 				</div>
 			</nav>
 		</header>

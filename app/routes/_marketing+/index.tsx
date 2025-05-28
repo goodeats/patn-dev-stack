@@ -7,6 +7,8 @@ import {
 } from '#app/components/ui/tooltip.tsx'
 import { type Route } from './+types/index.ts'
 
+export const meta: Route.MetaFunction = () => [{ title: 'Pat N | Web Dev' }]
+
 // Types
 type SkillCategory = 'Frontend' | 'Backend' | 'DevOps' | 'Other'
 
@@ -288,37 +290,6 @@ function ContactSection() {
 	)
 }
 
-function Footer() {
-	return (
-		<footer className="bg-muted text-muted-foreground px-4 py-8 text-center">
-			<p>&copy; {new Date().getFullYear()} patn.dev. All rights reserved.</p>
-			<p className="text-sm">
-				Built with{' '}
-				<a
-					href="https://remix.run"
-					className="hover:underline"
-					target="_blank"
-					rel="noopener noreferrer"
-				>
-					Remix
-				</a>{' '}
-				&{' '}
-				<a
-					href="https://tailwindcss.com"
-					className="hover:underline"
-					target="_blank"
-					rel="noopener noreferrer"
-				>
-					Tailwind CSS
-				</a>
-				.
-			</p>
-		</footer>
-	)
-}
-
-export const meta: Route.MetaFunction = () => [{ title: 'Pat N | Web Dev' }]
-
 export default function Index() {
 	return (
 		<main className="font-poppins bg-background text-foreground min-h-screen">
@@ -327,7 +298,6 @@ export default function Index() {
 			<SkillsSection />
 			<ProjectsSection />
 			<ContactSection />
-			<Footer />
 		</main>
 	)
 }

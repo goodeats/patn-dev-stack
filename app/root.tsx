@@ -7,12 +7,14 @@ import {
 	Scripts,
 	ScrollRestoration,
 	useLoaderData,
+	useRouteLoaderData,
 } from 'react-router'
 import { HoneypotProvider } from 'remix-utils/honeypot/react'
 import { type Route } from './+types/root.ts'
 import appleTouchIconAssetUrl from './assets/favicons/apple-touch-icon.png'
 import faviconAssetUrl from './assets/favicons/favicon.svg'
 import { GeneralErrorBoundary } from './components/error-boundary.tsx'
+import { Footer } from './components/footer.tsx'
 import { Header } from './components/header.tsx'
 import { Logo } from './components/logo.tsx'
 import { EpicProgress } from './components/progress-bar.tsx'
@@ -130,6 +132,10 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export const headers: Route.HeadersFunction = pipeHeaders
 
+export function useRootLoaderData() {
+	return useRouteLoaderData<typeof loader>('root')!
+}
+
 function Document({
 	children,
 	nonce,
@@ -197,12 +203,9 @@ function App() {
 				<div className="flex flex-1 flex-col">
 					<Outlet />
 				</div>
-
-				<div className="container flex justify-between pb-5">
-					<Logo />
-					<ThemeSwitch userPreference={data.requestInfo.userPrefs.theme} />
-				</div>
 			</div>
+
+			<Footer />
 			<EpicToaster closeButton position="top-center" theme={theme} />
 			<EpicProgress />
 		</OpenImgContextProvider>
