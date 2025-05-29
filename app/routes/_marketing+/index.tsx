@@ -1,7 +1,12 @@
 import { ExternalLink } from '#app/components/external-link.tsx'
 import { Badge } from '#app/components/ui/badge.tsx'
 import { Button } from '#app/components/ui/button'
-import { Card, CardContent } from '#app/components/ui/card.tsx'
+import {
+	Card,
+	CardContent,
+	CardTitle,
+	CardHeader,
+} from '#app/components/ui/card.tsx'
 import { Icon, type IconName } from '#app/components/ui/icon'
 import {
 	Tooltip,
@@ -159,7 +164,7 @@ function AboutSection() {
 	)
 }
 
-function SkillCard({ skill }: { skill: Skill }) {
+function SkillBadge({ skill }: { skill: Skill }) {
 	return (
 		<TooltipProvider>
 			<Tooltip>
@@ -178,6 +183,27 @@ function SkillCard({ skill }: { skill: Skill }) {
 	)
 }
 
+function SkillCard({
+	category,
+	skills,
+}: {
+	category: SkillCategory
+	skills: Skill[]
+}) {
+	return (
+		<Card className="border-muted">
+			<CardHeader>
+				<CardTitle className="text-primary">{category}</CardTitle>
+			</CardHeader>
+			<CardContent className="flex flex-wrap gap-2">
+				{skills.map((skill) => (
+					<SkillBadge key={skill.name} skill={skill} />
+				))}
+			</CardContent>
+		</Card>
+	)
+}
+
 function SkillsSection() {
 	return (
 		<section id="skills" className="bg-muted px-4 py-20">
@@ -185,24 +211,19 @@ function SkillsSection() {
 				<h2 className="mb-12 text-center text-4xl font-bold">My Skillset</h2>
 				<div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-4">
 					{skillCategories.map((category) => (
-						<div key={category} className="bg-card rounded-lg py-6 shadow-lg">
-							<h3 className="text-primary mb-4 text-2xl font-semibold">
-								{category}
-							</h3>
-							<div className="flex flex-wrap gap-2">
-								{skills
-									.filter((skill) => skill.category === category)
-									.map((skill) => (
-										<SkillCard key={skill.name} skill={skill} />
-									))}
-							</div>
-						</div>
+						<SkillCard
+							key={category}
+							category={category}
+							skills={skills.filter((skill) => skill.category === category)}
+						/>
 					))}
 				</div>
-				<p className="text-muted-foreground mt-12 text-center text-lg">
-					...and I'm always eager to learn new technologies and methodologies to
-					build even better solutions!
-				</p>
+
+				<div className="mx-auto items-center text-center">
+					<p className="text-muted-foreground mx-auto mt-6 max-w-xl text-center text-lg">
+						I am continuously learning and growing my skillset!
+					</p>
+				</div>
 			</div>
 		</section>
 	)
