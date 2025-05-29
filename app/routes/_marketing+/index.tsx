@@ -1,6 +1,12 @@
 import { type Skill, type SocialLink } from '@prisma/client'
 import { ExternalLink } from '#app/components/external-link.tsx'
-import { MarketingCard, MarketingSection } from '#app/components/marketing.tsx'
+import {
+	MarketingCard,
+	MarketingSection,
+	MarketingSectionContent,
+	MarketingSectionHeader,
+	MarketingSectionParagraph,
+} from '#app/components/marketing.tsx'
 import { ScrollNavLinks } from '#app/components/scroll-nav-links.tsx'
 import { Badge } from '#app/components/ui/badge.tsx'
 import { Button } from '#app/components/ui/button'
@@ -152,24 +158,19 @@ function AboutSection({
 			sectionId="about"
 			className="flex flex-col gap-4 text-center"
 		>
-			<h2 className="text-4xl font-bold">About Me</h2>
-			<div className="mx-auto flex flex-col items-center">
+			<MarketingSectionHeader>About Me</MarketingSectionHeader>
+			<MarketingSectionContent>
 				{professionalAboutMe?.content && (
-					<p className="text-muted-foreground mt-6 max-w-xl text-left text-lg">
+					<MarketingSectionParagraph>
 						{professionalAboutMe.content}
-					</p>
+					</MarketingSectionParagraph>
 				)}
 				{personalAboutMe?.content && (
-					<p className="text-muted-foreground mt-6 max-w-xl text-left text-lg">
+					<MarketingSectionParagraph>
 						{personalAboutMe.content}
-					</p>
+					</MarketingSectionParagraph>
 				)}
-			</div>
-			{/* <div className="mx-auto items-center text-center">
-				<p className="text-muted-foreground mx-auto mt-6 max-w-xl text-center text-lg">
-					I am continuously learning and growing my skillset!
-				</p>
-			</div> */}
+			</MarketingSectionContent>
 		</MarketingSection>
 	)
 }
@@ -216,18 +217,18 @@ function SkillsSection({
 }) {
 	return (
 		<MarketingSection sectionId="skills">
-			<h2 className="mb-12 text-center text-4xl font-bold">My Skillset</h2>
-			<div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-4">
+			<MarketingSectionHeader>My Skillset</MarketingSectionHeader>
+			<div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
 				{skillCategories.map((skillCategory) => (
 					<SkillCard key={skillCategory.name} category={skillCategory} />
 				))}
 			</div>
 
-			<div className="mx-auto items-center text-center">
-				<p className="text-muted-foreground mx-auto mt-6 max-w-xl text-center text-lg">
+			<MarketingSectionContent className="mt-8">
+				<MarketingSectionParagraph>
 					I am continuously learning and growing my skillset!
-				</p>
-			</div>
+				</MarketingSectionParagraph>
+			</MarketingSectionContent>
 		</MarketingSection>
 	)
 }
@@ -287,9 +288,7 @@ function ProjectsSection({
 }) {
 	return (
 		<MarketingSection sectionId="projects">
-			<h2 className="mb-12 text-center text-4xl font-bold">
-				Featured Projects
-			</h2>
+			<MarketingSectionHeader>Featured Projects</MarketingSectionHeader>
 			<div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
 				{projects.map((project) => (
 					<ProjectCard key={project.title} project={project} />
@@ -309,9 +308,9 @@ function ContactSection({
 			sectionId="contact"
 			className="bg-background text-foreground"
 		>
-			<h2 className="text-4xl font-bold">
+			<MarketingSectionHeader>
 				Let's Build Something Amazing Together!
-			</h2>
+			</MarketingSectionHeader>
 			<p className="text-muted-foreground mx-auto mt-6 max-w-xl text-lg">
 				Have a project in mind, a question, or just want to connect? I'd love to
 				hear from you.

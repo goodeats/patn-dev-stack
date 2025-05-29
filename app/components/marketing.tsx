@@ -27,6 +27,47 @@ export const MarketingSection = ({
 	)
 }
 
+export const MarketingSectionHeader = ({
+	children,
+}: {
+	children: React.ReactNode
+}) => {
+	return <h2 className="mb-12 text-center text-4xl font-bold">{children}</h2>
+}
+
+export const MarketingSectionContent = ({
+	children,
+	className,
+}: {
+	children: React.ReactNode
+	className?: string
+}) => {
+	return (
+		<div className={cn('mx-auto flex flex-col items-center gap-8', className)}>
+			{children}
+		</div>
+	)
+}
+
+export const MarketingSectionParagraph = ({
+	children,
+	className,
+}: {
+	children: React.ReactNode
+	className?: string
+}) => {
+	return (
+		<p
+			className={cn(
+				'text-muted-foreground max-w-xl text-left text-lg',
+				className,
+			)}
+		>
+			{children}
+		</p>
+	)
+}
+
 export const MarketingCard = ({
 	title,
 	description,
