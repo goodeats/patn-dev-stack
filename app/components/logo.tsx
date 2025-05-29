@@ -6,7 +6,7 @@ export function Logo() {
 			<span className="font-light transition group-hover:-translate-x-1">
 				patn
 			</span>
-			<span className="font-bold transition group-hover:translate-x-1">
+			<span className="text-primary font-bold transition group-hover:translate-x-1">
 				dev
 			</span>
 		</Link>

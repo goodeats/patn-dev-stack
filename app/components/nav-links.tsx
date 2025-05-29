@@ -3,9 +3,10 @@ import { Button } from './ui/button'
 interface NavLinkProps {
 	href: string
 	children: React.ReactNode
+	className?: string
 }
 
-function NavLink({ href, children }: NavLinkProps) {
+function NavLink({ href, children, className }: NavLinkProps) {
 	const handleClick = (e: React.MouseEvent) => {
 		e.preventDefault()
 		document
@@ -14,7 +15,7 @@ function NavLink({ href, children }: NavLinkProps) {
 	}
 
 	return (
-		<Button asChild variant="ghost" size="sm">
+		<Button asChild variant="ghost" size="sm" className={className}>
 			<a href={href} onClick={handleClick}>
 				{children}
 			</a>
@@ -33,7 +34,11 @@ export function NavLinks() {
 	return (
 		<nav className="flex items-center gap-4">
 			{navItems.map(({ href, label }) => (
-				<NavLink key={href} href={href}>
+				<NavLink
+					key={href}
+					href={href}
+					className="text-primary hover:text-primary/80 hover:bg-primary/10"
+				>
 					{label}
 				</NavLink>
 			))}
