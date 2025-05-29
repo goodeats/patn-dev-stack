@@ -1,4 +1,4 @@
-import { type SocialLink } from '@prisma/client'
+import { type Skill, type SkillCategory, type SocialLink } from '@prisma/client'
 import React from 'react'
 import { ExternalLink } from '#app/components/external-link.tsx'
 import { Badge } from '#app/components/ui/badge.tsx'
@@ -19,66 +19,33 @@ import {
 import { prisma } from '#app/utils/db.server.ts'
 import { type Route } from './+types/index.ts'
 
-export const meta: Route.MetaFunction = () => [{ title: 'Pat N | Web Dev' }]
+// Define a more specific type for the skills that are actually selected
+type SelectedSkill = Pick<Skill, 'name' | 'description'>
 
-// Types
-type SkillCategory = 'Frontend' | 'Backend' | 'DevOps' | 'Other'
-
-interface Skill {
-	name: string
-	category: SkillCategory
-	icon?: string
-	description?: string
+// Define the type for the skill categories as they are shaped by the loader
+type LoaderSkillCategory = {
+	name: SkillCategory['name']
+	skills: SelectedSkill[]
 }
 
-// Data
-const skills: Skill[] = [
-	{ name: 'React', category: 'Frontend', description: 'Building dynamic UIs' },
-	{
-		name: 'Remix',
-		category: 'Frontend',
-		description: 'Full-stack web framework',
-	},
-	{
-		name: 'Next.js',
-		category: 'Frontend',
-		description: 'React framework for production',
-	},
-	{
-		name: 'TailwindCSS',
-		category: 'Frontend',
-		description: 'Utility-first CSS',
-	},
-	{ name: 'TypeScript', category: 'Frontend', description: 'Typed JavaScript' },
-	{
-		name: 'Node.js',
-		category: 'Backend',
-		description: 'Server-side JavaScript',
-	},
-	{
-		name: 'PostgreSQL',
-		category: 'Backend',
-		description: 'Relational database',
-	},
-	{ name: 'Prisma', category: 'Backend', description: 'Modern ORM' },
-	{ name: 'Docker', category: 'DevOps', description: 'Containerization' },
-	{ name: 'AWS', category: 'DevOps', description: 'Cloud services' },
-	{ name: 'Git & GitHub', category: 'DevOps', description: 'Version control' },
-	{
-		name: 'Agile Methodologies',
-		category: 'Other',
-		description: 'Iterative development',
-	},
-]
+export const meta: Route.MetaFunction = () => [{ title: 'Pat N | Web Dev' }]
 
-const skillCategories: SkillCategory[] = [
-	'Frontend',
-	'Backend',
-	'DevOps',
-	'Other',
-]
+export async function loader({}: Route.LoaderArgs) {
+	const skillCategories = await prisma.skillCategory.findMany({
+		where: {
+			isPublished: true,
+		},
+		select: {
+			name: true,
+			skills: {
+				select: {
+					name: true,
+					description: true,
+				},
+			},
+		},
+	})
 
-export async function loader({ request }: Route.LoaderArgs) {
 	const socialLinks = await prisma.socialLink.findMany({
 		where: {
 			isPublished: true,
@@ -92,6 +59,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 	})
 
 	return {
+		skillCategories,
 		socialLinks,
 	}
 }
@@ -194,7 +162,7 @@ function AboutSection() {
 	)
 }
 
-function SkillBadge({ skill }: { skill: Skill }) {
+function SkillBadge({ skill }: { skill: Pick<Skill, 'name' | 'description'> }) {
 	return (
 		<TooltipProvider>
 			<Tooltip>
@@ -213,20 +181,14 @@ function SkillBadge({ skill }: { skill: Skill }) {
 	)
 }
 
-function SkillCard({
-	category,
-	skills,
-}: {
-	category: SkillCategory
-	skills: Skill[]
-}) {
+function SkillCard({ category }: { category: LoaderSkillCategory }) {
 	return (
 		<Card className="border-muted transform transition duration-300 hover:scale-105">
 			<CardHeader>
-				<CardTitle className="text-primary">{category}</CardTitle>
+				<CardTitle className="text-primary">{category.name}</CardTitle>
 			</CardHeader>
 			<CardContent className="flex flex-wrap gap-2">
-				{skills.map((skill) => (
+				{category.skills.map((skill: SelectedSkill) => (
 					<SkillBadge key={skill.name} skill={skill} />
 				))}
 			</CardContent>
@@ -234,7 +196,11 @@ function SkillCard({
 	)
 }
 
-function SkillsSection() {
+function SkillsSection({
+	skillCategories,
+}: {
+	skillCategories: LoaderSkillCategory[]
+}) {
 	const { ref, isVisible } = useFadeInOnScroll()
 	return (
 		<section ref={ref} id="skills" className="bg-muted px-4 py-20">
@@ -243,12 +209,8 @@ function SkillsSection() {
 			>
 				<h2 className="mb-12 text-center text-4xl font-bold">My Skillset</h2>
 				<div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-4">
-					{skillCategories.map((category) => (
-						<SkillCard
-							key={category}
-							category={category}
-							skills={skills.filter((skill) => skill.category === category)}
-						/>
+					{skillCategories.map((skillCategory) => (
+						<SkillCard key={skillCategory.name} category={skillCategory} />
 					))}
 				</div>
 
@@ -394,12 +356,12 @@ function ContactSection({
 }
 
 export default function Index({ loaderData }: Route.ComponentProps) {
-	const { socialLinks } = loaderData
+	const { skillCategories, socialLinks } = loaderData
 	return (
 		<main className="font-poppins bg-background text-foreground min-h-screen">
 			<HeroSection />
 			<AboutSection />
-			<SkillsSection />
+			<SkillsSection skillCategories={skillCategories} />
 			<ProjectsSection />
 			<ContactSection socialLinks={socialLinks} />
 		</main>

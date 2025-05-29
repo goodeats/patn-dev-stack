@@ -340,12 +340,37 @@ async function seed() {
 			description: 'Relational database',
 		},
 		{ name: 'Prisma', category: 'Backend', description: 'Modern ORM' },
+		{
+			name: 'SQLite',
+			category: 'Backend',
+			description: 'Embeddable SQL database engine',
+		},
+		{
+			name: 'SSE',
+			category: 'Backend',
+			description: 'Server-Sent Events for real-time updates',
+		},
 		{ name: 'Docker', category: 'DevOps', description: 'Containerization' },
 		{ name: 'AWS', category: 'DevOps', description: 'Cloud services' },
+		{
+			name: 'Fly.io',
+			category: 'DevOps',
+			description: 'Application deployment platform',
+		},
 		{
 			name: 'Git & GitHub',
 			category: 'DevOps',
 			description: 'Version control',
+		},
+		{
+			name: 'PWA',
+			category: 'Frontend',
+			description: 'Progressive Web App for offline capabilities',
+		},
+		{
+			name: 'XState',
+			category: 'Frontend',
+			description: 'State management and statecharts',
 		},
 		{
 			name: 'Agile Methodologies',
