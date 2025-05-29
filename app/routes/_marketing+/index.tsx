@@ -1,5 +1,4 @@
-import { type Skill, type SkillCategory, type SocialLink } from '@prisma/client'
-import React from 'react'
+import { type Skill, type SocialLink } from '@prisma/client'
 import { ExternalLink } from '#app/components/external-link.tsx'
 import { Badge } from '#app/components/ui/badge.tsx'
 import { Button } from '#app/components/ui/button'
