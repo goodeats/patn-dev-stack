@@ -24,14 +24,27 @@ import { type Info, type Route } from './+types/index.ts'
 export const meta: Route.MetaFunction = () => [{ title: 'Pat N | Web Dev' }]
 
 export async function loader({}: Route.LoaderArgs) {
-	const aboutMeCategories = await prisma.aboutMeCategory.findFirst({
+	const professionalAboutMe = await prisma.aboutMe.findFirst({
 		where: {
 			isPublished: true,
-			name: 'Professional',
+			aboutMeCategory: {
+				name: 'Professional',
+			},
 		},
 		select: {
-			name: true,
-			description: true,
+			content: true,
+		},
+	})
+
+	const personalAboutMe = await prisma.aboutMe.findFirst({
+		where: {
+			isPublished: true,
+			aboutMeCategory: {
+				name: 'Personal',
+			},
+		},
+		select: {
+			content: true,
 		},
 	})
 
@@ -85,6 +98,8 @@ export async function loader({}: Route.LoaderArgs) {
 		skillCategories,
 		projects,
 		socialLinks,
+		professionalAboutMe,
+		personalAboutMe,
 	}
 }
 
@@ -151,7 +166,13 @@ function HeroSection() {
 	)
 }
 
-function AboutSection() {
+function AboutSection({
+	professionalAboutMe,
+	personalAboutMe,
+}: {
+	professionalAboutMe: Info['loaderData']['professionalAboutMe']
+	personalAboutMe: Info['loaderData']['personalAboutMe']
+}) {
 	const { ref, isVisible } = useFadeInOnScroll()
 	return (
 		<section
@@ -167,20 +188,16 @@ function AboutSection() {
 			<div
 				className={`mx-auto flex flex-col text-left ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
 			>
-				<p className="text-muted-foreground mt-6 max-w-xl text-lg">
-					I am a senior full-stack software engineer with 10+ years of
-					experience. I have launched and/or contributed to projects that
-					demonstrate AI technology, messaging platforms, health tech, and
-					e-commerce. I have well-rounded expertise in frontend, backend,
-					deployment, and everything in between. I also enjoy growing my skills
-					to keep up with current trends like using LLMs for coding tools.
-				</p>
-				<p className="text-muted-foreground mt-6 max-w-xl text-lg">
-					I grew up in Maine and currently live in Brooklyn so I enjoy nature
-					and city life equally! For fun I like to follow professional sports,
-					enjoy the discourse on Twitter, play video games, discover new music
-					to listen to.
-				</p>
+				{professionalAboutMe?.content && (
+					<p className="text-muted-foreground mt-6 max-w-xl text-lg">
+						{professionalAboutMe.content}
+					</p>
+				)}
+				{personalAboutMe?.content && (
+					<p className="text-muted-foreground mt-6 max-w-xl text-lg">
+						{personalAboutMe.content}
+					</p>
+				)}
 			</div>
 		</section>
 	)
@@ -384,11 +401,21 @@ function ContactSection({
 }
 
 export default function Index({ loaderData }: Route.ComponentProps) {
-	const { skillCategories, projects, socialLinks } = loaderData
+	const {
+		skillCategories,
+		projects,
+		socialLinks,
+		professionalAboutMe,
+		personalAboutMe,
+	} = loaderData
+
 	return (
 		<main className="font-poppins bg-background text-foreground min-h-screen">
 			<HeroSection />
-			<AboutSection />
+			<AboutSection
+				professionalAboutMe={professionalAboutMe}
+				personalAboutMe={personalAboutMe}
+			/>
 			<SkillsSection skillCategories={skillCategories} />
 			<ProjectsSection projects={projects} />
 			<ContactSection socialLinks={socialLinks} />
