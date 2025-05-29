@@ -1,12 +1,7 @@
 import { ExternalLink } from '#app/components/external-link.tsx'
 import { Badge } from '#app/components/ui/badge.tsx'
 import { Button } from '#app/components/ui/button'
-import {
-	Card,
-	CardTitle,
-	CardHeader,
-	CardContent,
-} from '#app/components/ui/card.tsx'
+import { Card, CardContent } from '#app/components/ui/card.tsx'
 import { Icon, type IconName } from '#app/components/ui/icon'
 import {
 	Tooltip,
@@ -139,24 +134,32 @@ function HeroSection() {
 
 function AboutSection() {
 	return (
-		<section id="about" className="bg-muted px-4 py-20 text-center">
+		<section
+			id="about"
+			className="bg-muted flex flex-col gap-4 px-4 py-20 text-center"
+		>
 			<h2 className="text-4xl font-bold">About Me</h2>
-			<Card>
-				<CardContent className="text-left">
-					I am a senior full-stack software engineer with 10+ years of
-					experience. I have launched and/or contributed to projects that
-					demonstrate AI technology, messaging platforms, health tech, and
-					e-commerce. I have well-rounded expertise in frontend, backend,
-					deployment, and everything in between. I also enjoy growing my skills
-					to keep up with current trends like using LLMs for coding tools.
-				</CardContent>
-			</Card>
-			<p className="text-muted-foreground mx-auto mt-4 max-w-2xl text-left text-lg">
-				I grew up in Maine and currently live in Brooklyn so I enjoy nature and
-				city life equally! For fun I like to follow professional sports, enjoy
-				the discourse on Twitter, play video games, discover new music to listen
-				to.
-			</p>
+			<div className="flex flex-col gap-4">
+				<Card>
+					<CardContent className="text-left">
+						I am a senior full-stack software engineer with 10+ years of
+						experience. I have launched and/or contributed to projects that
+						demonstrate AI technology, messaging platforms, health tech, and
+						e-commerce. I have well-rounded expertise in frontend, backend,
+						deployment, and everything in between. I also enjoy growing my
+						skills to keep up with current trends like using LLMs for coding
+						tools.
+					</CardContent>
+				</Card>
+				<Card>
+					<CardContent className="text-left">
+						I grew up in Maine and currently live in Brooklyn so I enjoy nature
+						and city life equally! For fun I like to follow professional sports,
+						enjoy the discourse on Twitter, play video games, discover new music
+						to listen to.
+					</CardContent>
+				</Card>
+			</div>
 		</section>
 	)
 }
