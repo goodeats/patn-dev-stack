@@ -18,6 +18,7 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from '#app/components/ui/tooltip.tsx'
+import { useFadeInOnScroll } from '#app/hooks/use-fade-in-on-scroll.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { type Info, type Route } from './+types/index.ts'
 
@@ -101,37 +102,6 @@ export async function loader({}: Route.LoaderArgs) {
 		professionalAboutMe,
 		personalAboutMe,
 	}
-}
-
-// Components
-function useFadeInOnScroll() {
-	const ref = React.useRef<HTMLDivElement>(null)
-	const [isVisible, setIsVisible] = React.useState(false)
-
-	React.useEffect(() => {
-		const observer = new IntersectionObserver(
-			(entries) => {
-				const entry = entries[0]
-				if (entry && entry.isIntersecting) {
-					setIsVisible(true)
-					observer.unobserve(entry.target)
-				}
-			},
-			{ threshold: 0.1 },
-		)
-
-		if (ref.current) {
-			observer.observe(ref.current)
-		}
-
-		return () => {
-			if (ref.current) {
-				observer.unobserve(ref.current)
-			}
-		}
-	}, [])
-
-	return { ref, isVisible }
 }
 
 function HeroSection() {
