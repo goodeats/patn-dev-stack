@@ -311,10 +311,15 @@ function ContactSection({
 			<MarketingSectionHeader>
 				Let's Build Something Amazing Together!
 			</MarketingSectionHeader>
-			<p className="text-muted-foreground mx-auto mt-6 max-w-xl text-lg">
-				Have a project in mind, a question, or just want to connect? I'd love to
-				hear from you.
-			</p>
+			<MarketingSectionContent className="gap-2">
+				<MarketingSectionParagraph>
+					Have a project in mind, a question, or just want to connect?
+				</MarketingSectionParagraph>
+				<MarketingSectionParagraph>
+					I'd love to hear from you!
+				</MarketingSectionParagraph>
+			</MarketingSectionContent>
+
 			<div className="mt-10 flex flex-wrap items-center justify-center gap-4">
 				<TooltipProvider>
 					{socialLinks.map(({ href, icon, label, text }) => (
