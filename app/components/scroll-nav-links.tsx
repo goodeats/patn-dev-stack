@@ -1,12 +1,12 @@
 import { Button } from './ui/button'
 
-interface NavLinkProps {
+interface ScrollNavLinkProps {
 	href: string
 	children: React.ReactNode
 	className?: string
 }
 
-function NavLink({ href, children, className }: NavLinkProps) {
+function ScrollNavLink({ href, children, className }: ScrollNavLinkProps) {
 	const handleClick = (e: React.MouseEvent) => {
 		e.preventDefault()
 		document
@@ -23,24 +23,26 @@ function NavLink({ href, children, className }: NavLinkProps) {
 	)
 }
 
-const navItems = [
-	{ href: '#about', label: 'About' },
-	{ href: '#skills', label: 'Skills' },
-	{ href: '#projects', label: 'Projects' },
-	{ href: '#contact', label: 'Contact' },
-]
+type ScrollNavLinkItem = {
+	href: string
+	label: string
+}
 
-export function NavLinks() {
+export function ScrollNavLinks({
+	navItems,
+}: {
+	navItems: ScrollNavLinkItem[]
+}) {
 	return (
 		<nav className="flex items-center gap-4">
 			{navItems.map(({ href, label }) => (
-				<NavLink
+				<ScrollNavLink
 					key={href}
 					href={href}
 					className="text-primary hover:text-primary/80 hover:bg-primary/10"
 				>
 					{label}
-				</NavLink>
+				</ScrollNavLink>
 			))}
 		</nav>
 	)
