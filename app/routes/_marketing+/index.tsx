@@ -1,16 +1,10 @@
 import { type Skill, type SocialLink } from '@prisma/client'
 import { ExternalLink } from '#app/components/external-link.tsx'
+import { MarketingCard } from '#app/components/marketing.tsx'
 import { ScrollNavLinks } from '#app/components/scroll-nav-links.tsx'
 import { Badge } from '#app/components/ui/badge.tsx'
 import { Button } from '#app/components/ui/button'
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardTitle,
-	CardHeader,
-	CardFooter,
-} from '#app/components/ui/card.tsx'
+import { CardContent, CardFooter } from '#app/components/ui/card.tsx'
 import { Icon, type IconName } from '#app/components/ui/icon'
 import {
 	Tooltip,
@@ -208,16 +202,13 @@ function SkillCard({
 	category: Info['loaderData']['skillCategories'][number]
 }) {
 	return (
-		<Card className="border-muted transform transition duration-300 hover:scale-105">
-			<CardHeader>
-				<CardTitle className="text-primary">{category.name}</CardTitle>
-			</CardHeader>
+		<MarketingCard title={category.name} className="text-left">
 			<CardContent className="flex flex-wrap gap-2">
 				{category.skills.map((skill) => (
 					<SkillBadge key={skill.name} skill={skill} />
 				))}
 			</CardContent>
-		</Card>
+		</MarketingCard>
 	)
 }
 
@@ -257,11 +248,11 @@ function ProjectCard({
 	const { title, description, skills, liveDemoUrl, sourceCodeUrl, comments } =
 		project
 	return (
-		<Card className="border-muted transform transition duration-300 hover:scale-105">
-			<CardHeader>
-				<CardTitle className="text-primary">{title}</CardTitle>
-				<CardDescription>{description}</CardDescription>
-			</CardHeader>
+		<MarketingCard
+			title={title}
+			description={description}
+			className="text-left"
+		>
 			<CardContent className="flex-1">
 				<p className="mb-4 text-sm">
 					<span className="font-semibold">Technologies:</span>
@@ -293,7 +284,7 @@ function ProjectCard({
 					<p className="text-muted-foreground mt-4 text-sm">{comments}</p>
 				)}
 			</CardFooter>
-		</Card>
+		</MarketingCard>
 	)
 }
 
