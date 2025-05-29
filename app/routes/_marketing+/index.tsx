@@ -6,8 +6,10 @@ import { Button } from '#app/components/ui/button'
 import {
 	Card,
 	CardContent,
+	CardDescription,
 	CardTitle,
 	CardHeader,
+	CardFooter,
 } from '#app/components/ui/card.tsx'
 import { Icon, type IconName } from '#app/components/ui/icon'
 import {
@@ -50,6 +52,7 @@ export async function loader({}: Route.LoaderArgs) {
 			skills: {
 				select: {
 					name: true,
+					description: true,
 				},
 			},
 		},
@@ -239,29 +242,29 @@ function SkillsSection({
 }
 
 function ProjectCard({
-	title,
-	description,
-	technologies,
-	liveDemoUrl,
-	sourceCodeUrl,
-	comments,
+	project,
 }: {
-	title: string
-	description: string
-	technologies: string
-	liveDemoUrl?: string | null
-	sourceCodeUrl?: string | null
-	comments?: string | null
+	project: Info['loaderData']['projects'][number]
 }) {
+	const { title, description, skills, liveDemoUrl, sourceCodeUrl, comments } =
+		project
 	return (
-		<div className="bg-card transform rounded-lg p-6 shadow-lg transition duration-300 hover:scale-105">
-			<h3 className="text-primary mb-3 text-2xl font-semibold">{title}</h3>
-			<p className="text-muted-foreground mb-4">{description}</p>
-			<p className="mb-4 text-sm">
-				<span className="font-semibold">Technologies:</span> {technologies}
-			</p>
-
-			<div className="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4">
+		<Card className="border-muted transform transition duration-300 hover:scale-105">
+			<CardHeader>
+				<CardTitle className="text-primary">{title}</CardTitle>
+				<CardDescription>{description}</CardDescription>
+			</CardHeader>
+			<CardContent className="flex-1">
+				<p className="mb-4 text-sm">
+					<span className="font-semibold">Technologies:</span>
+				</p>
+				<div className="flex flex-wrap gap-2">
+					{skills.map((skill) => (
+						<SkillBadge key={skill.name} skill={skill} />
+					))}
+				</div>
+			</CardContent>
+			<CardFooter className="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4">
 				{liveDemoUrl && (
 					<ExternalLink
 						href={liveDemoUrl}
@@ -278,9 +281,11 @@ function ProjectCard({
 						GitHub
 					</ExternalLink>
 				)}
-				{comments && <p className="text-muted-foreground mb-4">{comments}</p>}
-			</div>
-		</div>
+				{comments && (
+					<p className="text-muted-foreground mt-4 text-sm">{comments}</p>
+				)}
+			</CardFooter>
+		</Card>
 	)
 }
 
@@ -300,17 +305,7 @@ function ProjectsSection({
 				</h2>
 				<div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
 					{projects.map((project) => (
-						<ProjectCard
-							key={project.title}
-							title={project.title}
-							description={project.description}
-							technologies={project.skills
-								.map((skill) => skill.name)
-								.join(', ')}
-							liveDemoUrl={project.liveDemoUrl}
-							sourceCodeUrl={project.sourceCodeUrl}
-							comments={project.comments}
-						/>
+						<ProjectCard key={project.title} project={project} />
 					))}
 				</div>
 			</div>
