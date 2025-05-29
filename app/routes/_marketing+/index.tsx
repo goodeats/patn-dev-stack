@@ -17,16 +17,7 @@ import {
 	TooltipTrigger,
 } from '#app/components/ui/tooltip.tsx'
 import { prisma } from '#app/utils/db.server.ts'
-import { type Route } from './+types/index.ts'
-
-// Define a more specific type for the skills that are actually selected
-type SelectedSkill = Pick<Skill, 'name' | 'description'>
-
-// Define the type for the skill categories as they are shaped by the loader
-type LoaderSkillCategory = {
-	name: SkillCategory['name']
-	skills: SelectedSkill[]
-}
+import { type Info, type Route } from './+types/index.ts'
 
 export const meta: Route.MetaFunction = () => [{ title: 'Pat N | Web Dev' }]
 
@@ -46,6 +37,24 @@ export async function loader({}: Route.LoaderArgs) {
 		},
 	})
 
+	const projects = await prisma.project.findMany({
+		where: {
+			isPublished: true,
+		},
+		select: {
+			title: true,
+			description: true,
+			liveDemoUrl: true,
+			sourceCodeUrl: true,
+			comments: true,
+			skills: {
+				select: {
+					name: true,
+				},
+			},
+		},
+	})
+
 	const socialLinks = await prisma.socialLink.findMany({
 		where: {
 			isPublished: true,
@@ -60,6 +69,7 @@ export async function loader({}: Route.LoaderArgs) {
 
 	return {
 		skillCategories,
+		projects,
 		socialLinks,
 	}
 }
@@ -181,14 +191,18 @@ function SkillBadge({ skill }: { skill: Pick<Skill, 'name' | 'description'> }) {
 	)
 }
 
-function SkillCard({ category }: { category: LoaderSkillCategory }) {
+function SkillCard({
+	category,
+}: {
+	category: Info['loaderData']['skillCategories'][number]
+}) {
 	return (
 		<Card className="border-muted transform transition duration-300 hover:scale-105">
 			<CardHeader>
 				<CardTitle className="text-primary">{category.name}</CardTitle>
 			</CardHeader>
 			<CardContent className="flex flex-wrap gap-2">
-				{category.skills.map((skill: SelectedSkill) => (
+				{category.skills.map((skill) => (
 					<SkillBadge key={skill.name} skill={skill} />
 				))}
 			</CardContent>
@@ -199,7 +213,7 @@ function SkillCard({ category }: { category: LoaderSkillCategory }) {
 function SkillsSection({
 	skillCategories,
 }: {
-	skillCategories: LoaderSkillCategory[]
+	skillCategories: Info['loaderData']['skillCategories']
 }) {
 	const { ref, isVisible } = useFadeInOnScroll()
 	return (
@@ -230,12 +244,14 @@ function ProjectCard({
 	technologies,
 	liveDemoUrl,
 	sourceCodeUrl,
+	comments,
 }: {
 	title: string
 	description: string
 	technologies: string
-	liveDemoUrl?: string
-	sourceCodeUrl?: string
+	liveDemoUrl?: string | null
+	sourceCodeUrl?: string | null
+	comments?: string | null
 }) {
 	return (
 		<div className="bg-card transform rounded-lg p-6 shadow-lg transition duration-300 hover:scale-105">
@@ -244,6 +260,7 @@ function ProjectCard({
 			<p className="mb-4 text-sm">
 				<span className="font-semibold">Technologies:</span> {technologies}
 			</p>
+
 			<div className="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4">
 				{liveDemoUrl && (
 					<ExternalLink
@@ -261,12 +278,17 @@ function ProjectCard({
 						GitHub
 					</ExternalLink>
 				)}
+				{comments && <p className="text-muted-foreground mb-4">{comments}</p>}
 			</div>
 		</div>
 	)
 }
 
-function ProjectsSection() {
+function ProjectsSection({
+	projects,
+}: {
+	projects: Info['loaderData']['projects']
+}) {
 	const { ref, isVisible } = useFadeInOnScroll()
 	return (
 		<section ref={ref} id="projects" className="bg-muted px-4 py-20">
@@ -277,19 +299,19 @@ function ProjectsSection() {
 					Featured Projects
 				</h2>
 				<div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-					<ProjectCard
-						title="PPPAAATTT"
-						description="A fun, creative studio, closely resembling Figma, for assembling designs on a canvas."
-						technologies="Remix, TailwindCSS, SQLite, Fly.io"
-						liveDemoUrl="https://pppaaattt.xyz"
-						sourceCodeUrl="https://github.com/goodeats/epic-pppaaattt.xyz"
-					/>
-					<ProjectCard
-						title="Choros App"
-						description="A messaging platform for planning or finding local activities and then matchmaking groups to meet up. This app is currently in a private beta, but
-            I would be happy to give a personal demo."
-						technologies="Remix, TailwindCSS, SQLite, Fly.io, PWA, XState, SSE"
-					/>
+					{projects.map((project) => (
+						<ProjectCard
+							key={project.title}
+							title={project.title}
+							description={project.description}
+							technologies={project.skills
+								.map((skill) => skill.name)
+								.join(', ')}
+							liveDemoUrl={project.liveDemoUrl}
+							sourceCodeUrl={project.sourceCodeUrl}
+							comments={project.comments}
+						/>
+					))}
 				</div>
 			</div>
 		</section>
@@ -356,13 +378,13 @@ function ContactSection({
 }
 
 export default function Index({ loaderData }: Route.ComponentProps) {
-	const { skillCategories, socialLinks } = loaderData
+	const { skillCategories, projects, socialLinks } = loaderData
 	return (
 		<main className="font-poppins bg-background text-foreground min-h-screen">
 			<HeroSection />
 			<AboutSection />
 			<SkillsSection skillCategories={skillCategories} />
-			<ProjectsSection />
+			<ProjectsSection projects={projects} />
 			<ContactSection socialLinks={socialLinks} />
 		</main>
 	)

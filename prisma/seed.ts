@@ -409,7 +409,7 @@ async function seed() {
 		{
 			title: 'Choros App',
 			description:
-				'A messaging platform for planning or finding local activities and then matchmaking groups to meet up. This app is currently in a private beta, but I would be happy to give a personal demo.',
+				'A messaging platform for planning or finding local activities and then matchmaking groups to meet up.',
 			skills: [
 				'Remix',
 				'TailwindCSS',
