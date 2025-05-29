@@ -139,26 +139,21 @@ function AboutSection() {
 			className="bg-muted flex flex-col gap-4 px-4 py-20 text-center"
 		>
 			<h2 className="text-4xl font-bold">About Me</h2>
-			<div className="flex flex-col gap-4">
-				<Card>
-					<CardContent className="text-left">
-						I am a senior full-stack software engineer with 10+ years of
-						experience. I have launched and/or contributed to projects that
-						demonstrate AI technology, messaging platforms, health tech, and
-						e-commerce. I have well-rounded expertise in frontend, backend,
-						deployment, and everything in between. I also enjoy growing my
-						skills to keep up with current trends like using LLMs for coding
-						tools.
-					</CardContent>
-				</Card>
-				<Card>
-					<CardContent className="text-left">
-						I grew up in Maine and currently live in Brooklyn so I enjoy nature
-						and city life equally! For fun I like to follow professional sports,
-						enjoy the discourse on Twitter, play video games, discover new music
-						to listen to.
-					</CardContent>
-				</Card>
+			<div className="mx-auto flex flex-col text-left">
+				<p className="text-muted-foreground mt-6 max-w-xl text-lg">
+					I am a senior full-stack software engineer with 10+ years of
+					experience. I have launched and/or contributed to projects that
+					demonstrate AI technology, messaging platforms, health tech, and
+					e-commerce. I have well-rounded expertise in frontend, backend,
+					deployment, and everything in between. I also enjoy growing my skills
+					to keep up with current trends like using LLMs for coding tools.
+				</p>
+				<p className="text-muted-foreground mt-6 max-w-xl text-lg">
+					I grew up in Maine and currently live in Brooklyn so I enjoy nature
+					and city life equally! For fun I like to follow professional sports,
+					enjoy the discourse on Twitter, play video games, discover new music
+					to listen to.
+				</p>
 			</div>
 		</section>
 	)
@@ -190,7 +185,7 @@ function SkillsSection() {
 				<h2 className="mb-12 text-center text-4xl font-bold">My Skillset</h2>
 				<div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-4">
 					{skillCategories.map((category) => (
-						<div key={category} className="bg-card rounded-lg p-6 shadow-lg">
+						<div key={category} className="bg-card rounded-lg py-6 shadow-lg">
 							<h3 className="text-primary mb-4 text-2xl font-semibold">
 								{category}
 							</h3>
