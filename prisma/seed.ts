@@ -71,7 +71,7 @@ async function seed() {
 	}
 	console.timeEnd(`👤 Created ${totalUsers} users...`)
 
-	console.time(`🐨 Created admin user "kody"`)
+	console.time(`🐨 Created admin user "pat"`)
 
 	const kodyImages = {
 		kodyUser: { objectKey: 'user/kody.png' },
@@ -244,7 +244,68 @@ async function seed() {
 		}
 	}
 
-	console.timeEnd(`🐨 Created admin user "kody"`)
+	console.timeEnd(`🐨 Created admin user "pat"`)
+
+	console.time(`📝 Created about me`)
+
+	const aboutMeCategories = [
+		{
+			name: 'Professional',
+			description: 'Professional experience and skills',
+		},
+		{
+			name: 'Personal',
+			description: 'Personal interests and hobbies',
+		},
+	] as const
+
+	for (const category of aboutMeCategories) {
+		await prisma.aboutMeCategory.create({
+			data: {
+				name: category.name,
+				description: category.description,
+			},
+		})
+	}
+
+	const aboutMeContent = [
+		{
+			name: 'Professional',
+			description: 'Professional experience and skills',
+			category: 'Professional',
+			content: `I am a senior full-stack software engineer with 10+ years of
+					experience. I have launched and/or contributed to projects that
+					demonstrate AI technology, messaging platforms, health tech, and
+					e-commerce. I have well-rounded expertise in frontend, backend,
+					deployment, and everything in between. I also enjoy growing my skills
+					to keep up with current trends like using LLMs for coding tools.`,
+		},
+		{
+			name: 'Personal',
+			description: 'Personal interests and hobbies',
+			category: 'Personal',
+			content: `I grew up in Maine and currently live in Brooklyn so I enjoy nature
+					and city life equally! For fun I like to follow professional sports,
+					enjoy the discourse on Twitter, play video games, discover new music to listen to.`,
+		},
+	] as const
+
+	for (const aboutMe of aboutMeContent) {
+		await prisma.aboutMe.create({
+			data: {
+				name: aboutMe.name,
+				description: aboutMe.description,
+				content: aboutMe.content,
+				aboutMeCategory: {
+					connect: {
+						name: aboutMe.category,
+					},
+				},
+			},
+		})
+	}
+
+	console.timeEnd(`📝 Created about me`)
 
 	console.time(`🗣️ Created social links`)
 

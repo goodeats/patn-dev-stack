@@ -214,6 +214,34 @@ model Skill {
   @@index([skillCategoryId])
 }
 
+model AboutMeCategory {
+  id        String   @id @default(cuid())
+  name      String   @unique // e.g., "Professional", "Personal", "Skills"
+  description String?
+  isPublished Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  aboutMes AboutMe[]
+}
+
+model AboutMe {
+  id        String   @id @default(cuid())
+  name      String
+  content   String
+  description String?
+  isPublished Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  aboutMeCategoryId String
+  aboutMeCategory AboutMeCategory @relation(fields: [aboutMeCategoryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([aboutMeCategoryId])
+}
+
 model Project {
   id            String   @id @default(cuid())
   title         String   @unique

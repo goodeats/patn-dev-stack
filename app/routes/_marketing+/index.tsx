@@ -24,6 +24,17 @@ import { type Info, type Route } from './+types/index.ts'
 export const meta: Route.MetaFunction = () => [{ title: 'Pat N | Web Dev' }]
 
 export async function loader({}: Route.LoaderArgs) {
+	const aboutMeCategories = await prisma.aboutMeCategory.findFirst({
+		where: {
+			isPublished: true,
+			name: 'Professional',
+		},
+		select: {
+			name: true,
+			description: true,
+		},
+	})
+
 	const skillCategories = await prisma.skillCategory.findMany({
 		where: {
 			isPublished: true,
