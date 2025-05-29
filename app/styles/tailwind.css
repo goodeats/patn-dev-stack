@@ -232,7 +232,7 @@
 }
 
 .animate-fade-in-up {
-  animation: fade-in-up 0.6s ease-out forwards;
+  animation: fade-in-up 0.9s ease-out forwards;
 }
 
 /* Respect reduced motion preference */

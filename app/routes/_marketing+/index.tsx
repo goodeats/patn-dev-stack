@@ -141,13 +141,11 @@ function useFadeInOnScroll() {
 }
 
 function HeroSection() {
-	const { ref, isVisible } = useFadeInOnScroll()
+	const { ref } = useFadeInOnScroll()
 	return (
 		<section
 			ref={ref}
-			className={`from-background to-muted flex min-h-screen flex-col items-center justify-center bg-gradient-to-br px-4 py-16 text-center ${
-				isVisible ? 'animate-fade-in-up' : 'opacity-0'
-			}`}
+			className="from-background to-muted flex min-h-screen flex-col items-center justify-center bg-gradient-to-br px-4 py-16 text-center"
 		>
 			<div className="animate-slide-top [animation-fill-mode:backwards]">
 				<h1
@@ -180,12 +178,16 @@ function AboutSection() {
 		<section
 			ref={ref}
 			id="about"
-			className={`bg-muted flex flex-col gap-4 px-4 py-20 text-center ${
-				isVisible ? 'animate-fade-in-up' : 'opacity-0'
-			}`}
+			className="bg-muted flex flex-col gap-4 px-4 py-20 text-center"
 		>
-			<h2 className="text-4xl font-bold">About Me</h2>
-			<div className="mx-auto flex flex-col text-left">
+			<h2
+				className={`text-4xl font-bold ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
+			>
+				About Me
+			</h2>
+			<div
+				className={`mx-auto flex flex-col text-left ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
+			>
 				<p className="text-muted-foreground mt-6 max-w-xl text-lg">
 					I am a senior full-stack software engineer with 10+ years of
 					experience. I have launched and/or contributed to projects that
@@ -248,14 +250,10 @@ function SkillCard({
 function SkillsSection() {
 	const { ref, isVisible } = useFadeInOnScroll()
 	return (
-		<section
-			ref={ref}
-			id="skills"
-			className={`bg-muted px-4 py-20 ${
-				isVisible ? 'animate-fade-in-up' : 'opacity-0'
-			}`}
-		>
-			<div className="container mx-auto">
+		<section ref={ref} id="skills" className="bg-muted px-4 py-20">
+			<div
+				className={`container mx-auto ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
+			>
 				<h2 className="mb-12 text-center text-4xl font-bold">My Skillset</h2>
 				<div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-4">
 					{skillCategories.map((category) => (
@@ -322,14 +320,10 @@ function ProjectCard({
 function ProjectsSection() {
 	const { ref, isVisible } = useFadeInOnScroll()
 	return (
-		<section
-			ref={ref}
-			id="projects"
-			className={`bg-muted px-4 py-20 ${
-				isVisible ? 'animate-fade-in-up' : 'opacity-0'
-			}`}
-		>
-			<div className="container mx-auto">
+		<section ref={ref} id="projects" className="bg-muted px-4 py-20">
+			<div
+				className={`container mx-auto ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
+			>
 				<h2 className="mb-12 text-center text-4xl font-bold">
 					Featured Projects
 				</h2>
@@ -359,11 +353,11 @@ function ContactSection() {
 		<section
 			ref={ref}
 			id="contact"
-			className={`bg-background text-foreground px-4 py-20 ${
-				isVisible ? 'animate-fade-in-up' : 'opacity-0'
-			}`}
+			className="bg-background text-foreground px-4 py-20"
 		>
-			<div className="container mx-auto text-center">
+			<div
+				className={`container mx-auto text-center ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
+			>
 				<h2 className="text-4xl font-bold">
 					Let's Build Something Amazing Together!
 				</h2>
