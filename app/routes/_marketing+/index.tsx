@@ -169,7 +169,7 @@ function SkillBadge({ skill }: { skill: Skill }) {
 		<TooltipProvider>
 			<Tooltip>
 				<TooltipTrigger asChild>
-					<Badge variant="secondary" className="cursor-default">
+					<Badge variant="secondary" className="cursor-pointer">
 						{skill.name}
 					</Badge>
 				</TooltipTrigger>
@@ -191,7 +191,7 @@ function SkillCard({
 	skills: Skill[]
 }) {
 	return (
-		<Card className="border-muted">
+		<Card className="border-muted transform transition duration-300 hover:scale-105">
 			<CardHeader>
 				<CardTitle className="text-primary">{category}</CardTitle>
 			</CardHeader>
