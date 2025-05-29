@@ -184,3 +184,60 @@ model Passkey {
 
   @@index(userId)
 }
+
+model SkillCategory {
+  id        String   @id @default(cuid())
+  name      String   @unique // e.g., "Frontend", "Backend", "DevOps", "Other"
+  isPublished Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  skills Skill[]
+}
+
+model Skill {
+  id              String   @id @default(cuid())
+  name            String   @unique
+  description     String?
+  icon            String?  // Optional: could store an icon name or path if needed in the future
+  isPublished     Boolean @default(true)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  skillCategoryId String
+  skillCategory   SkillCategory @relation(fields: [skillCategoryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  projects Project[] @relation("ProjectSkills")
+
+  @@index([skillCategoryId])
+}
+
+model Project {
+  id            String   @id @default(cuid())
+  title         String   @unique
+  description   String
+  isPublished   Boolean @default(true)
+  liveDemoUrl   String?
+  sourceCodeUrl String?
+  // in case I worked on a private project
+  comments      String?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  skills Skill[] @relation("ProjectSkills")
+}
+
+model SocialLink {
+  id        String   @id @default(cuid())
+  href      String   @unique
+  icon      String   // Corresponds to IconName, e.g., "envelope-closed", "linkedin-logo"
+  label     String   // Aria-label text
+  text      String   // Text for display or tooltip, e.g., "Email Me", "LinkedIn"
+  isPublished Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

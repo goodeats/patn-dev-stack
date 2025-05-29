@@ -1,3 +1,4 @@
+import { type SocialLink } from '@prisma/client'
 import React from 'react'
 import { ExternalLink } from '#app/components/external-link.tsx'
 import { Badge } from '#app/components/ui/badge.tsx'
@@ -15,6 +16,7 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from '#app/components/ui/tooltip.tsx'
+import { prisma } from '#app/utils/db.server.ts'
 import { type Route } from './+types/index.ts'
 
 export const meta: Route.MetaFunction = () => [{ title: 'Pat N | Web Dev' }]
@@ -76,38 +78,23 @@ const skillCategories: SkillCategory[] = [
 	'Other',
 ]
 
-const socialLinks = [
-	{
-		href: 'mailto:your.email@example.com',
-		icon: 'envelope-closed',
-		label: 'Send me an email',
-		text: 'Email Me',
-	},
-	{
-		href: 'https://www.linkedin.com/in/yourprofile/',
-		icon: 'linkedin-logo',
-		label: 'Connect with me on LinkedIn',
-		text: 'LinkedIn',
-	},
-	{
-		href: 'https://github.com/yourusername',
-		icon: 'github-logo',
-		label: 'View my work on GitHub',
-		text: 'GitHub',
-	},
-	{
-		href: 'https://twitter.com/yourusername',
-		icon: 'twitter-logo',
-		label: 'Follow me on Twitter',
-		text: 'Twitter',
-	},
-	{
-		href: 'https://instagram.com/yourusername',
-		icon: 'instagram-logo',
-		label: 'Follow me on Instagram',
-		text: 'Instagram',
-	},
-] as const
+export async function loader({ request }: Route.LoaderArgs) {
+	const socialLinks = await prisma.socialLink.findMany({
+		where: {
+			isPublished: true,
+		},
+		select: {
+			href: true,
+			icon: true,
+			label: true,
+			text: true,
+		},
+	})
+
+	return {
+		socialLinks,
+	}
+}
 
 // Components
 function useFadeInOnScroll() {
@@ -347,7 +334,11 @@ function ProjectsSection() {
 	)
 }
 
-function ContactSection() {
+function ContactSection({
+	socialLinks,
+}: {
+	socialLinks: Pick<SocialLink, 'href' | 'icon' | 'label' | 'text'>[]
+}) {
 	const { ref, isVisible } = useFadeInOnScroll()
 	return (
 		<section
@@ -402,14 +393,15 @@ function ContactSection() {
 	)
 }
 
-export default function Index() {
+export default function Index({ loaderData }: Route.ComponentProps) {
+	const { socialLinks } = loaderData
 	return (
 		<main className="font-poppins bg-background text-foreground min-h-screen">
 			<HeroSection />
 			<AboutSection />
 			<SkillsSection />
 			<ProjectsSection />
-			<ContactSection />
+			<ContactSection socialLinks={socialLinks} />
 		</main>
 	)
 }

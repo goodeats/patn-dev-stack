@@ -111,10 +111,12 @@ async function seed() {
 	const kody = await prisma.user.create({
 		select: { id: true },
 		data: {
-			email: 'kody@kcd.dev',
-			username: 'kody',
-			name: 'Kody',
-			password: { create: createPassword('kodylovesyou') },
+			email: process.env.DEV_EMAIL || 'kody@kcd.dev',
+			username: process.env.DEV_USERNAME || 'kody',
+			name: process.env.DEV_NAME || 'Kody',
+			password: {
+				create: createPassword(process.env.DEV_PASSWORD || 'kodylovesyou'),
+			},
 			connections: {
 				create: {
 					providerName: 'github',
@@ -243,6 +245,52 @@ async function seed() {
 	}
 
 	console.timeEnd(`🐨 Created admin user "kody"`)
+
+	console.time(`🗣️ Created social links`)
+
+	const socialLinks = [
+		{
+			href: process.env.CONTACT_EMAIL,
+			icon: 'envelope-closed',
+			label: 'Send me an email',
+			text: 'Email Me',
+		},
+		{
+			href: process.env.CONTACT_LINKEDIN,
+			icon: 'linkedin-logo',
+			label: 'Connect with me on LinkedIn',
+			text: 'LinkedIn',
+		},
+		{
+			href: process.env.CONTACT_GITHUB,
+			icon: 'github-logo',
+			label: 'View my work on GitHub',
+			text: 'GitHub',
+		},
+		{
+			href: process.env.CONTACT_TWITTER,
+			icon: 'twitter-logo',
+			label: 'Follow me on Twitter',
+			text: 'Twitter',
+		},
+		{
+			href: process.env.CONTACT_INSTAGRAM,
+			icon: 'instagram-logo',
+			label: 'Follow me on Instagram',
+			text: 'Instagram',
+		},
+	] as const
+	const filteredSocialLinks = socialLinks.filter((link) => !!link.href)
+	for (const link of filteredSocialLinks) {
+		await prisma.socialLink.create({
+			data: {
+				...link,
+				href: link.href!,
+			},
+		})
+	}
+
+	console.timeEnd(`🗣️ Created social links`)
 
 	console.timeEnd(`🌱 Database has been seeded`)
 }
