@@ -31,7 +31,7 @@ const navItems = [
 
 export function NavLinks() {
 	return (
-		<nav className="hidden items-center gap-4 md:flex">
+		<nav className="flex items-center gap-4">
 			{navItems.map(({ href, label }) => (
 				<NavLink key={href} href={href}>
 					{label}

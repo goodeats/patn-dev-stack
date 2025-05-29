@@ -1,5 +1,6 @@
 import { type Skill, type SocialLink } from '@prisma/client'
 import { ExternalLink } from '#app/components/external-link.tsx'
+import { NavLinks } from '#app/components/nav-links.tsx'
 import { Badge } from '#app/components/ui/badge.tsx'
 import { Button } from '#app/components/ui/button'
 import {
@@ -130,6 +131,9 @@ function HeroSection() {
 					I craft intuitive user experiences, interactive layouts, and APIs to
 					transform ideas into web applications.
 				</p>
+				<div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+					<NavLinks />
+				</div>
 			</div>
 		</section>
 	)
