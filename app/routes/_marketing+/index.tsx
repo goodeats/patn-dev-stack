@@ -314,7 +314,12 @@ function ContactSection() {
 						{socialLinks.map(({ href, icon, label, text }) => (
 							<Tooltip key={href}>
 								<TooltipTrigger asChild>
-									<Button variant="ghost" size="icon" asChild>
+									<Button
+										variant="ghost"
+										size="icon"
+										asChild
+										className="hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground transition-colors"
+									>
 										<a
 											href={href}
 											target={href.startsWith('mailto:') ? undefined : '_blank'}
