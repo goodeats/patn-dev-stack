@@ -1,3 +1,4 @@
+import React from 'react'
 import { ExternalLink } from '#app/components/external-link.tsx'
 import { Badge } from '#app/components/ui/badge.tsx'
 import { Button } from '#app/components/ui/button'
@@ -109,9 +110,45 @@ const socialLinks = [
 ] as const
 
 // Components
+function useFadeInOnScroll() {
+	const ref = React.useRef<HTMLDivElement>(null)
+	const [isVisible, setIsVisible] = React.useState(false)
+
+	React.useEffect(() => {
+		const observer = new IntersectionObserver(
+			(entries) => {
+				const entry = entries[0]
+				if (entry && entry.isIntersecting) {
+					setIsVisible(true)
+					observer.unobserve(entry.target)
+				}
+			},
+			{ threshold: 0.1 },
+		)
+
+		if (ref.current) {
+			observer.observe(ref.current)
+		}
+
+		return () => {
+			if (ref.current) {
+				observer.unobserve(ref.current)
+			}
+		}
+	}, [])
+
+	return { ref, isVisible }
+}
+
 function HeroSection() {
+	const { ref, isVisible } = useFadeInOnScroll()
 	return (
-		<section className="from-background to-muted flex min-h-screen flex-col items-center justify-center bg-gradient-to-br px-4 py-16 text-center">
+		<section
+			ref={ref}
+			className={`from-background to-muted flex min-h-screen flex-col items-center justify-center bg-gradient-to-br px-4 py-16 text-center ${
+				isVisible ? 'animate-fade-in-up' : 'opacity-0'
+			}`}
+		>
 			<div className="animate-slide-top [animation-fill-mode:backwards]">
 				<h1
 					data-heading
@@ -138,10 +175,14 @@ function HeroSection() {
 }
 
 function AboutSection() {
+	const { ref, isVisible } = useFadeInOnScroll()
 	return (
 		<section
+			ref={ref}
 			id="about"
-			className="bg-muted flex flex-col gap-4 px-4 py-20 text-center"
+			className={`bg-muted flex flex-col gap-4 px-4 py-20 text-center ${
+				isVisible ? 'animate-fade-in-up' : 'opacity-0'
+			}`}
 		>
 			<h2 className="text-4xl font-bold">About Me</h2>
 			<div className="mx-auto flex flex-col text-left">
@@ -205,8 +246,15 @@ function SkillCard({
 }
 
 function SkillsSection() {
+	const { ref, isVisible } = useFadeInOnScroll()
 	return (
-		<section id="skills" className="bg-muted px-4 py-20">
+		<section
+			ref={ref}
+			id="skills"
+			className={`bg-muted px-4 py-20 ${
+				isVisible ? 'animate-fade-in-up' : 'opacity-0'
+			}`}
+		>
 			<div className="container mx-auto">
 				<h2 className="mb-12 text-center text-4xl font-bold">My Skillset</h2>
 				<div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-4">
@@ -272,8 +320,15 @@ function ProjectCard({
 }
 
 function ProjectsSection() {
+	const { ref, isVisible } = useFadeInOnScroll()
 	return (
-		<section id="projects" className="bg-muted px-4 py-20">
+		<section
+			ref={ref}
+			id="projects"
+			className={`bg-muted px-4 py-20 ${
+				isVisible ? 'animate-fade-in-up' : 'opacity-0'
+			}`}
+		>
 			<div className="container mx-auto">
 				<h2 className="mb-12 text-center text-4xl font-bold">
 					Featured Projects
@@ -299,8 +354,15 @@ function ProjectsSection() {
 }
 
 function ContactSection() {
+	const { ref, isVisible } = useFadeInOnScroll()
 	return (
-		<section id="contact" className="bg-background text-foreground px-4 py-20">
+		<section
+			ref={ref}
+			id="contact"
+			className={`bg-background text-foreground px-4 py-20 ${
+				isVisible ? 'animate-fade-in-up' : 'opacity-0'
+			}`}
+		>
 			<div className="container mx-auto text-center">
 				<h2 className="text-4xl font-bold">
 					Let's Build Something Amazing Together!
