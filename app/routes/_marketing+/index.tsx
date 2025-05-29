@@ -1,3 +1,4 @@
+import { ExternalLink } from '#app/components/external-link.tsx'
 import { Badge } from '#app/components/ui/badge.tsx'
 import { Button } from '#app/components/ui/button'
 import {
@@ -229,30 +230,22 @@ function ProjectCard({
 			<p className="mb-4 text-sm">
 				<span className="font-semibold">Technologies:</span> {technologies}
 			</p>
-			<div className="flex space-x-4">
+			<div className="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4">
 				{liveDemoUrl && (
-					<Button asChild>
-						<a
-							href={liveDemoUrl}
-							className="text-primary hover:underline"
-							aria-label={`View project demo for ${title}`}
-							tabIndex={0}
-						>
-							Live Demo
-						</a>
-					</Button>
+					<ExternalLink
+						href={liveDemoUrl}
+						ariaLabel={`View project demo for ${title}`}
+					>
+						Live Demo
+					</ExternalLink>
 				)}
 				{sourceCodeUrl && (
-					<Button asChild>
-						<a
-							href={sourceCodeUrl}
-							className="text-primary hover:underline"
-							aria-label={`View source code for ${title} on GitHub`}
-							tabIndex={0}
-						>
-							GitHub
-						</a>
-					</Button>
+					<ExternalLink
+						href={sourceCodeUrl}
+						ariaLabel={`View source code for ${title} on GitHub`}
+					>
+						GitHub
+					</ExternalLink>
 				)}
 			</div>
 		</div>
@@ -278,7 +271,7 @@ function ProjectsSection() {
 						title="Choros App"
 						description="A messaging platform for planning or finding local activities and then matchmaking groups to meet up. This app is currently in a private beta, but
             I would be happy to give a personal demo."
-						technologies="Remix, TailwindCSS, SQLite, Fly.io, PWA, XState"
+						technologies="Remix, TailwindCSS, SQLite, Fly.io, PWA, XState, SSE"
 					/>
 				</div>
 			</div>
