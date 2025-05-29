@@ -230,7 +230,7 @@ function SkillsSection({
 	return (
 		<section ref={ref} id="skills" className="bg-muted px-4 py-20">
 			<div
-				className={`container mx-auto ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
+				className={`container px-4 text-center sm:px-8 ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
 			>
 				<h2 className="mb-12 text-center text-4xl font-bold">My Skillset</h2>
 				<div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-4">
@@ -272,7 +272,7 @@ function ProjectCard({
 					))}
 				</div>
 			</CardContent>
-			<CardFooter className="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4">
+			<CardFooter className="gap-4">
 				{liveDemoUrl && (
 					<ExternalLink
 						href={liveDemoUrl}
@@ -306,7 +306,7 @@ function ProjectsSection({
 	return (
 		<section ref={ref} id="projects" className="bg-muted px-4 py-20">
 			<div
-				className={`container mx-auto ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
+				className={`container px-4 text-center sm:px-8 ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
 			>
 				<h2 className="mb-12 text-center text-4xl font-bold">
 					Featured Projects
@@ -334,7 +334,7 @@ function ContactSection({
 			className="bg-background text-foreground px-4 py-20"
 		>
 			<div
-				className={`container mx-auto text-center ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
+				className={`container px-4 text-center sm:px-8 ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
 			>
 				<h2 className="text-4xl font-bold">
 					Let's Build Something Amazing Together!
