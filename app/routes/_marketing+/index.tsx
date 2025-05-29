@@ -1,3 +1,4 @@
+import { Badge } from '#app/components/ui/badge.tsx'
 import { Button } from '#app/components/ui/button'
 import { Icon, type IconName } from '#app/components/ui/icon'
 import {
@@ -120,21 +121,20 @@ function AboutSection() {
 
 function SkillCard({ skill }: { skill: Skill }) {
 	return (
-		<li key={skill.name} className="flex items-center">
-			<span className="bg-primary mr-3 h-2 w-2 rounded-full"></span>
-			<TooltipProvider>
-				<Tooltip>
-					<TooltipTrigger asChild>
-						<span className="cursor-default">{skill.name}</span>
-					</TooltipTrigger>
-					{skill.description && (
-						<TooltipContent>
-							<p>{skill.description}</p>
-						</TooltipContent>
-					)}
-				</Tooltip>
-			</TooltipProvider>
-		</li>
+		<TooltipProvider>
+			<Tooltip>
+				<TooltipTrigger asChild>
+					<Badge variant="secondary" className="cursor-default">
+						{skill.name}
+					</Badge>
+				</TooltipTrigger>
+				{skill.description && (
+					<TooltipContent>
+						<p>{skill.description}</p>
+					</TooltipContent>
+				)}
+			</Tooltip>
+		</TooltipProvider>
 	)
 }
 
@@ -149,13 +149,13 @@ function SkillsSection() {
 							<h3 className="text-primary mb-4 text-2xl font-semibold">
 								{category}
 							</h3>
-							<ul className="space-y-3">
+							<div className="flex flex-wrap gap-2">
 								{skills
 									.filter((skill) => skill.category === category)
 									.map((skill) => (
 										<SkillCard key={skill.name} skill={skill} />
 									))}
-							</ul>
+							</div>
 						</div>
 					))}
 				</div>
