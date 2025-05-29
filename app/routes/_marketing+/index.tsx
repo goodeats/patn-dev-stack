@@ -1,5 +1,11 @@
 import { Badge } from '#app/components/ui/badge.tsx'
 import { Button } from '#app/components/ui/button'
+import {
+	Card,
+	CardTitle,
+	CardHeader,
+	CardContent,
+} from '#app/components/ui/card.tsx'
 import { Icon, type IconName } from '#app/components/ui/icon'
 import {
 	Tooltip,
@@ -68,6 +74,39 @@ const skillCategories: SkillCategory[] = [
 	'Other',
 ]
 
+const socialLinks = [
+	{
+		href: 'mailto:your.email@example.com',
+		icon: 'envelope-closed',
+		label: 'Send me an email',
+		text: 'Email Me',
+	},
+	{
+		href: 'https://www.linkedin.com/in/yourprofile/',
+		icon: 'linkedin-logo',
+		label: 'Connect with me on LinkedIn',
+		text: 'LinkedIn',
+	},
+	{
+		href: 'https://github.com/yourusername',
+		icon: 'github-logo',
+		label: 'View my work on GitHub',
+		text: 'GitHub',
+	},
+	{
+		href: 'https://twitter.com/yourusername',
+		icon: 'twitter-logo',
+		label: 'Follow me on Twitter',
+		text: 'Twitter',
+	},
+	{
+		href: 'https://instagram.com/yourusername',
+		icon: 'instagram-logo',
+		label: 'Follow me on Instagram',
+		text: 'Instagram',
+	},
+] as const
+
 // Components
 function HeroSection() {
 	return (
@@ -99,16 +138,18 @@ function HeroSection() {
 
 function AboutSection() {
 	return (
-		<section id="about" className="px-4 py-20 text-center">
+		<section id="about" className="bg-muted px-4 py-20 text-center">
 			<h2 className="text-4xl font-bold">About Me</h2>
-			<p className="text-muted-foreground mx-auto mt-4 max-w-2xl text-left text-lg">
-				I am a senior full-stack software engineer with 10+ years of experience.
-				I have launched and/or contributed to projects that demonstrate AI
-				technology, messaging platforms, health tech, and e-commerce. I have
-				well-rounded expertise in frontend, backend, deployment, and everything
-				in between. I also enjoy growing my skills to keep up with current
-				trends like using LLMs for coding tools.
-			</p>
+			<Card>
+				<CardContent className="text-left">
+					I am a senior full-stack software engineer with 10+ years of
+					experience. I have launched and/or contributed to projects that
+					demonstrate AI technology, messaging platforms, health tech, and
+					e-commerce. I have well-rounded expertise in frontend, backend,
+					deployment, and everything in between. I also enjoy growing my skills
+					to keep up with current trends like using LLMs for coding tools.
+				</CardContent>
+			</Card>
 			<p className="text-muted-foreground mx-auto mt-4 max-w-2xl text-left text-lg">
 				I grew up in Maine and currently live in Brooklyn so I enjoy nature and
 				city life equally! For fun I like to follow professional sports, enjoy
@@ -246,39 +287,6 @@ function ProjectsSection() {
 }
 
 function ContactSection() {
-	const socialLinks = [
-		{
-			href: 'mailto:your.email@example.com',
-			icon: 'envelope-closed',
-			label: 'Send me an email',
-			text: 'Email Me',
-		},
-		{
-			href: 'https://www.linkedin.com/in/yourprofile/',
-			icon: 'linkedin-logo',
-			label: 'Connect with me on LinkedIn',
-			text: 'LinkedIn',
-		},
-		{
-			href: 'https://github.com/yourusername',
-			icon: 'github-logo',
-			label: 'View my work on GitHub',
-			text: 'GitHub',
-		},
-		{
-			href: 'https://twitter.com/yourusername',
-			icon: 'twitter-logo',
-			label: 'Follow me on Twitter',
-			text: 'Twitter',
-		},
-		{
-			href: 'https://instagram.com/yourusername',
-			icon: 'instagram-logo',
-			label: 'Follow me on Instagram',
-			text: 'Instagram',
-		},
-	] as const
-
 	return (
 		<section id="contact" className="bg-background text-foreground px-4 py-20">
 			<div className="container mx-auto text-center">
