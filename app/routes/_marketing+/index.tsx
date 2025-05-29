@@ -104,14 +104,84 @@ export async function loader({}: Route.LoaderArgs) {
 	}
 }
 
+function FloatingShapes() {
+	// Generate random shapes with different properties
+	const shapes = Array.from({ length: 6 }, (_, i) => ({
+		id: i,
+		size: Math.random() * 100 + 50, // 50-150px
+		initialX: Math.random() * 100, // 0-100%
+		initialY: Math.random() * 100, // 0-100%
+		duration: Math.random() * 20 + 20, // 20-40s
+		delay: Math.random() * 5, // 0-5s delay
+		shape: ['circle', 'square', 'triangle'][Math.floor(Math.random() * 3)],
+		moveX: Math.random() * 200 - 100, // -100 to 100
+		moveY: Math.random() * 200 - 100, // -100 to 100
+	}))
+
+	return (
+		<>
+			<style>{`
+				@keyframes float-shape {
+					0%, 100% {
+						transform: translate(0, 0) scale(1) rotate(0deg);
+					}
+					20% {
+						transform: translate(var(--move-x), var(--move-y)) scale(1.1) rotate(90deg);
+					}
+					40% {
+						transform: translate(calc(var(--move-x) * -0.5), calc(var(--move-y) * 0.5)) scale(0.9) rotate(180deg);
+					}
+					60% {
+						transform: translate(calc(var(--move-x) * 0.5), calc(var(--move-y) * -0.5)) scale(1.05) rotate(270deg);
+					}
+					80% {
+						transform: translate(calc(var(--move-x) * -0.2), calc(var(--move-y) * -0.2)) scale(0.95) rotate(360deg);
+					}
+				}
+				.clip-path-triangle {
+					clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+				}
+			`}</style>
+			<div className="pointer-events-none absolute inset-0 overflow-hidden">
+				{shapes.map((shape) => (
+					<div
+						key={shape.id}
+						className={`absolute animate-[float-shape_var(--duration)_ease-in-out_infinite] opacity-[0.03] dark:opacity-[0.02] ${
+							shape.shape === 'circle'
+								? 'rounded-full'
+								: shape.shape === 'triangle'
+									? 'clip-path-triangle'
+									: 'rounded-lg'
+						}`}
+						style={
+							{
+								width: `${shape.size}px`,
+								height: `${shape.size}px`,
+								left: `${shape.initialX}%`,
+								top: `${shape.initialY}%`,
+								background: `linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.5) 100%)`,
+								'--duration': `${shape.duration}s`,
+								'--move-x': `${shape.moveX}px`,
+								'--move-y': `${shape.moveY}px`,
+								animationDelay: `${shape.delay}s`,
+							} as React.CSSProperties
+						}
+					/>
+				))}
+			</div>
+		</>
+	)
+}
+
 function HeroSection() {
 	const { ref } = useFadeInOnScroll()
 	return (
 		<section
 			ref={ref}
-			className="from-background to-muted flex min-h-screen flex-col items-center justify-center bg-gradient-to-br px-4 py-16 text-center"
+			className="from-background to-muted relative flex min-h-screen flex-col items-center justify-center bg-gradient-to-br px-4 py-16 text-center"
 		>
-			<div className="animate-slide-top [animation-fill-mode:backwards]">
+			<FloatingShapes />
+			<div className="animate-slide-top relative z-10 [animation-fill-mode:backwards]">
 				<h1
 					data-heading
 					className="text-foreground text-5xl font-bold md:text-6xl lg:text-7xl"
