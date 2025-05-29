@@ -1,6 +1,6 @@
 import { type Skill, type SocialLink } from '@prisma/client'
 import { ExternalLink } from '#app/components/external-link.tsx'
-import { MarketingCard } from '#app/components/marketing.tsx'
+import { MarketingCard, MarketingSection } from '#app/components/marketing.tsx'
 import { ScrollNavLinks } from '#app/components/scroll-nav-links.tsx'
 import { Badge } from '#app/components/ui/badge.tsx'
 import { Button } from '#app/components/ui/button'
@@ -147,33 +147,30 @@ function AboutSection({
 	professionalAboutMe: Info['loaderData']['professionalAboutMe']
 	personalAboutMe: Info['loaderData']['personalAboutMe']
 }) {
-	const { ref, isVisible } = useFadeInOnScroll()
 	return (
-		<section
-			ref={ref}
-			id="about"
-			className="bg-muted flex flex-col gap-4 px-4 py-20 text-center"
+		<MarketingSection
+			sectionId="about"
+			className="flex flex-col gap-4 text-center"
 		>
-			<h2
-				className={`text-4xl font-bold ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
-			>
-				About Me
-			</h2>
-			<div
-				className={`mx-auto flex flex-col text-left ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
-			>
+			<h2 className="text-4xl font-bold">About Me</h2>
+			<div className="mx-auto flex flex-col items-center">
 				{professionalAboutMe?.content && (
-					<p className="text-muted-foreground mt-6 max-w-xl text-lg">
+					<p className="text-muted-foreground mt-6 max-w-xl text-left text-lg">
 						{professionalAboutMe.content}
 					</p>
 				)}
 				{personalAboutMe?.content && (
-					<p className="text-muted-foreground mt-6 max-w-xl text-lg">
+					<p className="text-muted-foreground mt-6 max-w-xl text-left text-lg">
 						{personalAboutMe.content}
 					</p>
 				)}
 			</div>
-		</section>
+			{/* <div className="mx-auto items-center text-center">
+				<p className="text-muted-foreground mx-auto mt-6 max-w-xl text-center text-lg">
+					I am continuously learning and growing my skillset!
+				</p>
+			</div> */}
+		</MarketingSection>
 	)
 }
 
@@ -217,26 +214,21 @@ function SkillsSection({
 }: {
 	skillCategories: Info['loaderData']['skillCategories']
 }) {
-	const { ref, isVisible } = useFadeInOnScroll()
 	return (
-		<section ref={ref} id="skills" className="bg-muted px-4 py-20">
-			<div
-				className={`container px-4 text-center sm:px-8 ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
-			>
-				<h2 className="mb-12 text-center text-4xl font-bold">My Skillset</h2>
-				<div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-4">
-					{skillCategories.map((skillCategory) => (
-						<SkillCard key={skillCategory.name} category={skillCategory} />
-					))}
-				</div>
-
-				<div className="mx-auto items-center text-center">
-					<p className="text-muted-foreground mx-auto mt-6 max-w-xl text-center text-lg">
-						I am continuously learning and growing my skillset!
-					</p>
-				</div>
+		<MarketingSection sectionId="skills">
+			<h2 className="mb-12 text-center text-4xl font-bold">My Skillset</h2>
+			<div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-4">
+				{skillCategories.map((skillCategory) => (
+					<SkillCard key={skillCategory.name} category={skillCategory} />
+				))}
 			</div>
-		</section>
+
+			<div className="mx-auto items-center text-center">
+				<p className="text-muted-foreground mx-auto mt-6 max-w-xl text-center text-lg">
+					I am continuously learning and growing my skillset!
+				</p>
+			</div>
+		</MarketingSection>
 	)
 }
 
@@ -293,22 +285,17 @@ function ProjectsSection({
 }: {
 	projects: Info['loaderData']['projects']
 }) {
-	const { ref, isVisible } = useFadeInOnScroll()
 	return (
-		<section ref={ref} id="projects" className="bg-muted px-4 py-20">
-			<div
-				className={`container px-4 text-center sm:px-8 ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
-			>
-				<h2 className="mb-12 text-center text-4xl font-bold">
-					Featured Projects
-				</h2>
-				<div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-					{projects.map((project) => (
-						<ProjectCard key={project.title} project={project} />
-					))}
-				</div>
+		<MarketingSection sectionId="projects">
+			<h2 className="mb-12 text-center text-4xl font-bold">
+				Featured Projects
+			</h2>
+			<div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+				{projects.map((project) => (
+					<ProjectCard key={project.title} project={project} />
+				))}
 			</div>
-		</section>
+		</MarketingSection>
 	)
 }
 
@@ -317,57 +304,51 @@ function ContactSection({
 }: {
 	socialLinks: Pick<SocialLink, 'href' | 'icon' | 'label' | 'text'>[]
 }) {
-	const { ref, isVisible } = useFadeInOnScroll()
 	return (
-		<section
-			ref={ref}
-			id="contact"
-			className="bg-background text-foreground px-4 py-20"
+		<MarketingSection
+			sectionId="contact"
+			className="bg-background text-foreground"
 		>
-			<div
-				className={`container px-4 text-center sm:px-8 ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
-			>
-				<h2 className="text-4xl font-bold">
-					Let's Build Something Amazing Together!
-				</h2>
-				<p className="text-muted-foreground mx-auto mt-6 max-w-xl text-lg">
-					Have a project in mind, a question, or just want to connect? I'd love
-					to hear from you.
-				</p>
-				<div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-					<TooltipProvider>
-						{socialLinks.map(({ href, icon, label, text }) => (
-							<Tooltip key={href}>
-								<TooltipTrigger asChild>
-									<Button
-										variant="ghost"
-										size="icon"
-										asChild
-										className="hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground transition-colors"
+			<h2 className="text-4xl font-bold">
+				Let's Build Something Amazing Together!
+			</h2>
+			<p className="text-muted-foreground mx-auto mt-6 max-w-xl text-lg">
+				Have a project in mind, a question, or just want to connect? I'd love to
+				hear from you.
+			</p>
+			<div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+				<TooltipProvider>
+					{socialLinks.map(({ href, icon, label, text }) => (
+						<Tooltip key={href}>
+							<TooltipTrigger asChild>
+								<Button
+									variant="ghost"
+									size="icon"
+									asChild
+									className="hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground transition-colors"
+								>
+									<a
+										href={href}
+										target={href.startsWith('mailto:') ? undefined : '_blank'}
+										rel={
+											href.startsWith('mailto:')
+												? undefined
+												: 'noopener noreferrer'
+										}
+										aria-label={label}
+										tabIndex={0}
 									>
-										<a
-											href={href}
-											target={href.startsWith('mailto:') ? undefined : '_blank'}
-											rel={
-												href.startsWith('mailto:')
-													? undefined
-													: 'noopener noreferrer'
-											}
-											aria-label={label}
-											tabIndex={0}
-										>
-											<Icon name={icon as IconName} size="lg" />
-											<span className="sr-only">{text}</span>
-										</a>
-									</Button>
-								</TooltipTrigger>
-								<TooltipContent>{text}</TooltipContent>
-							</Tooltip>
-						))}
-					</TooltipProvider>
-				</div>
+										<Icon name={icon as IconName} size="lg" />
+										<span className="sr-only">{text}</span>
+									</a>
+								</Button>
+							</TooltipTrigger>
+							<TooltipContent>{text}</TooltipContent>
+						</Tooltip>
+					))}
+				</TooltipProvider>
 			</div>
-		</section>
+		</MarketingSection>
 	)
 }
 
