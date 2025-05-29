@@ -243,3 +243,30 @@
     transform: none;
   }
 }
+
+@layer components {
+	/* Add your custom component styles here */
+	.clip-path-triangle {
+		clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+	}
+}
+
+@layer utilities {
+	@keyframes float-shape {
+		0%, 100% {
+			transform: translate(0, 0) scale(1) rotate(0deg);
+		}
+		20% {
+			transform: translate(var(--move-x), var(--move-y)) scale(1.1) rotate(90deg);
+		}
+		40% {
+			transform: translate(calc(var(--move-x) * -0.5), calc(var(--move-y) * 0.5)) scale(0.9) rotate(180deg);
+		}
+		60% {
+			transform: translate(calc(var(--move-x) * 0.5), calc(var(--move-y) * -0.5)) scale(1.05) rotate(270deg);
+		}
+		80% {
+			transform: translate(calc(var(--move-x) * -0.2), calc(var(--move-y) * -0.2)) scale(0.95) rotate(360deg);
+		}
+	}
+}
