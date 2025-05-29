@@ -292,6 +292,132 @@ async function seed() {
 
 	console.timeEnd(`🗣️ Created social links`)
 
+	console.time(`🎯 Created skill categories and skills`)
+
+	const skillCategories = ['Frontend', 'Backend', 'DevOps', 'Other'] as const
+	for (const category of skillCategories) {
+		await prisma.skillCategory.create({
+			data: {
+				name: category,
+			},
+		})
+	}
+
+	const skills = [
+		{
+			name: 'React',
+			category: 'Frontend',
+			description: 'Building dynamic UIs',
+		},
+		{
+			name: 'Remix',
+			category: 'Frontend',
+			description: 'Full-stack web framework',
+		},
+		{
+			name: 'Next.js',
+			category: 'Frontend',
+			description: 'React framework for production',
+		},
+		{
+			name: 'TailwindCSS',
+			category: 'Frontend',
+			description: 'Utility-first CSS',
+		},
+		{
+			name: 'TypeScript',
+			category: 'Frontend',
+			description: 'Typed JavaScript',
+		},
+		{
+			name: 'Node.js',
+			category: 'Backend',
+			description: 'Server-side JavaScript',
+		},
+		{
+			name: 'PostgreSQL',
+			category: 'Backend',
+			description: 'Relational database',
+		},
+		{ name: 'Prisma', category: 'Backend', description: 'Modern ORM' },
+		{ name: 'Docker', category: 'DevOps', description: 'Containerization' },
+		{ name: 'AWS', category: 'DevOps', description: 'Cloud services' },
+		{
+			name: 'Git & GitHub',
+			category: 'DevOps',
+			description: 'Version control',
+		},
+		{
+			name: 'Agile Methodologies',
+			category: 'Other',
+			description: 'Iterative development',
+		},
+	]
+
+	for (const skill of skills) {
+		await prisma.skill.create({
+			data: {
+				name: skill.name,
+				description: skill.description,
+				skillCategory: {
+					connect: {
+						name: skill.category,
+					},
+				},
+			},
+		})
+	}
+
+	console.timeEnd(`🎯 Created skill categories and skills`)
+
+	console.time(`📝 Created projects`)
+
+	const projects = [
+		{
+			title: 'PPPAAATTT',
+			description:
+				'A fun, creative studio, closely resembling Figma, for assembling designs on a canvas.',
+			skills: ['Remix', 'TailwindCSS', 'SQLite', 'Fly.io'],
+			liveDemoUrl: 'https://pppaaattt.xyz',
+			sourceCodeUrl: 'https://github.com/goodeats/epic-pppaaattt.xyz',
+		},
+		{
+			title: 'Choros App',
+			description:
+				'A messaging platform for planning or finding local activities and then matchmaking groups to meet up. This app is currently in a private beta, but I would be happy to give a personal demo.',
+			skills: [
+				'Remix',
+				'TailwindCSS',
+				'SQLite',
+				'Fly.io',
+				'PWA',
+				'XState',
+				'SSE',
+			],
+			comments:
+				'This project is currently in a private beta, but I would be happy to give a personal demo.',
+		},
+	]
+
+	for (const project of projects) {
+		await prisma.project.create({
+			data: {
+				title: project.title,
+				description: project.description,
+				liveDemoUrl: project.liveDemoUrl,
+				sourceCodeUrl: project.sourceCodeUrl,
+				comments: project.comments,
+				skills: {
+					connect: project.skills.map((skill) => ({
+						name: skill,
+					})),
+				},
+			},
+		})
+	}
+
+	console.timeEnd(`📝 Created projects`)
+
 	console.timeEnd(`🌱 Database has been seeded`)
 }
 
