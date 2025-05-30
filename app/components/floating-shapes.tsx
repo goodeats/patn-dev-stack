@@ -8,7 +8,8 @@ import { createLogger } from '#app/utils/logger.ts'
 const CONFIG = {
 	// Shape generation
 	SHAPE_COUNT: 7,
-	SHAPE_TYPES: ['square'], // ['circle', 'square', 'triangle']
+	// SHAPE_TYPES: ['square'], // ['circle', 'square', 'triangle']
+	SHAPE_TYPES: ['triangle'], // ['circle', 'square', 'triangle']
 
 	// Size settings (as percentage of container's smallest dimension)
 	SIZE: {
@@ -27,7 +28,7 @@ const CONFIG = {
 	ANIMATION: {
 		DURATION_MIN_SECONDS: 135,
 		DURATION_MAX_SECONDS: 140,
-		DELAY_MAX_SECONDS: 5,
+		DELAY_MAX_SECONDS: 0,
 		// Movement range as percentage of container
 		MOVEMENT_RANGE_PERCENT: 15, // ±15% of container dimensions
 	},
@@ -144,10 +145,9 @@ export function FloatingShapes() {
 							// Size based on container's smallest dimension
 							width: `min(${shape.sizePercent}vw, ${shape.sizePercent}vh)`,
 							height: `min(${shape.sizePercent}vw, ${shape.sizePercent}vh)`,
-							// Position based on center point
-							left: `${shape.centerX}%`,
-							top: `${shape.centerY}%`,
-							transform: 'translate(-50%, -50%)', // Center the shape on the position
+							// Position adjusted for center point without transform
+							left: `${shape.centerX - shape.sizePercent / 2}%`,
+							top: `${shape.centerY - shape.sizePercent / 2}%`,
 							background: `linear-gradient(135deg, rgba(${BG_COLOR_RGBA.join(
 								',',
 							)}, 1) 0%, rgba(${BG_COLOR_RGBA.join(',')}, ${BG_GRADIENT_OPACITY}) 100%)`,
