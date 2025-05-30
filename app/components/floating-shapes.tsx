@@ -18,7 +18,7 @@ const CONFIG = {
 	// Size settings (as percentage of container's smallest dimension)
 	SIZE: {
 		MIN_PERCENT: 150, // % of container's smallest dimension
-		MAX_PERCENT: 200, // % of container's smallest dimension
+		MAX_PERCENT: 333, // % of container's smallest dimension
 	},
 
 	// Position settings (center point positioning)
@@ -41,22 +41,6 @@ const CONFIG = {
 	APPEARANCE: {
 		OPACITY_LIGHT_THEME: 'opacity-5',
 		OPACITY_DARK_THEME: 'opacity-5',
-		// Using OKLCH color values dynamically based on theme
-		BG_COLOR_OKLCH: {
-			// reference tailwind.css variables for colors
-			LIGHT: {
-				BACKGROUND: [100, 0, 0],
-				FOREGROUND: [13.71, 0.036, 258.53],
-				PRIMARY: [0.606, 0.25, 292.717],
-				MUTED: [94.32, 0.0123, 247.96],
-			},
-			DARK: {
-				BACKGROUND: [13.71, 0.036, 258.53],
-				PRIMARY: [0.541, 0.281, 293.009],
-				PRIMARY_FOREGROUND: [0.969, 0.016, 293.756],
-				MUTED: [22.6, 0.0267, 260.02],
-			},
-		},
 		BACKGROUND: {
 			GRADIENT_ANGLE: 135, // Angle in degrees for the linear gradient direction
 			GRADIENT_OPACITY_START: 1, // Starting opacity for the gradient (solid)
@@ -166,15 +150,34 @@ export const getShapeTopPosition = (
 }
 
 /**
+ * Generates a linear gradient background string for shapes using CSS variables.
+ * @param theme - The current theme ('light' or 'dark').
+ * @param bgGradientConfig - The configuration object for gradient settings.
+ * @returns A CSS background gradient string.
+ */
+export const getBackgroundGradient = (
+	theme: string,
+	bgGradientConfig: BackgroundGradientConfig,
+): string => {
+	// Use CSS variables directly from the theme
+	// This ensures we always use the current primary color values from tailwind.css
+	const colorVariable = theme === 'light' ? 'var(--primary)' : 'var(--primary)'
+
+	// Constructs a linear gradient using configured angle and opacity stops
+	// The gradient adds depth and a sense of light direction, enhancing the 3D floating illusion
+	return `linear-gradient(${bgGradientConfig.GRADIENT_ANGLE}deg, ${colorVariable} ${bgGradientConfig.GRADIENT_PERCENT_START}%, ${colorVariable} ${bgGradientConfig.GRADIENT_PERCENT_END}%)`
+}
+
+/**
  * Computes the styles for a shape based on its properties and theme settings.
  * @param shape - The shape properties to compute styles from.
- * @param bgColorOklch - The OKLCH color array for the background.
+ * @param theme - The current theme ('light' or 'dark').
  * @param bgGradientConfig - The configuration object for gradient settings.
  * @returns The computed CSS properties for the shape.
  */
 export const getShapeStyles = (
 	shape: ShapeProps,
-	bgColorOklch: number[],
+	theme: string,
 	bgGradientConfig: BackgroundGradientConfig,
 ): React.CSSProperties => {
 	// For an equilateral triangle, height is (side * sqrt(3)) / 2
@@ -195,7 +198,7 @@ export const getShapeStyles = (
 		// Background with a linear gradient for visual depth
 		// The gradient goes from solid color to semi-transparent, creating a subtle fade effect
 		// This enhances the floating, ethereal appearance of shapes
-		background: getBackgroundGradient(bgColorOklch, bgGradientConfig),
+		background: getBackgroundGradient(theme, bgGradientConfig),
 
 		// Animation duration as a CSS variable for the float-shape animation
 		// Controls how long one full cycle of floating movement takes
@@ -210,21 +213,6 @@ export const getShapeStyles = (
 		// Creates a more natural, less synchronized floating effect
 		animationDelay: `${shape.delay}s`,
 	}
-}
-
-/**
- * Generates a linear gradient background string for shapes.
- * @param bgColorOklch - The OKLCH color array for the gradient start.
- * @param bgGradientConfig - The configuration object for gradient settings.
- * @returns A CSS background gradient string.
- */
-export const getBackgroundGradient = (
-	bgColorOklch: number[],
-	bgGradientConfig: BackgroundGradientConfig,
-): string => {
-	// Constructs a linear gradient using configured angle and opacity stops
-	// The gradient adds depth and a sense of light direction, enhancing the 3D floating illusion
-	return `linear-gradient(${bgGradientConfig.GRADIENT_ANGLE}deg, oklch(${bgColorOklch.join(' ')}) ${bgGradientConfig.GRADIENT_PERCENT_START}%, oklch(${bgColorOklch.join(' ')}) ${bgGradientConfig.GRADIENT_PERCENT_END}%)`
 }
 
 interface ShapeProps {
@@ -314,11 +302,6 @@ export function FloatingShapes() {
 			? CONFIG.APPEARANCE.OPACITY_LIGHT_THEME
 			: CONFIG.APPEARANCE.OPACITY_DARK_THEME
 
-	const bgColorOklch =
-		theme === 'light'
-			? CONFIG.APPEARANCE.BG_COLOR_OKLCH.LIGHT.PRIMARY
-			: CONFIG.APPEARANCE.BG_COLOR_OKLCH.DARK.PRIMARY_FOREGROUND
-
 	const bgGradientConfig = CONFIG.APPEARANCE.BACKGROUND
 
 	return (
@@ -330,7 +313,7 @@ export function FloatingShapes() {
 				<div
 					key={shape.id}
 					className={getShapeClassNames(shape.shape, shapeOpacityClass)}
-					style={getShapeStyles(shape, bgColorOklch, bgGradientConfig)}
+					style={getShapeStyles(shape, theme, bgGradientConfig)}
 				/>
 			))}
 		</div>

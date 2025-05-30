@@ -1,4 +1,4 @@
-import { Project, type SocialLink } from '@prisma/client'
+import { type SocialLink } from '@prisma/client'
 import { Button } from './ui/button'
 import { Icon, type IconName } from './ui/icon'
 import {
