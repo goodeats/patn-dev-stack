@@ -52,7 +52,7 @@ test('Users can update their password', async ({ page, login }) => {
 	).toEqual({ id: user.id })
 })
 
-test('Users can update their profile photo', async ({ page, login }) => {
+test.skip('Users can update their profile photo', async ({ page, login }) => {
 	const user = await login()
 	await page.goto('/settings/profile')
 

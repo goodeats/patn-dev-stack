@@ -9,6 +9,7 @@ import {
 	USERNAME_MAX_LENGTH,
 	USERNAME_MIN_LENGTH,
 } from '#app/utils/user-validation'
+import { logout } from '#tests/actions/logout.ts'
 import { readEmail } from '#tests/mocks/utils.ts'
 import { createUser, expect, test as base } from '#tests/playwright-utils.ts'
 
@@ -44,9 +45,8 @@ test('onboarding with link', async ({ page, getOnboardingData }) => {
 	const onboardingData = getOnboardingData()
 
 	await page.goto('/')
-
-	await page.getByRole('link', { name: /log in/i }).click()
-	await expect(page).toHaveURL(`/login`)
+	await expect(page.getByRole('link', { name: /log in/i })).not.toBeVisible()
+	await page.goto(`/login`)
 
 	const createAccountLink = page.getByRole('link', {
 		name: /create an account/i,
@@ -98,15 +98,7 @@ test('onboarding with link', async ({ page, getOnboardingData }) => {
 	await page.getByRole('button', { name: /Create an account/i }).click()
 
 	await expect(page).toHaveURL(`/`)
-
-	await page.getByRole('link', { name: onboardingData.name }).click()
-	await page.getByRole('menuitem', { name: /profile/i }).click()
-
-	await expect(page).toHaveURL(`/users/${onboardingData.username}`)
-
-	await page.getByRole('link', { name: onboardingData.name }).click()
-	await page.getByRole('menuitem', { name: /logout/i }).click()
-	await expect(page).toHaveURL(`/`)
+	await logout(page, onboardingData)
 })
 
 test('onboarding with a short code', async ({ page, getOnboardingData }) => {
@@ -331,6 +323,11 @@ test('login as existing user', async ({ page, insertNewUser }) => {
 	await page.getByLabel(/^password$/i).fill(password)
 	await page.getByRole('button', { name: /log in/i }).click()
 	await expect(page).toHaveURL(`/`)
+	await expect(page.getByRole('link', { name: user.name })).toBeVisible()
+	await expect(page.getByRole('link', { name: /log in/i })).not.toBeVisible()
+	await expect(
+		page.getByRole('link', { name: /create an account/i }),
+	).not.toBeVisible()
 
 	await expect(page.getByRole('link', { name: user.name })).toBeVisible()
 })
@@ -385,6 +382,11 @@ test('reset password with a link', async ({ page, insertNewUser }) => {
 	await page.getByRole('button', { name: /log in/i }).click()
 
 	await expect(page).toHaveURL(`/`)
+	await expect(page.getByRole('link', { name: user.name })).toBeVisible()
+	await expect(page.getByRole('link', { name: /log in/i })).not.toBeVisible()
+	await expect(
+		page.getByRole('link', { name: /create an account/i }),
+	).not.toBeVisible()
 
 	await expect(page.getByRole('link', { name: user.name })).toBeVisible()
 })
