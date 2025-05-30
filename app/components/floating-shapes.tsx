@@ -22,21 +22,37 @@ export function FloatingShapes() {
 	useEffect(() => {
 		// const shapeList = ['circle', 'square', 'triangle']
 		const shapeList = ['square']
+
+		// Size constants
+		const MIN_SIZE = 550
+		const SIZE_RANGE = 150 // Results in 150-300px shapes
+
+		// Position constants (as percentage of container)
+		const MAX_INITIAL_POSITION = 100
+
+		// Animation constants
+		const MIN_DURATION = 15
+		const DURATION_RANGE = 25 // Results in 15-40s duration
+		const MAX_DELAY = 5
+
+		// Movement constants
+		const MOVEMENT_RANGE = 150 // Total range of 150px
+		const HALF_MOVEMENT = MOVEMENT_RANGE / 2 // +/- 75px
+
 		// Generate random shapes with different properties only on the client
 		const generateShapes = () =>
 			Array.from({ length: SHAPE_COUNT }, (_, i) => ({
-				// Reduced shape count
 				id: i,
-				size: Math.random() * 80 + 40, // Adjusted size range slightly (40-120px)
-				initialX: Math.random() * 100,
-				initialY: Math.random() * 100,
-				duration: Math.random() * 25 + 15, // Adjusted duration (15-40s)
-				delay: Math.random() * 5,
+				size: Math.random() * SIZE_RANGE + MIN_SIZE,
+				initialX: Math.random() * MAX_INITIAL_POSITION,
+				initialY: Math.random() * MAX_INITIAL_POSITION,
+				duration: Math.random() * DURATION_RANGE + MIN_DURATION,
+				delay: Math.random() * MAX_DELAY,
 				shape: shapeList[
 					Math.floor(Math.random() * shapeList.length)
 				] as string,
-				moveX: Math.random() * 150 - 75, // Adjusted move range
-				moveY: Math.random() * 150 - 75, // Adjusted move range
+				moveX: Math.random() * MOVEMENT_RANGE - HALF_MOVEMENT,
+				moveY: Math.random() * MOVEMENT_RANGE - HALF_MOVEMENT,
 			}))
 		setShapes(generateShapes())
 	}, [])
