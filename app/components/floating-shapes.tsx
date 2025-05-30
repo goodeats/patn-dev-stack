@@ -26,8 +26,8 @@ const CONFIG = {
 
 	// Animation settings
 	ANIMATION: {
-		DURATION_MIN_SECONDS: 135,
-		DURATION_MAX_SECONDS: 140,
+		DURATION_MIN_SECONDS: 120,
+		DURATION_MAX_SECONDS: 120,
 		DELAY_MAX_SECONDS: 0,
 		// Movement range as percentage of container
 		MOVEMENT_RANGE_PERCENT: 15, // ±15% of container dimensions
@@ -50,6 +50,48 @@ export const randomInRange = (min: number, max: number) => {
 	return Math.floor(Math.random() * (max - min + 1)) + min
 }
 
+export const getRandomSizePercent = (
+	minPercent: number,
+	maxPercent: number,
+) => {
+	return Math.random() * (maxPercent - minPercent) + minPercent
+}
+
+export const getRandomPosition = (
+	sizePercent: number,
+	overflowFactor: number,
+) => {
+	const halfSizePercent = sizePercent / 2
+	const overflow = halfSizePercent * overflowFactor
+	const minPosition = -overflow
+	const maxPosition = 100 + overflow
+	return {
+		centerX: Math.random() * (maxPosition - minPosition) + minPosition,
+		centerY: Math.random() * (maxPosition - minPosition) + minPosition,
+	}
+}
+
+export const getRandomDuration = (minSeconds: number, maxSeconds: number) => {
+	return Math.random() * (maxSeconds - minSeconds) + minSeconds
+}
+
+export const getRandomDelay = (maxSeconds: number) => {
+	return Math.random() * maxSeconds
+}
+
+export const getRandomShape = (shapeTypes: string[]) => {
+	return shapeTypes[Math.floor(Math.random() * shapeTypes.length)] as string
+}
+
+export const getRandomMovement = (movementRangePercent: number) => {
+	return {
+		moveXPercent:
+			Math.random() * (movementRangePercent * 2) - movementRangePercent,
+		moveYPercent:
+			Math.random() * (movementRangePercent * 2) - movementRangePercent,
+	}
+}
+
 interface ShapeProps {
 	id: number
 	sizePercent: number // Size as percentage of container's smallest dimension
@@ -70,38 +112,34 @@ export function FloatingShapes() {
 		// Generate random shapes with percentage-based properties
 		const generateShapes = () =>
 			Array.from({ length: CONFIG.SHAPE_COUNT }, (_, i) => {
-				// Random size as percentage of container's smallest dimension
-				const sizePercent =
-					Math.random() * (CONFIG.SIZE.MAX_PERCENT - CONFIG.SIZE.MIN_PERCENT) +
-					CONFIG.SIZE.MIN_PERCENT
-
-				// Calculate position range based on size and overflow factor
-				// Center can be positioned from -overflow to 100+overflow
-				const halfSizePercent = sizePercent / 2
-				const overflow = halfSizePercent * CONFIG.POSITION.OVERFLOW_FACTOR
-				const minPosition = -overflow
-				const maxPosition = 100 + overflow
+				const sizePercent = getRandomSizePercent(
+					CONFIG.SIZE.MIN_PERCENT,
+					CONFIG.SIZE.MAX_PERCENT,
+				)
+				const { centerX, centerY } = getRandomPosition(
+					sizePercent,
+					CONFIG.POSITION.OVERFLOW_FACTOR,
+				)
+				const duration = getRandomDuration(
+					CONFIG.ANIMATION.DURATION_MIN_SECONDS,
+					CONFIG.ANIMATION.DURATION_MAX_SECONDS,
+				)
+				const delay = getRandomDelay(CONFIG.ANIMATION.DELAY_MAX_SECONDS)
+				const shape = getRandomShape(CONFIG.SHAPE_TYPES)
+				const { moveXPercent, moveYPercent } = getRandomMovement(
+					CONFIG.ANIMATION.MOVEMENT_RANGE_PERCENT,
+				)
 
 				return {
 					id: i,
 					sizePercent,
-					centerX: Math.random() * (maxPosition - minPosition) + minPosition,
-					centerY: Math.random() * (maxPosition - minPosition) + minPosition,
-					duration:
-						Math.random() *
-							(CONFIG.ANIMATION.DURATION_MAX_SECONDS -
-								CONFIG.ANIMATION.DURATION_MIN_SECONDS) +
-						CONFIG.ANIMATION.DURATION_MIN_SECONDS,
-					delay: Math.random() * CONFIG.ANIMATION.DELAY_MAX_SECONDS,
-					shape: CONFIG.SHAPE_TYPES[
-						Math.floor(Math.random() * CONFIG.SHAPE_TYPES.length)
-					] as string,
-					moveXPercent:
-						Math.random() * (CONFIG.ANIMATION.MOVEMENT_RANGE_PERCENT * 2) -
-						CONFIG.ANIMATION.MOVEMENT_RANGE_PERCENT,
-					moveYPercent:
-						Math.random() * (CONFIG.ANIMATION.MOVEMENT_RANGE_PERCENT * 2) -
-						CONFIG.ANIMATION.MOVEMENT_RANGE_PERCENT,
+					centerX,
+					centerY,
+					duration,
+					delay,
+					shape,
+					moveXPercent,
+					moveYPercent,
 				}
 			})
 		setShapes(generateShapes())
@@ -118,12 +156,6 @@ export function FloatingShapes() {
 			: CONFIG.APPEARANCE.OPACITY_DARK_THEME
 
 	const { BG_COLOR_RGBA, BG_GRADIENT_OPACITY } = CONFIG.APPEARANCE
-
-	flLogger.log('shape positions', {
-		centerX: shapes.map((s) => s.centerX),
-		centerY: shapes.map((s) => s.centerY),
-		sizePercent: shapes.map((s) => s.sizePercent),
-	})
 
 	return (
 		<div
