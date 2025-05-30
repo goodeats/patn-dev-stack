@@ -7,13 +7,13 @@ import { createLogger } from '#app/utils/logger.ts'
 // ============================================================================
 const CONFIG = {
 	// Shape generation
-	SHAPE_COUNT: 10,
+	SHAPE_COUNT: 7,
 	SHAPE_TYPES: ['square'], // ['circle', 'square', 'triangle']
 
 	// Size settings (as percentage of container's smallest dimension)
 	SIZE: {
-		MIN_PERCENT: 15, // 15% of container's smallest dimension
-		MAX_PERCENT: 25, // 25% of container's smallest dimension
+		MIN_PERCENT: 115, // 15% of container's smallest dimension
+		MAX_PERCENT: 155, // 25% of container's smallest dimension
 	},
 
 	// Position settings (center point positioning)
@@ -25,8 +25,8 @@ const CONFIG = {
 
 	// Animation settings
 	ANIMATION: {
-		DURATION_MIN_SECONDS: 15,
-		DURATION_MAX_SECONDS: 40,
+		DURATION_MIN_SECONDS: 135,
+		DURATION_MAX_SECONDS: 140,
 		DELAY_MAX_SECONDS: 5,
 		// Movement range as percentage of container
 		MOVEMENT_RANGE_PERCENT: 15, // ±15% of container dimensions
@@ -37,7 +37,7 @@ const CONFIG = {
 		OPACITY_LIGHT_THEME: 'opacity-20',
 		OPACITY_DARK_THEME: 'opacity-30',
 		BG_COLOR_RGBA: [192, 192, 192],
-		BG_GRADIENT_OPACITY: 0.7,
+		BG_GRADIENT_OPACITY: 0.014,
 	},
 }
 
