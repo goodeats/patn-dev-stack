@@ -1,4 +1,4 @@
-import { type SocialLink } from '@prisma/client'
+import { Project, type SocialLink } from '@prisma/client'
 import { Button } from './ui/button'
 import { Icon, type IconName } from './ui/icon'
 import {
@@ -10,8 +10,10 @@ import {
 
 export function ExternalIconLink({
 	iconLink,
+	iconSize = 'lg',
 }: {
 	iconLink: Pick<SocialLink, 'href' | 'icon' | 'label' | 'text'>
+	iconSize?: 'sm' | 'md' | 'lg'
 }) {
 	const { href, label, text, icon } = iconLink
 
@@ -34,7 +36,7 @@ export function ExternalIconLink({
 							aria-label={label}
 							tabIndex={0}
 						>
-							<Icon name={icon as IconName} size="lg" />
+							<Icon name={icon as IconName} size={iconSize} />
 							<span className="sr-only">{text}</span>
 						</a>
 					</Button>
@@ -42,5 +44,19 @@ export function ExternalIconLink({
 				<TooltipContent>{text}</TooltipContent>
 			</Tooltip>
 		</TooltipProvider>
+	)
+}
+
+export function ProjectLink() {
+	return (
+		<ExternalIconLink
+			iconLink={{
+				href: 'https://github.com/goodeats/patn-dev-stack',
+				label: 'Project Source Code',
+				text: 'View Source Code',
+				icon: 'github-logo',
+			}}
+			iconSize="md"
+		/>
 	)
 }
