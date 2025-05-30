@@ -15,7 +15,7 @@ import appleTouchIconAssetUrl from './assets/favicons/apple-touch-icon.png'
 import faviconAssetUrl from './assets/favicons/favicon.svg'
 import { GeneralErrorBoundary } from './components/error-boundary.tsx'
 import { Footer } from './components/footer.tsx'
-import { Header, HeaderMarketing } from './components/header.tsx'
+import { Header } from './components/header.tsx'
 import { EpicProgress } from './components/progress-bar.tsx'
 import { useToast } from './components/toaster.tsx'
 import { href as iconsHref } from './components/ui/icon.tsx'
@@ -187,7 +187,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 function App() {
 	const data = useLoaderData<typeof loader>()
-	const user = data.user
 	const theme = useTheme()
 	useToast(data.toast)
 
@@ -197,7 +196,7 @@ function App() {
 			getSrc={getImgSrc}
 		>
 			<div className="flex min-h-screen flex-col justify-between">
-				{user ? <Header /> : <HeaderMarketing />}
+				<Header />
 
 				<div className="flex flex-1 flex-col">
 					<Outlet />

@@ -1,4 +1,5 @@
 import { type Skill, type SocialLink } from '@prisma/client'
+import { ExternalIconLink } from '#app/components/external-icon-link.tsx'
 import { ExternalLink } from '#app/components/external-link.tsx'
 import { FloatingShapes } from '#app/components/floating-shapes.tsx'
 import {
@@ -10,9 +11,7 @@ import {
 } from '#app/components/marketing.tsx'
 import { ScrollNavLinks } from '#app/components/scroll-nav-links.tsx'
 import { Badge } from '#app/components/ui/badge.tsx'
-import { Button } from '#app/components/ui/button'
 import { CardContent, CardFooter } from '#app/components/ui/card.tsx'
-import { Icon, type IconName } from '#app/components/ui/icon'
 import {
 	Tooltip,
 	TooltipContent,
@@ -323,36 +322,9 @@ function ContactSection({
 			</MarketingSectionContent>
 
 			<div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-				<TooltipProvider>
-					{socialLinks.map(({ href, icon, label, text }) => (
-						<Tooltip key={href}>
-							<TooltipTrigger asChild>
-								<Button
-									variant="ghost"
-									size="icon"
-									asChild
-									className="hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground transition-colors"
-								>
-									<a
-										href={href}
-										target={href.startsWith('mailto:') ? undefined : '_blank'}
-										rel={
-											href.startsWith('mailto:')
-												? undefined
-												: 'noopener noreferrer'
-										}
-										aria-label={label}
-										tabIndex={0}
-									>
-										<Icon name={icon as IconName} size="lg" />
-										<span className="sr-only">{text}</span>
-									</a>
-								</Button>
-							</TooltipTrigger>
-							<TooltipContent>{text}</TooltipContent>
-						</Tooltip>
-					))}
-				</TooltipProvider>
+				{socialLinks.map((socialLink) => (
+					<ExternalIconLink key={socialLink.href} iconLink={socialLink} />
+				))}
 			</div>
 		</MarketingSection>
 	)

@@ -1,4 +1,5 @@
 import { faker } from '@faker-js/faker'
+import { logout } from '#tests/actions/logout.ts'
 import { expect, test } from '#tests/playwright-utils.ts'
 
 async function setupWebAuthn(page: any) {
@@ -53,9 +54,10 @@ test('Users can register and use passkeys', async ({ page, login }) => {
 	).toHaveLength(1)
 
 	// Logout
-	await page.getByRole('link', { name: user.name ?? user.username }).click()
-	await page.getByRole('menuitem', { name: /logout/i }).click()
-	await expect(page).toHaveURL(`/`)
+	await logout(page, {
+		name: user.name ?? '',
+		username: user.username,
+	})
 
 	// Try logging in with passkey
 	await page.goto('/login')
@@ -104,9 +106,10 @@ test('Users can register and use passkeys', async ({ page, login }) => {
 	expect(afterDeletionCredentials.credentials).toHaveLength(1)
 
 	// Logout again to test deleted passkey
-	await page.getByRole('link', { name: user.name ?? user.username }).click()
-	await page.getByRole('menuitem', { name: /logout/i }).click()
-	await expect(page).toHaveURL(`/`)
+	await logout(page, {
+		name: user.name ?? user.username,
+		username: user.username,
+	})
 
 	// Try logging in with the deleted passkey
 	await page.goto('/login')
