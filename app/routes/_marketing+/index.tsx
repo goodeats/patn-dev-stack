@@ -1,6 +1,7 @@
 import { type Skill, type SocialLink } from '@prisma/client'
 import { useEffect, useState } from 'react'
 import { ExternalLink } from '#app/components/external-link.tsx'
+import { FloatingShapes } from '#app/components/floating-shapes.tsx'
 import {
 	MarketingCard,
 	MarketingSection,
@@ -21,6 +22,7 @@ import {
 } from '#app/components/ui/tooltip.tsx'
 import { useFadeInOnScroll } from '#app/hooks/use-fade-in-on-scroll.ts'
 import { prisma } from '#app/utils/db.server.ts'
+import { useTheme } from '../resources+/theme-switch.tsx'
 import { type Info, type Route } from './+types/index.ts'
 
 export const meta: Route.MetaFunction = () => [{ title: 'Pat N | Web Dev' }]
@@ -103,77 +105,6 @@ export async function loader({}: Route.LoaderArgs) {
 		professionalAboutMe,
 		personalAboutMe,
 	}
-}
-
-interface ShapeProps {
-	id: number
-	size: number
-	initialX: number
-	initialY: number
-	duration: number
-	delay: number
-	shape: string
-	moveX: number
-	moveY: number
-}
-
-function FloatingShapes() {
-	const [shapes, setShapes] = useState<ShapeProps[]>([])
-
-	useEffect(() => {
-		// Generate random shapes with different properties only on the client
-		const generateShapes = () =>
-			Array.from({ length: 600 }, (_, i) => ({
-				id: i,
-				size: Math.random() * 100 + 50, // 50-150px
-				initialX: Math.random() * 100, // 0-100%
-				initialY: Math.random() * 100, // 0-100%
-				duration: Math.random() * 20 + 20, // 20-40s
-				delay: Math.random() * 5, // 0-5s delay
-				shape: ['circle', 'square', 'triangle'][
-					Math.floor(Math.random() * 3)
-				] as string,
-				moveX: Math.random() * 200 - 100, // -100 to 100
-				moveY: Math.random() * 200 - 100, // -100 to 100
-			}))
-		setShapes(generateShapes())
-	}, [])
-
-	if (!shapes.length) {
-		return null // Or a placeholder, to avoid rendering anything on SSR for the shapes themselves
-	}
-
-	console.log(shapes)
-
-	return (
-		<div className="pointer-events-none absolute inset-0 overflow-hidden">
-			{shapes.map((shape) => (
-				<div
-					key={shape.id}
-					className={`absolute animate-[float-shape_var(--duration)_ease-in-out_infinite] opacity-[0.03] dark:opacity-[0.02] ${
-						shape.shape === 'circle'
-							? 'rounded-full'
-							: shape.shape === 'triangle'
-								? 'clip-path-triangle'
-								: 'rounded-lg'
-					}`}
-					style={
-						{
-							width: `${shape.size}px`,
-							height: `${shape.size}px`,
-							left: `${shape.initialX}%`,
-							top: `${shape.initialY}%`,
-							background: `linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.5) 100%)`,
-							'--duration': `${shape.duration}s`,
-							'--move-x': `${shape.moveX}px`,
-							'--move-y': `${shape.moveY}px`,
-							animationDelay: `${shape.delay}s`,
-						} as React.CSSProperties
-					}
-				/>
-			))}
-		</div>
-	)
 }
 
 function HeroSection() {
