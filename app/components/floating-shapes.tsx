@@ -218,6 +218,30 @@ interface ShapeProps {
 	moveYPercent: number // Movement as percentage of container height
 }
 
+/**
+ * Determines the CSS class names for a shape based on its type and theme opacity.
+ * @param shapeType - The type of shape (circle, triangle, etc.).
+ * @param shapeOpacityClass - The opacity class based on the current theme.
+ * @returns A string of class names to be applied to the shape element.
+ */
+export const getShapeClassNames = (
+	shapeType: string,
+	shapeOpacityClass: string,
+) => {
+	// Applies a custom floating animation with:
+	// - float-shape: The keyframe animation name defined in our CSS
+	// - var(--duration): Dynamic duration from shape's props (set in getShapeStyles)
+	// - ease-in-out: Smooth acceleration and deceleration for natural movement
+	// - infinite: Animation repeats indefinitely
+	return `absolute animate-[float-shape_var(--duration)_ease-in-out_infinite] ${shapeOpacityClass} ${
+		shapeType === 'circle'
+			? 'rounded-full' // Makes the shape a perfect circle with fully rounded corners.
+			: shapeType === 'triangle'
+				? 'clip-path-triangle' // Applies a custom clip-path to create a triangle shape, defined in Tailwind CSS.
+				: 'rounded-lg' // Default shape styling for squares or other shapes with slightly rounded corners.
+	}`
+}
+
 export function FloatingShapes() {
 	const theme = useTheme()
 	const [shapes, setShapes] = useState<ShapeProps[]>([])
@@ -280,13 +304,7 @@ export function FloatingShapes() {
 			{shapes.map((shape) => (
 				<div
 					key={shape.id}
-					className={`absolute animate-[float-shape_var(--duration)_ease-in-out_infinite] ${shapeOpacityClass} ${
-						shape.shape === 'circle'
-							? 'rounded-full'
-							: shape.shape === 'triangle'
-								? 'clip-path-triangle'
-								: 'rounded-lg'
-					}`}
+					className={getShapeClassNames(shape.shape, shapeOpacityClass)}
 					style={getShapeStyles(shape, BG_COLOR_RGBA, bgGradientConfig)}
 				/>
 			))}

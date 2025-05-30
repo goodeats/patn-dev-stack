@@ -1,5 +1,4 @@
 import { type Skill, type SocialLink } from '@prisma/client'
-import { useEffect, useState } from 'react'
 import { ExternalLink } from '#app/components/external-link.tsx'
 import { FloatingShapes } from '#app/components/floating-shapes.tsx'
 import {
@@ -22,7 +21,6 @@ import {
 } from '#app/components/ui/tooltip.tsx'
 import { useFadeInOnScroll } from '#app/hooks/use-fade-in-on-scroll.ts'
 import { prisma } from '#app/utils/db.server.ts'
-import { useTheme } from '../resources+/theme-switch.tsx'
 import { type Info, type Route } from './+types/index.ts'
 
 export const meta: Route.MetaFunction = () => [{ title: 'Pat N | Web Dev' }]
