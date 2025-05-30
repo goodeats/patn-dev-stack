@@ -2,7 +2,45 @@ import { useState, useEffect } from 'react'
 import { useTheme } from '#app/routes/resources+/theme-switch.tsx'
 import { createLogger } from '#app/utils/logger.ts'
 
-const SHAPE_COUNT = 10
+// ============================================================================
+// CONFIGURATION - Easy to tweak settings
+// ============================================================================
+const CONFIG = {
+	// Shape generation
+	SHAPE_COUNT: 10,
+	SHAPE_TYPES: ['square'], // ['circle', 'square', 'triangle']
+
+	// Size settings (as percentage of container's smallest dimension)
+	SIZE: {
+		MIN_PERCENT: 15, // 15% of container's smallest dimension
+		MAX_PERCENT: 25, // 25% of container's smallest dimension
+	},
+
+	// Position settings (center point positioning)
+	POSITION: {
+		// How far beyond container edges shapes can extend (as multiple of shape size)
+		// 0.5 means shape center can be 50% of shape size beyond edge
+		OVERFLOW_FACTOR: 0.5,
+	},
+
+	// Animation settings
+	ANIMATION: {
+		DURATION_MIN_SECONDS: 15,
+		DURATION_MAX_SECONDS: 40,
+		DELAY_MAX_SECONDS: 5,
+		// Movement range as percentage of container
+		MOVEMENT_RANGE_PERCENT: 15, // ±15% of container dimensions
+	},
+
+	// Appearance
+	APPEARANCE: {
+		OPACITY_LIGHT_THEME: 'opacity-20',
+		OPACITY_DARK_THEME: 'opacity-30',
+		BG_COLOR_RGBA: [192, 192, 192],
+		BG_GRADIENT_OPACITY: 0.7,
+	},
+}
+
 const flLogger = createLogger('FloatingShapes', {
 	skipTimestamp: true,
 })
@@ -13,14 +51,14 @@ export const randomInRange = (min: number, max: number) => {
 
 interface ShapeProps {
 	id: number
-	size: number
-	initialX: number
-	initialY: number
+	sizePercent: number // Size as percentage of container's smallest dimension
+	centerX: number // Center X position as percentage
+	centerY: number // Center Y position as percentage
 	duration: number
 	delay: number
 	shape: string
-	moveX: number
-	moveY: number
+	moveXPercent: number // Movement as percentage of container width
+	moveYPercent: number // Movement as percentage of container height
 }
 
 export function FloatingShapes() {
@@ -28,44 +66,43 @@ export function FloatingShapes() {
 	const [shapes, setShapes] = useState<ShapeProps[]>([])
 
 	useEffect(() => {
-		// const shapeList = ['circle', 'square', 'triangle']
-		const shapeList = ['square']
-
-		// Size constants
-		const MIN_SIZE = 500
-		const SIZE_RANGE = 0 // Results in 150-300px shapes
-
-		// Position constants (as percentage of container)
-		const MIN_INITIAL_POSITION = 0 - MIN_SIZE / 2
-		const MAX_INITIAL_POSITION = MIN_SIZE + MIN_SIZE / 2
-
-		// Animation constants
-		const MIN_DURATION = 15
-		const DURATION_RANGE = 25 // Results in 15-40s duration
-		const MAX_DELAY = 5
-
-		// Movement constants
-		const MOVEMENT_RANGE = 150 // Total range of 150px
-		const HALF_MOVEMENT = MOVEMENT_RANGE / 2 // +/- 75px
-
-		// Generate random shapes with different properties only on the client
+		// Generate random shapes with percentage-based properties
 		const generateShapes = () =>
-			Array.from({ length: SHAPE_COUNT }, (_, i) => ({
-				id: i,
-				// size: Math.random() * SIZE_RANGE + MIN_SIZE,
-				size: MIN_SIZE,
-				// initialX: Math.random() * MAX_INITIAL_POSITION,
-				initialX: randomInRange(MIN_INITIAL_POSITION, MAX_INITIAL_POSITION),
-				// initialY: Math.random() * MAX_INITIAL_POSITION,
-				initialY: randomInRange(MIN_INITIAL_POSITION, MAX_INITIAL_POSITION),
-				duration: Math.random() * DURATION_RANGE + MIN_DURATION,
-				delay: Math.random() * MAX_DELAY,
-				shape: shapeList[
-					Math.floor(Math.random() * shapeList.length)
-				] as string,
-				moveX: Math.random() * MOVEMENT_RANGE - HALF_MOVEMENT,
-				moveY: Math.random() * MOVEMENT_RANGE - HALF_MOVEMENT,
-			}))
+			Array.from({ length: CONFIG.SHAPE_COUNT }, (_, i) => {
+				// Random size as percentage of container's smallest dimension
+				const sizePercent =
+					Math.random() * (CONFIG.SIZE.MAX_PERCENT - CONFIG.SIZE.MIN_PERCENT) +
+					CONFIG.SIZE.MIN_PERCENT
+
+				// Calculate position range based on size and overflow factor
+				// Center can be positioned from -overflow to 100+overflow
+				const halfSizePercent = sizePercent / 2
+				const overflow = halfSizePercent * CONFIG.POSITION.OVERFLOW_FACTOR
+				const minPosition = -overflow
+				const maxPosition = 100 + overflow
+
+				return {
+					id: i,
+					sizePercent,
+					centerX: Math.random() * (maxPosition - minPosition) + minPosition,
+					centerY: Math.random() * (maxPosition - minPosition) + minPosition,
+					duration:
+						Math.random() *
+							(CONFIG.ANIMATION.DURATION_MAX_SECONDS -
+								CONFIG.ANIMATION.DURATION_MIN_SECONDS) +
+						CONFIG.ANIMATION.DURATION_MIN_SECONDS,
+					delay: Math.random() * CONFIG.ANIMATION.DELAY_MAX_SECONDS,
+					shape: CONFIG.SHAPE_TYPES[
+						Math.floor(Math.random() * CONFIG.SHAPE_TYPES.length)
+					] as string,
+					moveXPercent:
+						Math.random() * (CONFIG.ANIMATION.MOVEMENT_RANGE_PERCENT * 2) -
+						CONFIG.ANIMATION.MOVEMENT_RANGE_PERCENT,
+					moveYPercent:
+						Math.random() * (CONFIG.ANIMATION.MOVEMENT_RANGE_PERCENT * 2) -
+						CONFIG.ANIMATION.MOVEMENT_RANGE_PERCENT,
+				}
+			})
 		setShapes(generateShapes())
 	}, [])
 
@@ -73,18 +110,18 @@ export function FloatingShapes() {
 		return null
 	}
 
-	// Determine opacity based on the current theme
-	// For light theme, a slightly lower opacity might be better against a lighter gradient part
-	// For dark theme, a slightly higher opacity can make them pop more against a darker background
-	const shapeOpacityClass = theme === 'light' ? 'opacity-20' : 'opacity-30' // Increased opacity significantly
+	// Determine opacity based on theme
+	const shapeOpacityClass =
+		theme === 'light'
+			? CONFIG.APPEARANCE.OPACITY_LIGHT_THEME
+			: CONFIG.APPEARANCE.OPACITY_DARK_THEME
 
-	const bgColorRgba = [192, 192, 192]
-	const bgColorGradientOpacity = 0.7
+	const { BG_COLOR_RGBA, BG_GRADIENT_OPACITY } = CONFIG.APPEARANCE
 
 	flLogger.log('shape positions', {
-		initialX: shapes.map((s) => s.initialX),
-		initialY: shapes.map((s) => s.initialY),
-		size: shapes.map((s) => s.size),
+		centerX: shapes.map((s) => s.centerX),
+		centerY: shapes.map((s) => s.centerY),
+		sizePercent: shapes.map((s) => s.sizePercent),
 	})
 
 	return (
@@ -95,8 +132,6 @@ export function FloatingShapes() {
 			{shapes.map((shape) => (
 				<div
 					key={shape.id}
-					// The base animation and shape styles are applied here.
-					// The color (from --primary) and opacity (from shapeOpacityClass) define visibility.
 					className={`absolute animate-[float-shape_var(--duration)_ease-in-out_infinite] ${shapeOpacityClass} ${
 						shape.shape === 'circle'
 							? 'rounded-full'
@@ -106,19 +141,19 @@ export function FloatingShapes() {
 					}`}
 					style={
 						{
-							width: `${shape.size}px`,
-							height: `${shape.size}px`,
-							left: `${shape.initialX}%`,
-							top: `${shape.initialY}%`,
-							// The background uses the --primary CSS variable for color, which is theme-aware by definition in tailwind.css
-							// background: `linear-gradient(135deg, silver 0%, rgba(192, 192, 192, 0.7) 100%)`, // Using gold color with 70% opacity for gradient
-							background: `linear-gradient(135deg, rgba(${bgColorRgba.join(
+							// Size based on container's smallest dimension
+							width: `min(${shape.sizePercent}vw, ${shape.sizePercent}vh)`,
+							height: `min(${shape.sizePercent}vw, ${shape.sizePercent}vh)`,
+							// Position based on center point
+							left: `${shape.centerX}%`,
+							top: `${shape.centerY}%`,
+							transform: 'translate(-50%, -50%)', // Center the shape on the position
+							background: `linear-gradient(135deg, rgba(${BG_COLOR_RGBA.join(
 								',',
-							)}, 1) 0%, rgba(${bgColorRgba.join(',')}, ${bgColorGradientOpacity}) 100%)`, // Slightly increased gradient visibility too
-							// background: `linear-gradient(135deg, hsl(var(--muted)) 0%, hsl(var(--muted) / 0.7) 100%)`, // Slightly increased gradient visibility too
+							)}, 1) 0%, rgba(${BG_COLOR_RGBA.join(',')}, ${BG_GRADIENT_OPACITY}) 100%)`,
 							'--duration': `${shape.duration}s`,
-							'--move-x': `${shape.moveX}px`,
-							'--move-y': `${shape.moveY}px`,
+							'--move-x': `${shape.moveXPercent}%`,
+							'--move-y': `${shape.moveYPercent}%`,
 							animationDelay: `${shape.delay}s`,
 						} as React.CSSProperties
 					}
