@@ -1,7 +1,15 @@
 import { useState, useEffect } from 'react'
 import { useTheme } from '#app/routes/resources+/theme-switch.tsx'
+import { createLogger } from '#app/utils/logger.ts'
 
 const SHAPE_COUNT = 10
+const flLogger = createLogger('FloatingShapes', {
+	skipTimestamp: true,
+})
+
+export const randomInRange = (min: number, max: number) => {
+	return Math.floor(Math.random() * (max - min + 1)) + min
+}
 
 interface ShapeProps {
 	id: number
@@ -24,11 +32,12 @@ export function FloatingShapes() {
 		const shapeList = ['square']
 
 		// Size constants
-		const MIN_SIZE = 550
-		const SIZE_RANGE = 150 // Results in 150-300px shapes
+		const MIN_SIZE = 500
+		const SIZE_RANGE = 0 // Results in 150-300px shapes
 
 		// Position constants (as percentage of container)
-		const MAX_INITIAL_POSITION = 100
+		const MIN_INITIAL_POSITION = 0 - MIN_SIZE / 2
+		const MAX_INITIAL_POSITION = MIN_SIZE + MIN_SIZE / 2
 
 		// Animation constants
 		const MIN_DURATION = 15
@@ -43,9 +52,12 @@ export function FloatingShapes() {
 		const generateShapes = () =>
 			Array.from({ length: SHAPE_COUNT }, (_, i) => ({
 				id: i,
-				size: Math.random() * SIZE_RANGE + MIN_SIZE,
-				initialX: Math.random() * MAX_INITIAL_POSITION,
-				initialY: Math.random() * MAX_INITIAL_POSITION,
+				// size: Math.random() * SIZE_RANGE + MIN_SIZE,
+				size: MIN_SIZE,
+				// initialX: Math.random() * MAX_INITIAL_POSITION,
+				initialX: randomInRange(MIN_INITIAL_POSITION, MAX_INITIAL_POSITION),
+				// initialY: Math.random() * MAX_INITIAL_POSITION,
+				initialY: randomInRange(MIN_INITIAL_POSITION, MAX_INITIAL_POSITION),
 				duration: Math.random() * DURATION_RANGE + MIN_DURATION,
 				delay: Math.random() * MAX_DELAY,
 				shape: shapeList[
@@ -68,6 +80,12 @@ export function FloatingShapes() {
 
 	const bgColorRgba = [192, 192, 192]
 	const bgColorGradientOpacity = 0.7
+
+	flLogger.log('shape positions', {
+		initialX: shapes.map((s) => s.initialX),
+		initialY: shapes.map((s) => s.initialY),
+		size: shapes.map((s) => s.size),
+	})
 
 	return (
 		<div
