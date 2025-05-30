@@ -6,14 +6,13 @@ import { useTheme } from '#app/routes/resources+/theme-switch.tsx'
 // ============================================================================
 const CONFIG = {
 	// Shape generation
-	SHAPE_COUNT: 7,
-	// SHAPE_TYPES: ['square'], // ['circle', 'square', 'triangle']
+	SHAPE_COUNT: 12,
 	SHAPE_TYPES: ['triangle'], // ['circle', 'square', 'triangle']
 
 	// Size settings (as percentage of container's smallest dimension)
 	SIZE: {
-		MIN_PERCENT: 115, // 15% of container's smallest dimension
-		MAX_PERCENT: 155, // 25% of container's smallest dimension
+		MIN_PERCENT: 115, // % of container's smallest dimension
+		MAX_PERCENT: 155, // % of container's smallest dimension
 	},
 
 	// Position settings (center point positioning)
@@ -102,6 +101,48 @@ type BackgroundGradientConfig = {
 	GRADIENT_PERCENT_START: number
 	GRADIENT_PERCENT_END: number
 }
+/**
+ * Calculates the height of an equilateral triangle given its base width.
+ * Uses the formula: height = (base * sqrt(3)) / 2
+ * @param baseWidth - The width/base of the triangle
+ * @returns The height needed for an equilateral triangle
+ */
+export const getTriangleHeight = (baseWidth: number) => {
+	return (baseWidth * Math.sqrt(3)) / 2
+}
+
+/**
+ * Calculates the width and height for a shape based on container's smallest dimension.
+ * For triangles, adjusts height to maintain equilateral proportions.
+ * @param sizePercent - Size as percentage of container's smallest dimension.
+ * @param isTriangle - Whether the shape is a triangle.
+ * @returns An object with width and height CSS values.
+ */
+export const getShapeDimensions = (
+	sizePercent: number,
+	isTriangle: boolean,
+) => {
+	const width = `min(${sizePercent}vw, ${sizePercent}vh)`
+	const height = isTriangle
+		? `min(${getTriangleHeight(sizePercent)}vw, ${getTriangleHeight(sizePercent)}vh)`
+		: width
+	return { width, height }
+}
+
+/**
+ * Calculates the top offset for positioning a shape's center, adjusting for triangle height.
+ * @param centerY - Center Y position as percentage.
+ * @param sizePercent - Size as percentage of container's smallest dimension.
+ * @param isTriangle - Whether the shape is a triangle.
+ * @returns The top position as a percentage string.
+ */
+export const getShapeTopPosition = (
+	centerY: number,
+	sizePercent: number,
+	isTriangle: boolean,
+) => {
+	return `${centerY - (isTriangle ? (sizePercent * Math.sqrt(3)) / 4 : sizePercent / 2)}%`
+}
 
 /**
  * Computes the styles for a shape based on its properties and theme settings.
@@ -115,16 +156,20 @@ export const getShapeStyles = (
 	bgColorRgba: number[],
 	bgGradientConfig: BackgroundGradientConfig,
 ): React.CSSProperties => {
+	// For an equilateral triangle, height is (side * sqrt(3)) / 2
+	const isTriangle = shape.shape === 'triangle'
+	const { width, height } = getShapeDimensions(shape.sizePercent, isTriangle)
+
 	return {
 		// Size based on container's smallest dimension for responsive design
 		// Using 'min' ensures shapes scale proportionally on different screen sizes
-		width: `min(${shape.sizePercent}vw, ${shape.sizePercent}vh)`,
-		height: `min(${shape.sizePercent}vw, ${shape.sizePercent}vh)`,
+		width,
+		height,
 
 		// Position adjusted for center point without transform
 		// Subtract half the size to center the shape at the specified coordinates
 		left: `${shape.centerX - shape.sizePercent / 2}%`,
-		top: `${shape.centerY - shape.sizePercent / 2}%`,
+		top: getShapeTopPosition(shape.centerY, shape.sizePercent, isTriangle),
 
 		// Background with a linear gradient for visual depth
 		// The gradient goes from solid color to semi-transparent, creating a subtle fade effect
