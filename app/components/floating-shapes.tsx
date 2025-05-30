@@ -20,6 +20,8 @@ export function FloatingShapes() {
 	const [shapes, setShapes] = useState<ShapeProps[]>([])
 
 	useEffect(() => {
+		// const shapeList = ['circle', 'square', 'triangle']
+		const shapeList = ['square']
 		// Generate random shapes with different properties only on the client
 		const generateShapes = () =>
 			Array.from({ length: SHAPE_COUNT }, (_, i) => ({
@@ -30,8 +32,8 @@ export function FloatingShapes() {
 				initialY: Math.random() * 100,
 				duration: Math.random() * 25 + 15, // Adjusted duration (15-40s)
 				delay: Math.random() * 5,
-				shape: ['circle', 'square', 'triangle'][
-					Math.floor(Math.random() * 3)
+				shape: shapeList[
+					Math.floor(Math.random() * shapeList.length)
 				] as string,
 				moveX: Math.random() * 150 - 75, // Adjusted move range
 				moveY: Math.random() * 150 - 75, // Adjusted move range
