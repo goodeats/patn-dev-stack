@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { useTheme } from '#app/routes/resources+/theme-switch.tsx'
-import { createLogger } from '#app/utils/logger.ts'
 
 // ============================================================================
 // CONFIGURATION - Easy to tweak settings
@@ -38,13 +37,15 @@ const CONFIG = {
 		OPACITY_LIGHT_THEME: 'opacity-20',
 		OPACITY_DARK_THEME: 'opacity-30',
 		BG_COLOR_RGBA: [192, 192, 192],
-		BG_GRADIENT_OPACITY: 0.014,
+		BACKGROUND: {
+			GRADIENT_ANGLE: 135, // Angle in degrees for the linear gradient direction
+			GRADIENT_OPACITY_START: 1, // Starting opacity for the gradient (solid)
+			GRADIENT_OPACITY_END: 0.014, // Ending opacity for the gradient (semi-transparent)
+			GRADIENT_PERCENT_START: 0, // Starting percentage point for the gradient
+			GRADIENT_PERCENT_END: 100, // Ending percentage point for the gradient
+		},
 	},
 }
-
-const flLogger = createLogger('FloatingShapes', {
-	skipTimestamp: true,
-})
 
 export const randomInRange = (min: number, max: number) => {
 	return Math.floor(Math.random() * (max - min + 1)) + min
@@ -90,6 +91,74 @@ export const getRandomMovement = (movementRangePercent: number) => {
 		moveYPercent:
 			Math.random() * (movementRangePercent * 2) - movementRangePercent,
 	}
+}
+
+// Utility functions for style calculations
+
+type BackgroundGradientConfig = {
+	GRADIENT_ANGLE: number
+	GRADIENT_OPACITY_START: number
+	GRADIENT_OPACITY_END: number
+	GRADIENT_PERCENT_START: number
+	GRADIENT_PERCENT_END: number
+}
+
+/**
+ * Computes the styles for a shape based on its properties and theme settings.
+ * @param shape - The shape properties to compute styles from.
+ * @param bgColorRgba - The RGBA color array for the background.
+ * @param bgGradientConfig - The configuration object for gradient settings.
+ * @returns The computed CSS properties for the shape.
+ */
+export const getShapeStyles = (
+	shape: ShapeProps,
+	bgColorRgba: number[],
+	bgGradientConfig: BackgroundGradientConfig,
+): React.CSSProperties => {
+	return {
+		// Size based on container's smallest dimension for responsive design
+		// Using 'min' ensures shapes scale proportionally on different screen sizes
+		width: `min(${shape.sizePercent}vw, ${shape.sizePercent}vh)`,
+		height: `min(${shape.sizePercent}vw, ${shape.sizePercent}vh)`,
+
+		// Position adjusted for center point without transform
+		// Subtract half the size to center the shape at the specified coordinates
+		left: `${shape.centerX - shape.sizePercent / 2}%`,
+		top: `${shape.centerY - shape.sizePercent / 2}%`,
+
+		// Background with a linear gradient for visual depth
+		// The gradient goes from solid color to semi-transparent, creating a subtle fade effect
+		// This enhances the floating, ethereal appearance of shapes
+		background: getBackgroundGradient(bgColorRgba, bgGradientConfig),
+
+		// Animation duration as a CSS variable for the float-shape animation
+		// Controls how long one full cycle of floating movement takes
+		'--duration': `${shape.duration}s`,
+
+		// Movement distances as CSS variables for the animation keyframes
+		// Defines how far the shape moves in X and Y directions during animation
+		'--move-x': `${shape.moveXPercent}%`,
+		'--move-y': `${shape.moveYPercent}%`,
+
+		// Animation delay to stagger the start of animations for multiple shapes
+		// Creates a more natural, less synchronized floating effect
+		animationDelay: `${shape.delay}s`,
+	}
+}
+
+/**
+ * Generates a linear gradient background string for shapes.
+ * @param bgColorRgba - The RGBA color array for the gradient start.
+ * @param bgGradientConfig - The configuration object for gradient settings.
+ * @returns A CSS background gradient string.
+ */
+export const getBackgroundGradient = (
+	bgColorRgba: number[],
+	bgGradientConfig: BackgroundGradientConfig,
+): string => {
+	// Constructs a linear gradient using configured angle and opacity stops
+	// The gradient adds depth and a sense of light direction, enhancing the 3D floating illusion
+	return `linear-gradient(${bgGradientConfig.GRADIENT_ANGLE}deg, rgba(${bgColorRgba.join(',')}, ${bgGradientConfig.GRADIENT_OPACITY_START}) ${bgGradientConfig.GRADIENT_PERCENT_START}%, rgba(${bgColorRgba.join(',')}, ${bgGradientConfig.GRADIENT_OPACITY_END}) ${bgGradientConfig.GRADIENT_PERCENT_END}%)`
 }
 
 interface ShapeProps {
@@ -155,7 +224,8 @@ export function FloatingShapes() {
 			? CONFIG.APPEARANCE.OPACITY_LIGHT_THEME
 			: CONFIG.APPEARANCE.OPACITY_DARK_THEME
 
-	const { BG_COLOR_RGBA, BG_GRADIENT_OPACITY } = CONFIG.APPEARANCE
+	const { BG_COLOR_RGBA } = CONFIG.APPEARANCE
+	const bgGradientConfig = CONFIG.APPEARANCE.BACKGROUND
 
 	return (
 		<div
@@ -172,23 +242,7 @@ export function FloatingShapes() {
 								? 'clip-path-triangle'
 								: 'rounded-lg'
 					}`}
-					style={
-						{
-							// Size based on container's smallest dimension
-							width: `min(${shape.sizePercent}vw, ${shape.sizePercent}vh)`,
-							height: `min(${shape.sizePercent}vw, ${shape.sizePercent}vh)`,
-							// Position adjusted for center point without transform
-							left: `${shape.centerX - shape.sizePercent / 2}%`,
-							top: `${shape.centerY - shape.sizePercent / 2}%`,
-							background: `linear-gradient(135deg, rgba(${BG_COLOR_RGBA.join(
-								',',
-							)}, 1) 0%, rgba(${BG_COLOR_RGBA.join(',')}, ${BG_GRADIENT_OPACITY}) 100%)`,
-							'--duration': `${shape.duration}s`,
-							'--move-x': `${shape.moveXPercent}%`,
-							'--move-y': `${shape.moveYPercent}%`,
-							animationDelay: `${shape.delay}s`,
-						} as React.CSSProperties
-					}
+					style={getShapeStyles(shape, BG_COLOR_RGBA, bgGradientConfig)}
 				/>
 			))}
 		</div>
