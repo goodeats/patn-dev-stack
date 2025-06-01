@@ -3,6 +3,8 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* https://oklch.com for converting colors to oklch */
+
 :root {
 	--radius: 0.5rem;
 
