@@ -125,6 +125,11 @@ export async function signup({
 }) {
 	const hashedPassword = await getPasswordHash(password)
 
+	const usersExist = (await prisma.user.count()) > 0
+	const rolesToConnect = usersExist
+		? [{ name: 'user' }]
+		: [{ name: 'user' }, { name: 'admin' }]
+
 	const session = await prisma.session.create({
 		data: {
 			expirationDate: getSessionExpirationDate(),
@@ -133,7 +138,7 @@ export async function signup({
 					email: email.toLowerCase(),
 					username: username.toLowerCase(),
 					name,
-					roles: { connect: { name: 'user' } },
+					roles: { connect: rolesToConnect },
 					password: {
 						create: {
 							hash: hashedPassword,

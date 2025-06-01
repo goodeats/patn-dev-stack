@@ -55,6 +55,8 @@ export async function action({ request }: Route.ActionArgs) {
 			}
 
 			// Check if any users exist in the system
+			// good security for a single-user site
+			// 🚨 remove this for other projects
 			const usersExist = (await prisma.user.count()) > 0
 			if (usersExist) {
 				console.log('usersExist', usersExist)
