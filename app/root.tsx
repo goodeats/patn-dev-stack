@@ -26,6 +26,7 @@ import {
 	useTheme,
 } from './routes/resources+/theme-switch.tsx'
 import tailwindStyleSheetUrl from './styles/tailwind.css?url'
+import { APP_DESCRIPTION, APP_NAME } from './utils/app-name.ts'
 import { getUserId, logout } from './utils/auth.server.ts'
 import { ClientHintCheck, getHints } from './utils/client-hints.tsx'
 import { prisma } from './utils/db.server.ts'
@@ -60,8 +61,11 @@ export const links: Route.LinksFunction = () => {
 
 export const meta: Route.MetaFunction = ({ data }) => {
 	return [
-		{ title: data ? 'Epic Notes' : 'Error | Epic Notes' },
-		{ name: 'description', content: `Your own captain's log` },
+		{ title: data ? APP_NAME : `Error | ${APP_NAME}` },
+		{
+			name: 'description',
+			content: APP_DESCRIPTION ?? `Your own captain's log`,
+		},
 	]
 }
 
