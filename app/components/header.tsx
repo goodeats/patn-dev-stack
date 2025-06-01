@@ -15,7 +15,7 @@ export function Header() {
 					<ThemeSwitch userPreference={requestInfo.userPrefs.theme} />
 					{user && (
 						<Button variant="default" asChild>
-							<Link to={`/users/${user?.username}`}>{user?.name}</Link>
+							<Link to={`/dashboard`}>{user?.name}</Link>
 						</Button>
 					)}
 				</div>
