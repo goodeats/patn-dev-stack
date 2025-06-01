@@ -212,6 +212,10 @@ export const getShapeStyles = (
 		// Animation delay to stagger the start of animations for multiple shapes
 		// Creates a more natural, less synchronized floating effect
 		animationDelay: `${shape.delay}s`,
+
+		// This is a performance optimization to tell the browser to only animate the transform properties
+		// This can help reduce jank and improve performance
+		willChange: 'transform',
 	}
 }
 
