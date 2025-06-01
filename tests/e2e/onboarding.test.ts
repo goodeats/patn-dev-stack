@@ -13,6 +13,11 @@ import { logout } from '#tests/actions/logout.ts'
 import { readEmail } from '#tests/mocks/utils.ts'
 import { createUser, expect, test as base } from '#tests/playwright-utils.ts'
 
+// This file contains end-to-end tests for the user onboarding process.
+// It covers different scenarios including signing up with email verification links and codes,
+// onboarding and linking accounts with GitHub OAuth, logging in with existing credentials,
+// and resetting passwords via email links and codes.
+
 const URL_REGEX = /(?<url>https?:\/\/[^\s$.?#].[^\s]*)/
 const CODE_REGEX = /Here's your verification code: (?<code>[\d\w]+)/
 function extractUrl(text: string) {
@@ -22,7 +27,10 @@ function extractUrl(text: string) {
 const EMAIL_FROM = process.env.RESEND_EMAIL_FROM ?? 'p@patn.dev'
 
 const test = base.extend<{
-	getOnboardingData(): {
+	// opts allows for conditional logic within the fixture, e.g., deleting all users for single-user site scenarios.
+	// deleting all users for this set of tests is good for a single-user site
+	// but not good for a multi-user site
+	getOnboardingData(opts?: { deleteAllUsers?: boolean }): {
 		username: string
 		name: string
 		email: string
@@ -31,19 +39,29 @@ const test = base.extend<{
 }>({
 	getOnboardingData: async ({}, use) => {
 		const userData = createUser()
-		await use(() => {
+		let deleteAllUsers = false
+		await use((opts?: { deleteAllUsers?: boolean }) => {
+			if (opts?.deleteAllUsers) {
+				deleteAllUsers = true
+			}
 			const onboardingData = {
 				...userData,
 				password: faker.internet.password(),
 			}
 			return onboardingData
 		})
-		await prisma.user.deleteMany({ where: { username: userData.username } })
+		if (deleteAllUsers) {
+			console.log('deleting all users')
+			await prisma.user.deleteMany({})
+		} else {
+			console.log('deleting user', userData.username)
+			await prisma.user.deleteMany({ where: { username: userData.username } })
+		}
 	},
 })
 
 test('onboarding with link', async ({ page, getOnboardingData }) => {
-	const onboardingData = getOnboardingData()
+	const onboardingData = getOnboardingData({ deleteAllUsers: true })
 
 	await page.goto('/')
 	await expect(page.getByRole('link', { name: /log in/i })).not.toBeVisible()
@@ -103,7 +121,7 @@ test('onboarding with link', async ({ page, getOnboardingData }) => {
 })
 
 test('onboarding with a short code', async ({ page, getOnboardingData }) => {
-	const onboardingData = getOnboardingData()
+	const onboardingData = getOnboardingData({ deleteAllUsers: true })
 
 	await page.goto('/signup')
 
@@ -131,7 +149,9 @@ test('onboarding with a short code', async ({ page, getOnboardingData }) => {
 test('completes onboarding after GitHub OAuth given valid user details', async ({
 	page,
 	prepareGitHubUser,
+	getOnboardingData,
 }) => {
+	getOnboardingData({ deleteAllUsers: true })
 	const ghUser = await prepareGitHubUser()
 
 	// let's verify we do not have user with that email in our system:
@@ -180,7 +200,9 @@ test('completes onboarding after GitHub OAuth given valid user details', async (
 test('logs user in after GitHub OAuth if they are already registered', async ({
 	page,
 	prepareGitHubUser,
+	getOnboardingData,
 }) => {
+	getOnboardingData({ deleteAllUsers: true })
 	const ghUser = await prepareGitHubUser()
 
 	// let's verify we do not have user with that email in our system ...
@@ -229,7 +251,9 @@ test('logs user in after GitHub OAuth if they are already registered', async ({
 test('shows help texts on entering invalid details on onboarding page after GitHub OAuth', async ({
 	page,
 	prepareGitHubUser,
+	getOnboardingData,
 }) => {
+	getOnboardingData({ deleteAllUsers: true })
 	const ghUser = await prepareGitHubUser()
 
 	await page.goto('/signup')

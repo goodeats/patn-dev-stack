@@ -53,6 +53,19 @@ export async function action({ request }: Route.ActionArgs) {
 				})
 				return
 			}
+
+			// Check if any users exist in the system
+			// good security for a single-user site
+			// 🚨 remove this for other projects
+			const usersExist = (await prisma.user.count()) > 0
+			if (usersExist) {
+				console.log('usersExist', usersExist)
+				ctx.addIssue({
+					code: z.ZodIssueCode.custom,
+					message: 'You are not allowed to sign up. Please contact PatN.',
+				})
+				return
+			}
 		}),
 		async: true,
 	})
@@ -72,7 +85,7 @@ export async function action({ request }: Route.ActionArgs) {
 
 	const response = await sendEmail({
 		to: email,
-		subject: `Welcome to Epic Notes!`,
+		subject: `Welcome to patn.dev!`,
 		react: <SignupEmail onboardingUrl={verifyUrl.toString()} otp={otp} />,
 	})
 
