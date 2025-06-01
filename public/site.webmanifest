@@ -1,7 +1,10 @@
 {
 	"name": "patn.dev",
 	"short_name": "patn.dev",
+	"description": "Full-stack web developer portfolio and blog",
 	"start_url": "/",
+	"scope": "/",
+	"id": "/",
 	"icons": [
 		{
 			"src": "/favicons/android-chrome-192x192.png",
