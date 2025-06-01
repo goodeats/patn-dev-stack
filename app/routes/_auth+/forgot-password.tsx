@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { ErrorList, Field } from '#app/components/forms.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
+import { APP_NAME } from '#app/utils/app-name.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { sendEmail } from '#app/utils/email.server.ts'
 import { checkHoneypot } from '#app/utils/honeypot.server.ts'
@@ -70,7 +71,7 @@ export async function action({ request }: Route.ActionArgs) {
 
 	const response = await sendEmail({
 		to: user.email,
-		subject: `Epic Notes Password Reset`,
+		subject: `${APP_NAME} Password Reset`,
 		react: (
 			<ForgotPasswordEmail onboardingUrl={verifyUrl.toString()} otp={otp} />
 		),
@@ -97,7 +98,7 @@ function ForgotPasswordEmail({
 		<E.Html lang="en" dir="ltr">
 			<E.Container>
 				<h1>
-					<E.Text>Epic Notes Password Reset</E.Text>
+					<E.Text>{APP_NAME} Password Reset</E.Text>
 				</h1>
 				<p>
 					<E.Text>
@@ -114,7 +115,7 @@ function ForgotPasswordEmail({
 }
 
 export const meta: Route.MetaFunction = () => {
-	return [{ title: 'Password Recovery for Epic Notes' }]
+	return [{ title: `Password Recovery for ${APP_NAME}` }]
 }
 
 export default function ForgotPasswordRoute() {
@@ -131,15 +132,15 @@ export default function ForgotPasswordRoute() {
 	})
 
 	return (
-		<div className="container pb-32 pt-20">
+		<div className="container pt-20 pb-32">
 			<div className="flex flex-col justify-center">
 				<div className="text-center">
 					<h1 className="text-h1">Forgot Password</h1>
-					<p className="mt-3 text-body-md text-muted-foreground">
+					<p className="text-body-md text-muted-foreground mt-3">
 						No worries, we'll send you reset instructions.
 					</p>
 				</div>
-				<div className="mx-auto mt-16 min-w-full max-w-sm sm:min-w-[368px]">
+				<div className="mx-auto mt-16 max-w-sm min-w-full sm:min-w-[368px]">
 					<forgotPassword.Form method="POST" {...getFormProps(form)}>
 						<HoneypotInputs />
 						<div>
@@ -174,7 +175,7 @@ export default function ForgotPasswordRoute() {
 					</forgotPassword.Form>
 					<Link
 						to="/login"
-						className="mt-11 text-center text-body-sm font-bold"
+						className="text-body-sm mt-11 text-center font-bold"
 					>
 						Back to Login
 					</Link>

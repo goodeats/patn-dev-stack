@@ -20,11 +20,13 @@ import { EpicProgress } from './components/progress-bar.tsx'
 import { useToast } from './components/toaster.tsx'
 import { href as iconsHref } from './components/ui/icon.tsx'
 import { EpicToaster } from './components/ui/sonner.tsx'
+import { useReactScan } from './hooks/use-react-scan.ts'
 import {
 	useOptionalTheme,
 	useTheme,
 } from './routes/resources+/theme-switch.tsx'
 import tailwindStyleSheetUrl from './styles/tailwind.css?url'
+import { APP_DESCRIPTION, APP_NAME } from './utils/app-name.ts'
 import { getUserId, logout } from './utils/auth.server.ts'
 import { ClientHintCheck, getHints } from './utils/client-hints.tsx'
 import { prisma } from './utils/db.server.ts'
@@ -59,8 +61,11 @@ export const links: Route.LinksFunction = () => {
 
 export const meta: Route.MetaFunction = ({ data }) => {
 	return [
-		{ title: data ? 'Epic Notes' : 'Error | Epic Notes' },
-		{ name: 'description', content: `Your own captain's log` },
+		{ title: data ? APP_NAME : `Error | ${APP_NAME}` },
+		{
+			name: 'description',
+			content: APP_DESCRIPTION ?? `Your own captain's log`,
+		},
 	]
 }
 
@@ -178,6 +183,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
 	const data = useLoaderData<typeof loader | null>()
 	const nonce = useNonce()
 	const theme = useOptionalTheme()
+
+	// https://github.com/aidenybai/react-scan/blob/main/docs/installation/remix.md
+	useReactScan(data?.ENV.REACT_SCAN_ENABLED === 'true')
+
 	return (
 		<Document nonce={nonce} theme={theme} env={data?.ENV}>
 			{children}

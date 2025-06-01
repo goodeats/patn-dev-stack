@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { ErrorList, Field } from '#app/components/forms.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
+import { APP_NAME } from '#app/utils/app-name.ts'
 import { requireAnonymous } from '#app/utils/auth.server.ts'
 import {
 	ProviderConnectionForm,
@@ -53,6 +54,19 @@ export async function action({ request }: Route.ActionArgs) {
 				})
 				return
 			}
+
+			// Check if any users exist in the system
+			// good security for a single-user site
+			// 🚨 remove this for other projects
+			const usersExist = (await prisma.user.count()) > 0
+			if (usersExist) {
+				console.log('usersExist', usersExist)
+				ctx.addIssue({
+					code: z.ZodIssueCode.custom,
+					message: 'You are not allowed to sign up. Please contact PatN.',
+				})
+				return
+			}
 		}),
 		async: true,
 	})
@@ -72,7 +86,7 @@ export async function action({ request }: Route.ActionArgs) {
 
 	const response = await sendEmail({
 		to: email,
-		subject: `Welcome to Epic Notes!`,
+		subject: `Welcome to patn.dev!`,
 		react: <SignupEmail onboardingUrl={verifyUrl.toString()} otp={otp} />,
 	})
 
@@ -101,7 +115,7 @@ export function SignupEmail({
 		<E.Html lang="en" dir="ltr">
 			<E.Container>
 				<h1>
-					<E.Text>Welcome to Epic Notes!</E.Text>
+					<E.Text>Welcome to {APP_NAME}!</E.Text>
 				</h1>
 				<p>
 					<E.Text>
@@ -118,7 +132,7 @@ export function SignupEmail({
 }
 
 export const meta: Route.MetaFunction = () => {
-	return [{ title: 'Sign Up | Epic Notes' }]
+	return [{ title: `Sign Up | ${APP_NAME}` }]
 }
 
 export default function SignupRoute({ actionData }: Route.ComponentProps) {
