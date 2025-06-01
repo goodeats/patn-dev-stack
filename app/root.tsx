@@ -20,6 +20,7 @@ import { EpicProgress } from './components/progress-bar.tsx'
 import { useToast } from './components/toaster.tsx'
 import { href as iconsHref } from './components/ui/icon.tsx'
 import { EpicToaster } from './components/ui/sonner.tsx'
+import { useReactScan } from './hooks/use-react-scan.ts'
 import {
 	useOptionalTheme,
 	useTheme,
@@ -178,6 +179,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
 	const data = useLoaderData<typeof loader | null>()
 	const nonce = useNonce()
 	const theme = useOptionalTheme()
+
+	// https://github.com/aidenybai/react-scan/blob/main/docs/installation/remix.md
+	useReactScan(data?.ENV.REACT_SCAN_ENABLED === 'true')
+
 	return (
 		<Document nonce={nonce} theme={theme} env={data?.ENV}>
 			{children}

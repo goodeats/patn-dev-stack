@@ -26,6 +26,9 @@ const schema = z.object({
 	AWS_REGION: z.string(),
 	AWS_ENDPOINT_URL_S3: z.string().url(),
 	BUCKET_NAME: z.string(),
+
+	// If wanting to test react-scan, set this to true
+	REACT_SCAN_ENABLED: z.enum(['true', 'false']).optional(),
 })
 
 declare global {
@@ -61,6 +64,7 @@ export function getEnv() {
 		MODE: process.env.NODE_ENV,
 		SENTRY_DSN: process.env.SENTRY_DSN,
 		ALLOW_INDEXING: process.env.ALLOW_INDEXING,
+		REACT_SCAN_ENABLED: process.env.REACT_SCAN_ENABLED ?? 'false',
 	}
 }
 
