@@ -19,7 +19,7 @@ function extractUrl(text: string) {
 	const match = text.match(URL_REGEX)
 	return match?.groups?.url
 }
-const EMAIL_FROM = 'p@patn.dev'
+const EMAIL_FROM = process.env.RESEND_EMAIL_FROM ?? 'p@patn.dev'
 
 const test = base.extend<{
 	getOnboardingData(): {
