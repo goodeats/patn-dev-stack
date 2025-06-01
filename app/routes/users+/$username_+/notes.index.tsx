@@ -1,3 +1,4 @@
+import { APP_NAME } from '#app/utils/app-name.ts'
 import { type Route } from './+types/notes.index.ts'
 import { type Info as notesInfo } from './+types/notes.ts'
 
@@ -18,10 +19,10 @@ export const meta: Route.MetaFunction = ({ params, matches }) => {
 	const noteCount = notesMatch?.data?.owner.notes.length ?? 0
 	const notesText = noteCount === 1 ? 'note' : 'notes'
 	return [
-		{ title: `${displayName}'s Notes | Epic Notes` },
+		{ title: `${displayName}'s Notes | ${APP_NAME}` },
 		{
 			name: 'description',
-			content: `Checkout ${displayName}'s ${noteCount} ${notesText} on Epic Notes`,
+			content: `Checkout ${displayName}'s ${noteCount} ${notesText} on ${APP_NAME}`,
 		},
 	]
 }

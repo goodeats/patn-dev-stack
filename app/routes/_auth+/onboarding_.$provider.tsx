@@ -17,6 +17,7 @@ import { z } from 'zod'
 import { CheckboxField, ErrorList, Field } from '#app/components/forms.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
+import { APP_NAME } from '#app/utils/app-name.ts'
 import {
 	sessionKey,
 	signupWithConnection,
@@ -160,7 +161,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 }
 
 export const meta: Route.MetaFunction = () => {
-	return [{ title: 'Setup Epic Notes Account' }]
+	return [{ title: `Setup ${APP_NAME} Account` }]
 }
 
 export default function OnboardingProviderRoute({

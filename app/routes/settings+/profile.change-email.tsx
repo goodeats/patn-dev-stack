@@ -10,6 +10,7 @@ import {
 	prepareVerification,
 	requireRecentVerification,
 } from '#app/routes/_auth+/verify.server.ts'
+import { APP_NAME } from '#app/utils/app-name.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { sendEmail } from '#app/utils/email.server.ts'
@@ -79,7 +80,7 @@ export async function action({ request }: Route.ActionArgs) {
 
 	const response = await sendEmail({
 		to: submission.value.email,
-		subject: `Epic Notes Email Change Verification`,
+		subject: `${APP_NAME} Email Change Verification`,
 		react: <EmailChangeEmail verifyUrl={verifyUrl.toString()} otp={otp} />,
 	})
 
