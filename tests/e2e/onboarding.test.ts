@@ -27,6 +27,9 @@ function extractUrl(text: string) {
 const EMAIL_FROM = process.env.RESEND_EMAIL_FROM ?? 'p@patn.dev'
 
 const test = base.extend<{
+	// opts allows for conditional logic within the fixture, e.g., deleting all users for single-user site scenarios.
+	// deleting all users for this set of tests is good for a single-user site
+	// but not good for a multi-user site
 	getOnboardingData(opts?: { deleteAllUsers?: boolean }): {
 		username: string
 		name: string
