@@ -103,7 +103,7 @@ import {
 } from '#app/components/ui/tabs'
 import { useIsMobile } from '#app/hooks/use-mobile'
 
-const DemoSchema = z.object({
+export const DemoSchema = z.object({
 	id: z.number(),
 	header: z.string(),
 	type: z.string(),
@@ -333,7 +333,7 @@ function DraggableRow({ row }: { row: Row<z.infer<typeof DemoSchema>> }) {
 	)
 }
 
-export function DataTable({
+export function DashboardDataTableDemo({
 	data: initialData,
 }: {
 	data: z.infer<typeof DemoSchema>[]

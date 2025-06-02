@@ -5,7 +5,7 @@ import {
 	AppContainerGroup,
 } from '#app/components/app-container.tsx'
 import { ChartAreaInteractive } from '#app/components/chart-area-interactive.tsx'
-import { DataTable } from '#app/components/data-table.tsx'
+import { DashboardDataTableDemo } from '#app/components/dashboard-data-table-demo.tsx'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { SectionCards } from '#app/components/section-cards.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
@@ -34,7 +34,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	return { user, userJoinedDisplay: user.createdAt.toLocaleDateString() }
 }
 
-export default function DashboardRoute() {
+export default function DashboardIndexRoute() {
 	return (
 		<AppContainerContent id="dashboard-content" className="container">
 			<AppContainerGroup>
@@ -44,7 +44,7 @@ export default function DashboardRoute() {
 				<ChartAreaInteractive />
 			</AppContainerGroup>
 			<AppContainerGroup>
-				<DataTable data={dashboardData} />
+				<DashboardDataTableDemo data={dashboardData} />
 			</AppContainerGroup>
 			<AppContainerGroup>
 				<Spacer size="xs" />
