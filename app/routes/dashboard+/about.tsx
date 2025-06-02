@@ -1,7 +1,6 @@
-import { invariantResponse } from '@epic-web/invariant'
 import { type ColumnDef } from '@tanstack/react-table'
 import * as React from 'react'
-import { type LoaderFunctionArgs, useLoaderData } from 'react-router'
+import { type LoaderFunctionArgs } from 'react-router'
 import {
 	AppContainerContent,
 	AppContainerGroup,
@@ -24,14 +23,15 @@ import { Icon } from '#app/components/ui/icon.tsx'
 import { APP_NAME } from '#app/utils/app-name.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
-import { type Route } from './+types/route.ts'
+import { type Route } from './+types/about.ts'
 
 type AboutMeDataItem = {
 	id: string
 	content: string
 	description: string | null
-	createdAt: string
-	updatedAt: string
+	createdAt: Date
+	updatedAt: Date
+	userId: string
 	aboutMeCategory: {
 		id: string
 		name: string
@@ -127,8 +127,10 @@ const aboutMeColumns = (): ColumnDef<AboutMeDataItem>[] => [
 	},
 ]
 
-export default function DashboardAboutRoute() {
-	const { aboutMeData } = useLoaderData<typeof loader>()
+export default function DashboardAboutRoute({
+	loaderData,
+}: Route.ComponentProps) {
+	const { aboutMeData } = loaderData
 
 	const columns = React.useMemo(() => aboutMeColumns(), [])
 
