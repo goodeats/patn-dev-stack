@@ -13,19 +13,19 @@ export async function login(
 	await expect(page).toHaveURL(`/`)
 }
 
-export async function logout(
-	page: Page,
-	onboardingData: { name: string; username: string },
-) {
-	// Click on the user's name link to go to their profile page
-	await page.getByRole('link', { name: onboardingData.name }).click()
-	// Expect the URL to be the user's profile page
-	await expect(page).toHaveURL(`/users/${onboardingData.username}`)
-
-	// Click the logout button
-	await page.getByRole('button', { name: /logout/i }).click()
+export async function logout(page: Page) {
+	await page.goto('/dashboard')
+	// Click the user menu button first
+	await page.locator('#sidebar-user-button').click()
+	// Then click the logout button
+	await page.getByRole('menuitem', { name: /logout/i }).click()
 	// Expect the URL to be the home page after logging out
 	await expect(page).toHaveURL(`/`)
+	await expect(page.locator('#header-user-button')).not.toBeVisible()
+}
+
+export function getLoginRedirectUrl(redirectTo: string): string {
+	return `/login?redirectTo=${encodeURIComponent(redirectTo)}`
 }
 
 export {} // To make the file a module and allow top-level await in tests that import this function

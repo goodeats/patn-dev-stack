@@ -5,7 +5,8 @@ import {
 	IconNotification,
 	IconUserCircle,
 } from '@tabler/icons-react'
-import { NavLink } from 'react-router'
+import { useRef } from 'react'
+import { Form, NavLink } from 'react-router'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -36,6 +37,7 @@ export function SidebarNavUser({
 	}
 }) {
 	const { isMobile } = useSidebar()
+	const formRef = useRef<HTMLFormElement>(null)
 
 	return (
 		<SidebarMenu>
@@ -43,6 +45,7 @@ export function SidebarNavUser({
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
 						<SidebarMenuButton
+							id="sidebar-user-button"
 							size="lg"
 							className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
 						>
@@ -107,10 +110,14 @@ export function SidebarNavUser({
 							</DropdownMenuItem>
 						</DropdownMenuGroup>
 						<DropdownMenuSeparator />
-						<DropdownMenuItem>
-							<IconLogout />
-							Log out
-						</DropdownMenuItem>
+						<Form id="logout-form" action="/logout" method="POST" ref={formRef}>
+							<DropdownMenuItem asChild>
+								<button type="submit" className="w-full cursor-pointer">
+									<IconLogout />
+									Logout
+								</button>
+							</DropdownMenuItem>
+						</Form>
 					</DropdownMenuContent>
 				</DropdownMenu>
 			</SidebarMenuItem>

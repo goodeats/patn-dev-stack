@@ -117,7 +117,7 @@ test('onboarding with link', async ({ page, getOnboardingData }) => {
 	await page.getByRole('button', { name: /Create an account/i }).click()
 
 	await expect(page).toHaveURL(`/`)
-	await logout(page, onboardingData)
+	await logout(page)
 })
 
 test('onboarding with a short code', async ({ page, getOnboardingData }) => {
