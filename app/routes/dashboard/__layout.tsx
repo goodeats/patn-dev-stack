@@ -1,10 +1,6 @@
 import {
-	IconCamera,
-	IconChartBar,
 	IconDashboard,
 	IconDatabase,
-	IconFileAi,
-	IconFileDescription,
 	IconFileWord,
 	IconFolder,
 	IconHelp,
@@ -12,7 +8,7 @@ import {
 	IconReport,
 	IconSearch,
 	IconSettings,
-	IconUsers,
+	IconAddressBook,
 } from '@tabler/icons-react'
 import * as React from 'react'
 import {
@@ -22,9 +18,9 @@ import {
 } from '#app/components/app-container'
 import { ProjectLink } from '#app/components/external-icon-link.tsx'
 import { Logo } from '#app/components/logo.tsx'
-import { NavDocuments } from '#app/components/nav-documents'
-import { NavMain } from '#app/components/nav-main'
-import { NavSecondary } from '#app/components/nav-secondary'
+import { type DynamicNavLink } from '#app/components/nav-links.tsx'
+import { SidebarNavGroup } from '#app/components/sidebar-nav-group.tsx'
+import { SidebarNavItems } from '#app/components/sidebar-nav-items.tsx'
 import { SidebarNavUser } from '#app/components/sidebar-nav-user.tsx'
 import { Separator } from '#app/components/ui/separator'
 import {
@@ -91,86 +87,6 @@ export function DashboardHeader() {
 }
 
 const data = {
-	user: {
-		name: 'shadcn',
-		email: 'm@example.com',
-		avatar: '/avatars/shadcn.jpg',
-	},
-	navMain: [
-		{
-			title: 'Dashboard',
-			url: '#',
-			icon: IconDashboard,
-		},
-		{
-			title: 'Lifecycle',
-			url: '#',
-			icon: IconListDetails,
-		},
-		{
-			title: 'Analytics',
-			url: '#',
-			icon: IconChartBar,
-		},
-		{
-			title: 'Projects',
-			url: '#',
-			icon: IconFolder,
-		},
-		{
-			title: 'Team',
-			url: '#',
-			icon: IconUsers,
-		},
-	],
-	navClouds: [
-		{
-			title: 'Capture',
-			icon: IconCamera,
-			isActive: true,
-			url: '#',
-			items: [
-				{
-					title: 'Active Proposals',
-					url: '#',
-				},
-				{
-					title: 'Archived',
-					url: '#',
-				},
-			],
-		},
-		{
-			title: 'Proposal',
-			icon: IconFileDescription,
-			url: '#',
-			items: [
-				{
-					title: 'Active Proposals',
-					url: '#',
-				},
-				{
-					title: 'Archived',
-					url: '#',
-				},
-			],
-		},
-		{
-			title: 'Prompts',
-			icon: IconFileAi,
-			url: '#',
-			items: [
-				{
-					title: 'Active Proposals',
-					url: '#',
-				},
-				{
-					title: 'Archived',
-					url: '#',
-				},
-			],
-		},
-	],
 	navSecondary: [
 		{
 			title: 'Settings',
@@ -207,6 +123,29 @@ const data = {
 	],
 }
 
+const navMain: DynamicNavLink[] = [
+	{
+		label: 'Dashboard',
+		to: '.',
+		icon: IconDashboard,
+	},
+	{
+		label: 'About',
+		to: 'about',
+		icon: IconListDetails,
+	},
+	{
+		label: 'Projects',
+		to: 'projects',
+		icon: IconFolder,
+	},
+	{
+		label: 'Contact',
+		to: 'contact',
+		icon: IconAddressBook,
+	},
+]
+
 export function DashboardSidebar({
 	user,
 	...props
@@ -219,9 +158,8 @@ export function DashboardSidebar({
 				<Logo />
 			</SidebarHeader>
 			<SidebarContent>
-				<NavMain items={data.navMain} />
-				<NavDocuments items={data.documents} />
-				<NavSecondary items={data.navSecondary} className="mt-auto" />
+				<SidebarNavGroup items={navMain} />
+				<SidebarNavItems items={data.navSecondary} className="mt-auto" />
 			</SidebarContent>
 			<SidebarFooter>
 				<SidebarNavUser user={user} />

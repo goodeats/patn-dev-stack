@@ -7,6 +7,7 @@ import {
 	useLoaderData,
 } from 'react-router'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
+import { Header } from '#app/components/header.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
@@ -44,6 +45,7 @@ export default function ProfileRoute() {
 
 	return (
 		<div className="container mt-36 mb-48 flex flex-col items-center justify-center">
+			<Header />
 			<Spacer size="4xs" />
 
 			<div className="bg-muted container flex flex-col items-center rounded-3xl p-12">

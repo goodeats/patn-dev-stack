@@ -22,7 +22,7 @@ import {
 	useSidebar,
 } from '#app/components/ui/sidebar'
 
-export function NavDocuments({
+export function SidebarNavDocuments({
 	items,
 }: {
 	items: {

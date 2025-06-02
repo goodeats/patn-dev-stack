@@ -5,6 +5,7 @@ import {
 	IconNotification,
 	IconUserCircle,
 } from '@tabler/icons-react'
+import { NavLink } from 'react-router'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -21,6 +22,7 @@ import {
 	useSidebar,
 } from '#app/components/ui/sidebar'
 import { UserAvatar } from '#app/components/user-avatar'
+import { Icon } from './ui/icon'
 
 export function SidebarNavUser({
 	user,
@@ -80,6 +82,17 @@ export function SidebarNavUser({
 						</DropdownMenuLabel>
 						<DropdownMenuSeparator />
 						<DropdownMenuGroup>
+							<DropdownMenuItem asChild>
+								<NavLink
+									to="/settings/profile"
+									prefetch="intent"
+									className="flex w-full items-center"
+								>
+									<Icon className="text-body-md" name="person">
+										<span className="text-body-xs">Profile</span>
+									</Icon>
+								</NavLink>
+							</DropdownMenuItem>
 							<DropdownMenuItem>
 								<IconUserCircle />
 								Account
