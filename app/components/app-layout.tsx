@@ -9,16 +9,11 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 	const defaultOpen = sidebarState === true
 
 	return (
-		<AppContainer id="dashboard-container" className="debug-border-blue">
-			<SidebarProvider
-				id="dashboard-sidebar-provider"
-				defaultOpen={defaultOpen}
-			>
+		<AppContainer id="dashboard-container">
+			<SidebarProvider defaultOpen={defaultOpen}>
 				<AppSidebar id="dashboard-sidebar" />
 				{/* children should be wrapped in AppContainerContent */}
-				<AppMain id="dashboard-main" className="debug-border-red">
-					{children}
-				</AppMain>
+				<AppMain id="dashboard-main">{children}</AppMain>
 			</SidebarProvider>
 		</AppContainer>
 	)

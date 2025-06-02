@@ -1,13 +1,17 @@
 import { Button } from '#app/components/ui/button'
 import { Separator } from '#app/components/ui/separator'
 import { SidebarTrigger } from '#app/components/ui/sidebar'
+import { useRootLoaderData } from '#app/root.tsx'
+import { ThemeSwitch } from '#app/routes/resources+/theme-switch.tsx'
+import { ProjectLink } from './external-icon-link'
 
 export function DashboardHeader() {
+	const { requestInfo } = useRootLoaderData()
 	return (
-		<header className="debug-border-green container w-full border-b py-1.5">
+		<header id="dashboard-header" className="w-full border-b px-4 py-1.5">
 			<nav className="flex flex-wrap items-center justify-between gap-4 sm:flex-nowrap md:gap-8">
 				<div className="flex items-center gap-2">
-					<SidebarTrigger className="" />
+					<SidebarTrigger id="dashboard-sidebar-trigger" />
 					<Separator
 						orientation="vertical"
 						className="mx-2 data-[orientation=vertical]:h-4"
@@ -16,16 +20,8 @@ export function DashboardHeader() {
 				</div>
 
 				<div className="flex items-center gap-2">
-					<Button variant="ghost" asChild size="sm" className="hidden sm:flex">
-						<a
-							href="https://github.com/shadcn-ui/ui/tree/main/apps/v4/app/(examples)/dashboard"
-							rel="noopener noreferrer"
-							target="_blank"
-							className="dark:text-foreground"
-						>
-							GitHub
-						</a>
-					</Button>
+					<ThemeSwitch userPreference={requestInfo.userPrefs.theme} />
+					<ProjectLink />
 				</div>
 			</nav>
 		</header>

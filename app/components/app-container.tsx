@@ -24,7 +24,7 @@ const AppMain = React.forwardRef<
 	<div
 		ref={ref}
 		className={cn(
-			'font-poppins bg-background text-foreground flex min-h-screen flex-1 flex-row',
+			'font-poppins bg-background text-foreground flex min-h-screen min-w-0 flex-1 flex-row',
 			className,
 		)}
 		{...props}
