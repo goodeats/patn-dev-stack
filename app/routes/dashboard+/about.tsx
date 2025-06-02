@@ -9,7 +9,7 @@ import {
 	DataTable,
 	createDataTableSelectColumn,
 	DataTableSortHeader,
-} from '#app/components/data-table-generic.tsx'
+} from '#app/components/data-table.tsx'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import {
@@ -150,8 +150,8 @@ export default function DashboardAboutRoute({
 					filterFields={[
 						{ accessorKey: 'content', placeholder: 'Filter content...' },
 						{
-							accessorKey: 'aboutMeCategory',
-							placeholder: 'Filter by category name...',
+							accessorKey: 'categoryName',
+							placeholder: 'Filter category...',
 						},
 					]}
 				/>
