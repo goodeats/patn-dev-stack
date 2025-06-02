@@ -39,6 +39,22 @@
 	--foreground-destructive: oklch(51.46% 0.1979 16.57);
 
 	--ring: oklch(71.07% 0.0351 256.79);
+
+	--sidebar: hsl(0 0% 98%);
+
+	--sidebar-foreground: hsl(240 5.3% 26.1%);
+
+	--sidebar-primary: hsl(240 5.9% 10%);
+
+	--sidebar-primary-foreground: hsl(0 0% 98%);
+
+	--sidebar-accent: hsl(240 4.8% 95.9%);
+
+	--sidebar-accent-foreground: hsl(240 5.9% 10%);
+
+	--sidebar-border: hsl(220 13% 91%);
+
+	--sidebar-ring: hsl(217.2 91.2% 59.8%);
 }
 
 .dark {
@@ -73,6 +89,22 @@
 	--foreground-destructive: oklch(63.72% 0.2071 21.89);
 
 	--ring: oklch(65.28% 0.0684 260.07);
+
+	--sidebar: hsl(240 5.9% 10%);
+
+	--sidebar-foreground: hsl(240 4.8% 95.9%);
+
+	--sidebar-primary: hsl(224.3 76.3% 48%);
+
+	--sidebar-primary-foreground: hsl(0 0% 100%);
+
+	--sidebar-accent: hsl(240 3.7% 15.9%);
+
+	--sidebar-accent-foreground: hsl(240 4.8% 95.9%);
+
+	--sidebar-border: hsl(240 3.7% 15.9%);
+
+	--sidebar-ring: hsl(217.2 91.2% 59.8%);
 }
 
 @theme inline {
@@ -101,6 +133,14 @@
 	--color-input-invalid: var(--input-invalid);
 	--color-destructive-foreground: var(--destructive-foreground);
 	--color-foreground-destructive: var(--foreground-destructive);
+	--color-sidebar-ring: var(--sidebar-ring);
+	--color-sidebar-border: var(--sidebar-border);
+	--color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+	--color-sidebar-accent: var(--sidebar-accent);
+	--color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+	--color-sidebar-primary: var(--sidebar-primary);
+	--color-sidebar-foreground: var(--sidebar-foreground);
+	--color-sidebar: var(--sidebar);
 }
 
 @theme {
@@ -254,6 +294,23 @@
 }
 
 @layer utilities {
+  /* adds a red border to the element */
+  .debug-border, .debug-border-red {
+    @apply border-[10px] border-solid border-red-500;
+  }
+
+  .debug-border-blue {
+    @apply border-[10px] border-solid border-blue-500;
+  }
+
+  .debug-border-green {
+    @apply border-[10px] border-solid border-green-500;
+  }
+
+  .debug-border-yellow {
+    @apply border-[10px] border-solid border-yellow-500;
+  }
+
 	@keyframes float-shape {
 		0%, 100% {
 			transform: translate(0, 0) scale(1) rotate(0deg);
@@ -270,5 +327,14 @@
 		80% {
 			transform: translate(calc(var(--move-x) * -0.2), calc(var(--move-y) * -0.2)) scale(0.95) rotate(360deg);
 		}
+	}
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+	}
+  body {
+    @apply bg-background text-foreground;
 	}
 }
