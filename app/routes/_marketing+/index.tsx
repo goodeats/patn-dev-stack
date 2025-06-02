@@ -2,6 +2,8 @@ import { type Skill, type SocialLink } from '@prisma/client'
 import { ExternalIconLink } from '#app/components/external-icon-link.tsx'
 import { ExternalLink } from '#app/components/external-link.tsx'
 import { FloatingShapes } from '#app/components/floating-shapes.tsx'
+import { Footer } from '#app/components/footer.tsx'
+import { Header } from '#app/components/header.tsx'
 import {
 	MarketingCard,
 	MarketingSection,
@@ -341,6 +343,8 @@ export default function Index({ loaderData }: Route.ComponentProps) {
 
 	return (
 		<main className="font-poppins bg-background text-foreground min-h-screen">
+			<Header />
+
 			<HeroSection />
 			<AboutSection
 				professionalAboutMe={professionalAboutMe}
@@ -349,6 +353,8 @@ export default function Index({ loaderData }: Route.ComponentProps) {
 			<SkillsSection skillCategories={skillCategories} />
 			<ProjectsSection projects={projects} />
 			<ContactSection socialLinks={socialLinks} />
+
+			<Footer />
 		</main>
 	)
 }

@@ -1,21 +1,25 @@
 import { invariantResponse } from '@epic-web/invariant'
-import { Img } from 'openimg/react'
+import { type LoaderFunctionArgs, useLoaderData } from 'react-router'
+import { type z } from 'zod'
 import {
-	type LoaderFunctionArgs,
-	Form,
-	Link,
-	useLoaderData,
-} from 'react-router'
+	AppContainerContent,
+	AppContainerGroup,
+} from '#app/components/app-container.tsx'
+import { DashboardLayout } from '#app/components/app-layout.tsx'
+import { AppSidebar } from '#app/components/app-sidebar.tsx'
+import { ChartAreaInteractive } from '#app/components/chart-area-interactive.tsx'
+import { DashboardHeader } from '#app/components/dashboard-header.tsx'
+import { DataTable } from '#app/components/data-table.tsx'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
+import { SectionCards } from '#app/components/section-cards.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
-import { Button } from '#app/components/ui/button.tsx'
-import { Icon } from '#app/components/ui/icon.tsx'
+import { SidebarProvider } from '#app/components/ui/sidebar.tsx'
+import dashboardData from '#app/dashboard/data.json'
 import { APP_NAME } from '#app/utils/app-name.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
-import { getUserImgSrc } from '#app/utils/misc.tsx'
 import { useOptionalUser } from '#app/utils/user.ts'
-import { type Route } from './+types/$username.ts'
+import { type Route } from './+types/route.ts'
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	const userId = await requireUserId(request)
@@ -43,67 +47,22 @@ export default function DashboardRoute() {
 	const isLoggedInUser = user.id === loggedInUser?.id
 
 	return (
-		<div className="container mt-36 mb-48 flex flex-col items-center justify-center">
-			<Spacer size="4xs" />
-
-			<div className="bg-muted container flex flex-col items-center rounded-3xl p-12">
-				<div className="relative w-52">
-					<div className="absolute -top-40">
-						<div className="relative">
-							<Img
-								src={getUserImgSrc(data.user.image?.objectKey)}
-								alt={userDisplayName}
-								className="size-52 rounded-full object-cover"
-								width={832}
-								height={832}
-							/>
-						</div>
-					</div>
-				</div>
-
-				<Spacer size="sm" />
-
-				<div className="flex flex-col items-center">
-					<div className="flex flex-wrap items-center justify-center gap-4">
-						<h1 className="text-h2 text-center">{userDisplayName}</h1>
-					</div>
-					<p className="text-muted-foreground mt-2 text-center">
-						Joined {data.userJoinedDisplay}
-					</p>
-					{isLoggedInUser ? (
-						<Form action="/logout" method="POST" className="mt-3">
-							<Button type="submit" variant="link" size="pill">
-								<Icon name="exit" className="scale-125 max-md:scale-150">
-									Logout
-								</Icon>
-							</Button>
-						</Form>
-					) : null}
-					<div className="mt-10 flex gap-4">
-						{isLoggedInUser ? (
-							<>
-								<Button asChild>
-									<Link to="notes" prefetch="intent">
-										My notes
-									</Link>
-								</Button>
-								<Button asChild>
-									<Link to="/settings/profile" prefetch="intent">
-										Edit profile
-									</Link>
-								</Button>
-							</>
-						) : (
-							<Button asChild>
-								<Link to="notes" prefetch="intent">
-									{userDisplayName}'s notes
-								</Link>
-							</Button>
-						)}
-					</div>
-				</div>
-			</div>
-		</div>
+		<DashboardLayout>
+			<AppContainerContent>
+				<DashboardHeader />
+				<AppContainerContent className="container">
+					<AppContainerGroup>
+						<SectionCards />
+					</AppContainerGroup>
+					<AppContainerGroup>
+						<ChartAreaInteractive />
+					</AppContainerGroup>
+					<AppContainerGroup>
+						<DataTable data={dashboardData} />
+					</AppContainerGroup>
+				</AppContainerContent>
+			</AppContainerContent>
+		</DashboardLayout>
 	)
 }
 
