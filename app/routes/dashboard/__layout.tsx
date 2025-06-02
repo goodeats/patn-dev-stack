@@ -25,7 +25,7 @@ import { Logo } from '#app/components/logo.tsx'
 import { NavDocuments } from '#app/components/nav-documents'
 import { NavMain } from '#app/components/nav-main'
 import { NavSecondary } from '#app/components/nav-secondary'
-import { NavUser } from '#app/components/nav-user'
+import { SidebarNavUser } from '#app/components/sidebar-nav-user.tsx'
 import { Separator } from '#app/components/ui/separator'
 import {
 	SidebarProvider,
@@ -224,7 +224,7 @@ export function DashboardSidebar({
 				<NavSecondary items={data.navSecondary} className="mt-auto" />
 			</SidebarContent>
 			<SidebarFooter>
-				<NavUser user={user} />
+				<SidebarNavUser user={user} />
 			</SidebarFooter>
 		</Sidebar>
 	)
