@@ -74,45 +74,45 @@ async function seed() {
 	console.time(`🐨 Created admin user "pat"`)
 
 	const kodyImages = {
-		kodyUser: { objectKey: 'user/kody.png' },
+		kodyUser: { objectKey: 'user/pat.png' },
 		cuteKoala: {
 			altText: 'an adorable koala cartoon illustration',
-			objectKey: 'kody-notes/cute-koala.png',
+			objectKey: 'pat-notes/cute-koala.png',
 		},
 		koalaEating: {
 			altText: 'a cartoon illustration of a koala in a tree eating',
-			objectKey: 'kody-notes/koala-eating.png',
+			objectKey: 'pat-notes/koala-eating.png',
 		},
 		koalaCuddle: {
 			altText: 'a cartoon illustration of koalas cuddling',
-			objectKey: 'kody-notes/koala-cuddle.png',
+			objectKey: 'pat-notes/koala-cuddle.png',
 		},
 		mountain: {
 			altText: 'a beautiful mountain covered in snow',
-			objectKey: 'kody-notes/mountain.png',
+			objectKey: 'pat-notes/mountain.png',
 		},
 		koalaCoder: {
 			altText: 'a koala coding at the computer',
-			objectKey: 'kody-notes/koala-coder.png',
+			objectKey: 'pat-notes/koala-coder.png',
 		},
 		koalaMentor: {
 			altText:
 				'a koala in a friendly and helpful posture. The Koala is standing next to and teaching a woman who is coding on a computer and shows positive signs of learning and understanding what is being explained.',
-			objectKey: 'kody-notes/koala-mentor.png',
+			objectKey: 'pat-notes/koala-mentor.png',
 		},
 		koalaSoccer: {
 			altText: 'a cute cartoon koala kicking a soccer ball on a soccer field ',
-			objectKey: 'kody-notes/koala-soccer.png',
+			objectKey: 'pat-notes/koala-soccer.png',
 		},
 	}
 
 	const githubUser = await insertGitHubUser(MOCK_CODE_GITHUB)
 
-	const kody = await prisma.user.create({
+	const pat = await prisma.user.create({
 		select: { id: true },
 		data: {
-			email: process.env.DEV_EMAIL || 'kody@kcd.dev',
-			username: process.env.DEV_USERNAME || 'kody',
+			email: process.env.DEV_EMAIL || 'pat@kcd.dev',
+			username: process.env.DEV_USERNAME || 'pat',
 			name: process.env.DEV_NAME || 'Kody',
 			password: {
 				create: createPassword(process.env.DEV_PASSWORD || 'kodylovesyou'),
@@ -129,7 +129,7 @@ async function seed() {
 
 	await prisma.userImage.create({
 		data: {
-			userId: kody.id,
+			userId: pat.id,
 			objectKey: kodyImages.kodyUser.objectKey,
 		},
 	})
@@ -229,7 +229,7 @@ async function seed() {
 				id: noteData.id,
 				title: noteData.title,
 				content: noteData.content,
-				ownerId: kody.id,
+				ownerId: pat.id,
 			},
 		})
 
@@ -248,7 +248,7 @@ async function seed() {
 
 	console.time(`📝 Created about me`)
 
-	const aboutMeCategories = [
+	const aboutMeCategoryData = [
 		{
 			name: 'Professional',
 			description: 'Professional experience and skills',
@@ -259,7 +259,7 @@ async function seed() {
 		},
 	] as const
 
-	for (const category of aboutMeCategories) {
+	for (const category of aboutMeCategoryData) {
 		await prisma.aboutMeCategory.create({
 			data: {
 				name: category.name,
@@ -267,6 +267,13 @@ async function seed() {
 			},
 		})
 	}
+
+	const aboutMeCategories = await prisma.aboutMeCategory.findMany({
+		select: { id: true, name: true },
+	})
+	const aboutMeCategoriesMap = new Map(
+		aboutMeCategories.map((c) => [c.name, c.id]),
+	)
 
 	const aboutMeContent = [
 		{
@@ -296,11 +303,8 @@ async function seed() {
 				name: aboutMe.name,
 				description: aboutMe.description,
 				content: aboutMe.content,
-				aboutMeCategory: {
-					connect: {
-						name: aboutMe.category,
-					},
-				},
+				userId: pat.id,
+				aboutMeCategoryId: aboutMeCategoriesMap.get(aboutMe.category)!,
 			},
 		})
 	}
@@ -347,6 +351,7 @@ async function seed() {
 			data: {
 				...link,
 				href: link.href!,
+				userId: pat.id,
 			},
 		})
 	}
@@ -355,14 +360,19 @@ async function seed() {
 
 	console.time(`🎯 Created skill categories and skills`)
 
-	const skillCategories = ['Frontend', 'Backend', 'DevOps', 'Other'] as const
-	for (const category of skillCategories) {
+	const skillCategoryData = ['Frontend', 'Backend', 'DevOps', 'Other'] as const
+	for (const category of skillCategoryData) {
 		await prisma.skillCategory.create({
 			data: {
 				name: category,
 			},
 		})
 	}
+
+	const skillCategories = await prisma.skillCategory.findMany({
+		select: { id: true, name: true },
+	})
+	const skillCategoriesMap = new Map(skillCategories.map((c) => [c.name, c.id]))
 
 	const skills = [
 		{
@@ -445,11 +455,8 @@ async function seed() {
 			data: {
 				name: skill.name,
 				description: skill.description,
-				skillCategory: {
-					connect: {
-						name: skill.category,
-					},
-				},
+				userId: pat.id,
+				skillCategoryId: skillCategoriesMap.get(skill.category)!,
 			},
 		})
 	}
@@ -493,9 +500,10 @@ async function seed() {
 				liveDemoUrl: project.liveDemoUrl,
 				sourceCodeUrl: project.sourceCodeUrl,
 				comments: project.comments,
+				userId: pat.id,
 				skills: {
-					connect: project.skills.map((skill) => ({
-						name: skill,
+					connect: project.skills.map((skillName) => ({
+						name: skillName,
 					})),
 				},
 			},
