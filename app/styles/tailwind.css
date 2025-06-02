@@ -294,6 +294,23 @@
 }
 
 @layer utilities {
+  /* adds a red border to the element */
+  .debug-border, .debug-border-red {
+    @apply border-[10px] border-solid border-red-500;
+  }
+
+  .debug-border-blue {
+    @apply border-[10px] border-solid border-blue-500;
+  }
+
+  .debug-border-green {
+    @apply border-[10px] border-solid border-green-500;
+  }
+
+  .debug-border-yellow {
+    @apply border-[10px] border-solid border-yellow-500;
+  }
+
 	@keyframes float-shape {
 		0%, 100% {
 			transform: translate(0, 0) scale(1) rotate(0deg);
