@@ -8,7 +8,6 @@ import {
 	IconFileWord,
 	IconFolder,
 	IconHelp,
-	IconInnerShadowTop,
 	IconListDetails,
 	IconReport,
 	IconSearch,
@@ -16,23 +15,80 @@ import {
 	IconUsers,
 } from '@tabler/icons-react'
 import * as React from 'react'
-
+import {
+	AppContainer,
+	AppContainerContent,
+	AppMain,
+} from '#app/components/app-container'
+import { ProjectLink } from '#app/components/external-icon-link.tsx'
+import { Logo } from '#app/components/logo.tsx'
 import { NavDocuments } from '#app/components/nav-documents'
 import { NavMain } from '#app/components/nav-main'
 import { NavSecondary } from '#app/components/nav-secondary'
 import { NavUser } from '#app/components/nav-user'
+import { Separator } from '#app/components/ui/separator'
 import {
+	SidebarProvider,
+	SidebarTrigger,
 	Sidebar,
 	SidebarContent,
 	SidebarFooter,
 	SidebarHeader,
-	SidebarMenu,
-	SidebarMenuButton,
-	SidebarMenuItem,
-	SidebarTrigger,
-	useSidebar,
 } from '#app/components/ui/sidebar'
-import { Logo } from './logo'
+import { useRootLoaderData } from '#app/root.tsx'
+import { ThemeSwitch } from '#app/routes/resources+/theme-switch.tsx'
+import { useRequestInfo } from '#app/utils/request-info.ts'
+import { type Info as userInfo } from './+types/route.ts'
+
+export function DashboardLayout({
+	user,
+	children,
+}: {
+	user: userInfo['loaderData']['user']
+	children: React.ReactNode
+}) {
+	const requestInfo = useRequestInfo()
+	const sidebarState = requestInfo.userPrefs.sidebar
+	const defaultOpen = sidebarState === true
+
+	return (
+		<AppContainer id="dashboard-container">
+			<SidebarProvider defaultOpen={defaultOpen}>
+				<DashboardSidebar id="dashboard-sidebar" user={user} />
+				<AppMain id="dashboard-main">
+					<AppContainerContent>
+						<DashboardHeader />
+						{/* children should be wrapped in AppContainerContent */}
+						{children}
+					</AppContainerContent>
+				</AppMain>
+			</SidebarProvider>
+		</AppContainer>
+	)
+}
+
+export function DashboardHeader() {
+	const { requestInfo } = useRootLoaderData()
+	return (
+		<header id="dashboard-header" className="w-full border-b px-4 py-1.5">
+			<nav className="flex flex-wrap items-center justify-between gap-4 sm:flex-nowrap md:gap-8">
+				<div className="flex items-center gap-2">
+					<SidebarTrigger id="dashboard-sidebar-trigger" />
+					<Separator
+						orientation="vertical"
+						className="mx-2 data-[orientation=vertical]:h-4"
+					/>
+					<h1 className="text-base font-medium">Dashboard</h1>
+				</div>
+
+				<div className="flex items-center gap-2">
+					<ThemeSwitch userPreference={requestInfo.userPrefs.theme} />
+					<ProjectLink />
+				</div>
+			</nav>
+		</header>
+	)
+}
 
 const data = {
 	user: {
@@ -151,7 +207,12 @@ const data = {
 	],
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function DashboardSidebar({
+	user,
+	...props
+}: React.ComponentProps<typeof Sidebar> & {
+	user: userInfo['loaderData']['user']
+}) {
 	return (
 		<Sidebar collapsible="icon" {...props}>
 			<SidebarHeader>
@@ -163,7 +224,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 				<NavSecondary items={data.navSecondary} className="mt-auto" />
 			</SidebarContent>
 			<SidebarFooter>
-				<NavUser user={data.user} />
+				<NavUser user={user} />
 			</SidebarFooter>
 		</Sidebar>
 	)
