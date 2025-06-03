@@ -67,7 +67,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 		orderBy: { name: 'asc' },
 	})
 
-	console.log('yooo')
+	console.log('about.$aboutId server')
 
 	return { aboutMe, categories }
 }
@@ -132,6 +132,8 @@ export default function DashboardAboutDetailsRoute({
 	const { aboutMe, categories } = loaderData
 	const navigation = useNavigation()
 	const isSubmitting = navigation.state !== 'idle'
+
+	console.log('about.$aboutId client')
 
 	return (
 		<AppContainerContent id="about-details-content" className="container py-6">
