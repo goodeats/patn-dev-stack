@@ -1,6 +1,12 @@
+import { invariantResponse } from '@epic-web/invariant'
 import { type ColumnDef } from '@tanstack/react-table'
 import * as React from 'react'
-import { type LoaderFunctionArgs } from 'react-router'
+import {
+	type ActionFunctionArgs,
+	type LoaderFunctionArgs,
+	Form,
+	Link,
+} from 'react-router'
 import {
 	AppContainerContent,
 	AppContainerGroup,
@@ -62,6 +68,28 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	return { aboutMeData }
 }
 
+export async function action({ request }: ActionFunctionArgs) {
+	const userId = await requireUserId(request)
+	const formData = await request.formData()
+	const intent = formData.get('intent')
+
+	if (intent === 'delete') {
+		const aboutId = formData.get('aboutId')
+		invariantResponse(typeof aboutId === 'string', 'About ID is required')
+
+		await prisma.aboutMe.deleteMany({
+			where: {
+				id: aboutId,
+				userId,
+			},
+		})
+
+		return { type: 'success' } as const
+	}
+
+	throw new Error(`Invalid intent: ${intent}`)
+}
+
 const aboutMeColumns = (): ColumnDef<AboutMeDataItem>[] => [
 	createDataTableSelectColumn<AboutMeDataItem>(),
 	{
@@ -114,12 +142,29 @@ const aboutMeColumns = (): ColumnDef<AboutMeDataItem>[] => [
 					</Button>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align="end" className="w-[160px]">
-					<DropdownMenuItem>Edit</DropdownMenuItem>
-					<DropdownMenuItem>Make a copy</DropdownMenuItem>
-					<DropdownMenuItem>Favorite</DropdownMenuItem>
+					<DropdownMenuItem asChild>
+						<Link to={`/dashboard/about/${row.original.id}`}>Edit</Link>
+					</DropdownMenuItem>
 					<DropdownMenuSeparator />
-					<DropdownMenuItem className="text-destructive-foreground bg-destructive">
-						Delete
+					<DropdownMenuItem asChild>
+						<Form
+							method="post"
+							onSubmit={(e) => {
+								if (!confirm('Are you sure you want to delete this section?')) {
+									e.preventDefault()
+								}
+							}}
+						>
+							<input type="hidden" name="aboutId" value={row.original.id} />
+							<button
+								type="submit"
+								name="intent"
+								value="delete"
+								className="hover:bg-accent hover:text-accent-foreground text-destructive-foreground relative flex w-full cursor-default items-center rounded-sm px-2 py-1.5 text-sm transition-colors outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+							>
+								Delete
+							</button>
+						</Form>
 					</DropdownMenuItem>
 				</DropdownMenuContent>
 			</DropdownMenu>
@@ -143,8 +188,11 @@ export default function DashboardAboutRoute({
 					data={aboutMeData}
 					getRowId={(row) => row.id}
 					toolbarActions={
-						<Button>
-							<Icon name="plus" className="mr-2" /> Add Section
+						<Button asChild>
+							<Link to="new">
+								<Icon name="plus" className="mr-2" />
+								Create
+							</Link>
 						</Button>
 					}
 					filterFields={[
