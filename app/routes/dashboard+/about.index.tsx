@@ -6,14 +6,13 @@ import {
 	type LoaderFunctionArgs,
 	Form,
 	Link,
-	useLoaderData, // Make sure this is imported if used in the default export
 } from 'react-router'
 import {
 	DataTable,
 	createDataTableSelectColumn,
 	DataTableSortHeader,
 } from '#app/components/data-table.tsx'
-import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx' // Optional: if this level needs specific error handling
+import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import {
 	DropdownMenu,
@@ -26,11 +25,8 @@ import { Icon } from '#app/components/ui/icon.tsx'
 import { APP_NAME } from '#app/utils/app-name.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
-// You might need to create a new type file e.g., './+types/about.index.ts'
-// and import Route from there if you use Route.ComponentProps for typed loaderData.
-// For now, assuming useLoaderData will be used directly or types adjusted manually.
+import { type Route } from './+types/about.index.ts'
 
-// Definition for data items, same as original
 type AboutMeDataItem = {
 	id: string
 	content: string
@@ -44,7 +40,6 @@ type AboutMeDataItem = {
 	}
 }
 
-// Loader function, same as original from about.tsx
 export async function loader({ request }: LoaderFunctionArgs) {
 	const userId = await requireUserId(request)
 	const aboutMeData = await prisma.aboutMe.findMany({
@@ -69,7 +64,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	return { aboutMeData }
 }
 
-// Action function, same as original from about.tsx
 export async function action({ request }: ActionFunctionArgs) {
 	const userId = await requireUserId(request)
 	const formData = await request.formData()
@@ -86,13 +80,12 @@ export async function action({ request }: ActionFunctionArgs) {
 			},
 		})
 
-		return { type: 'success' } as const // Or consider redirecting / revalidating
+		return { type: 'success' } as const
 	}
 
 	throw new Error(`Invalid intent: ${intent}`)
 }
 
-// Column definitions, same as original
 const aboutMeColumns = (): ColumnDef<AboutMeDataItem>[] => [
 	createDataTableSelectColumn<AboutMeDataItem>(),
 	{
@@ -145,7 +138,6 @@ const aboutMeColumns = (): ColumnDef<AboutMeDataItem>[] => [
 					</Button>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align="end" className="w-[160px]">
-					{/* Link to a relative path. './:id' or simply ':id' from /dashboard/about */}
 					<DropdownMenuItem asChild>
 						<Link to={row.original.id}>Edit</Link>
 					</DropdownMenuItem>
@@ -177,9 +169,10 @@ const aboutMeColumns = (): ColumnDef<AboutMeDataItem>[] => [
 ]
 
 // Default export component, same as original but without AppContainer wrappers
-export default function DashboardAboutIndexRoute() {
-	// Removed { loaderData } prop, using useLoaderData hook
-	const { aboutMeData } = useLoaderData<typeof loader>()
+export default function DashboardAboutIndexRoute({
+	loaderData,
+}: Route.ComponentProps) {
+	const { aboutMeData } = loaderData
 	const columns = React.useMemo(() => aboutMeColumns(), [])
 
 	return (
@@ -210,9 +203,7 @@ export default function DashboardAboutIndexRoute() {
 	)
 }
 
-// Meta function, can be specific to this index page
 export const meta = () => {
-	// Removed Route.MetaFunction typing for simplicity, can be added back with correct type import
 	return [
 		{ title: `About Me List | Dashboard | ${APP_NAME}` },
 		{
@@ -222,7 +213,6 @@ export const meta = () => {
 	]
 }
 
-// ErrorBoundary, can be specific to this index page
 export function ErrorBoundary() {
 	return (
 		<GeneralErrorBoundary
