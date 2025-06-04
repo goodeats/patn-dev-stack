@@ -80,23 +80,23 @@ export default function DashboardAboutDetailsRoute() {
 
 				<Card>
 					<CardHeader>
-						<CardTitle>{aboutMe.name}</CardTitle>
+						<CardTitle className="text-2xl">{aboutMe.name}</CardTitle>
 						<CardDescription>
 							{aboutMe.description ?? 'No description'}
 						</CardDescription>
 					</CardHeader>
-					<CardContent className="flex flex-col gap-6 md:grid md:grid-cols-[auto_1fr] md:gap-x-4 md:gap-y-6">
-						<h3 className="text-lg font-semibold">Content</h3>
-						<p className="prose prose-sm text-muted-foreground sm:prose-base max-w-none break-words whitespace-pre-wrap">
+					<CardContent className="flex flex-col gap-4 md:grid md:grid-cols-[minmax(120px,auto)_1fr] md:items-baseline md:gap-x-8 md:gap-y-6">
+						<h3 className="text-foreground text-base font-medium">Content</h3>
+						<p className="prose prose-sm text-muted-foreground sm:prose-base max-w-none text-sm break-words whitespace-pre-wrap">
 							{aboutMe.content}
 						</p>
 
-						<h3 className="text-lg font-semibold">Category</h3>
+						<h3 className="text-foreground text-base font-medium">Category</h3>
 						<p className="text-muted-foreground text-sm">
 							{aboutMe.aboutMeCategory.name}
 						</p>
 
-						<h3 className="text-lg font-semibold">Status</h3>
+						<h3 className="text-foreground text-base font-medium">Status</h3>
 						<p className="text-muted-foreground text-sm">
 							{aboutMe.isPublished ? 'Published' : 'Draft'}
 						</p>
