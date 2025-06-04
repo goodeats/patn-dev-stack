@@ -36,6 +36,8 @@ import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { createToastHeaders } from '#app/utils/toast.server.ts'
 import { type Route, type Info } from './+types/about.index.ts'
+import { handleCategoryAction } from './__about-category-editor.server.tsx'
+import { AboutCategoryEditor } from './__about-category-editor.tsx'
 
 export const handle: SEOHandle = {
 	getSitemapEntries: () => null,
@@ -82,10 +84,20 @@ export async function loader({ request }: LoaderFunctionArgs) {
 type AboutMeDataItem = Info['loaderData']['aboutMeData'][number]
 type AboutMeCategoryDataItem = Info['loaderData']['aboutMeCategoryData'][number]
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action(args: ActionFunctionArgs) {
+	const { request } = args
 	const userId = await requireUserId(request)
 	const formData = await request.formData()
 	const intent = formData.get('intent')
+
+	// Handle category actions
+	if (
+		intent === 'createCategory' ||
+		intent === 'updateCategory' ||
+		intent === 'deleteCategory'
+	) {
+		return handleCategoryAction(args)
+	}
 
 	if (intent === 'deleteAboutMe') {
 		const aboutId = formData.get('aboutId')
@@ -293,17 +305,21 @@ const aboutMeColumns = (): ColumnDef<AboutMeDataItem>[] => [
 	},
 ]
 
-const aboutMeCategoryColumns = (): ColumnDef<AboutMeCategoryDataItem>[] => [
+const aboutMeCategoryColumns = (
+	onEditCategory: (category: AboutMeCategoryDataItem) => void,
+): ColumnDef<AboutMeCategoryDataItem>[] => [
 	createDataTableSelectColumn<AboutMeCategoryDataItem>(),
 	{
 		accessorKey: 'name',
 		header: 'Name',
 		cell: ({ row }) => (
-			<TooltipDataTableRowLink
-				to={`categories/${row.original.id}`}
-				label={row.original.name}
-				description={row.original.description}
-			/>
+			<button
+				type="button"
+				onClick={() => onEditCategory(row.original)}
+				className="text-left hover:underline"
+			>
+				{row.original.name}
+			</button>
 		),
 	},
 	{
@@ -382,7 +398,13 @@ const aboutMeCategoryColumns = (): ColumnDef<AboutMeCategoryDataItem>[] => [
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align="end" className="w-[160px]">
 					<DropdownMenuItem asChild>
-						<Link to={`categories/${row.original.id}`}>Edit</Link>
+						<button
+							type="button"
+							onClick={() => onEditCategory(row.original)}
+							className="hover:bg-accent hover:text-accent-foreground relative flex w-full cursor-default items-center rounded-sm px-2 py-1.5 text-sm transition-colors outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+						>
+							Edit
+						</button>
 					</DropdownMenuItem>
 					<DropdownMenuSeparator />
 					<DropdownMenuItem asChild>
@@ -417,13 +439,52 @@ const aboutMeCategoryColumns = (): ColumnDef<AboutMeCategoryDataItem>[] => [
 
 export default function DashboardAboutIndexRoute({
 	loaderData,
+	actionData,
 }: Route.ComponentProps) {
 	const { aboutMeData, aboutMeCategoryData } = loaderData
-	const memoizedAboutMeColumns = React.useMemo(() => aboutMeColumns(), [])
-	const memoizedAboutMeCategoryColumns = React.useMemo(
-		() => aboutMeCategoryColumns(),
+	const [categoryDialogOpen, setCategoryDialogOpen] = React.useState(false)
+	const [currentCategory, setCurrentCategory] =
+		React.useState<AboutMeCategoryDataItem | null>(null)
+
+	const handleEditCategory = React.useCallback(
+		(category: AboutMeCategoryDataItem) => {
+			setCurrentCategory(category)
+			setCategoryDialogOpen(true)
+		},
 		[],
 	)
+
+	const handleCreateCategory = React.useCallback(() => {
+		setCurrentCategory(null)
+		setCategoryDialogOpen(true)
+	}, [])
+
+	const handleCategoryDialogChange = React.useCallback((open: boolean) => {
+		setCategoryDialogOpen(open)
+		if (!open) {
+			setCurrentCategory(null)
+		}
+	}, [])
+
+	const memoizedAboutMeColumns = React.useMemo(() => aboutMeColumns(), [])
+	const memoizedAboutMeCategoryColumns = React.useMemo(
+		() => aboutMeCategoryColumns(handleEditCategory),
+		[handleEditCategory],
+	)
+
+	// Close dialog on successful action
+	React.useEffect(() => {
+		if (
+			actionData &&
+			'type' in actionData &&
+			actionData.type === 'success' &&
+			'entity' in actionData &&
+			actionData.entity === 'aboutMeCategory'
+		) {
+			setCategoryDialogOpen(false)
+			setCurrentCategory(null)
+		}
+	}, [actionData])
 
 	return (
 		<AppContainerContent id="about-me-content" className="container space-y-8">
@@ -466,11 +527,9 @@ export default function DashboardAboutIndexRoute({
 					data={aboutMeCategoryData}
 					getRowId={(row) => row.id}
 					toolbarActions={
-						<Button asChild>
-							<Link to="categories/new">
-								<Icon name="plus" className="mr-2" />
-								Create
-							</Link>
+						<Button onClick={handleCreateCategory}>
+							<Icon name="plus" className="mr-2" />
+							Create
 						</Button>
 					}
 					filterFields={[
@@ -482,6 +541,15 @@ export default function DashboardAboutIndexRoute({
 					]}
 				/>
 			</AppContainerGroup>
+
+			<AboutCategoryEditor
+				category={currentCategory}
+				actionData={
+					actionData && 'result' in actionData ? actionData : undefined
+				}
+				open={categoryDialogOpen}
+				onOpenChange={handleCategoryDialogChange}
+			/>
 		</AppContainerContent>
 	)
 }

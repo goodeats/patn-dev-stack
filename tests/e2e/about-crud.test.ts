@@ -71,6 +71,76 @@ test('can create, edit, and delete about me sections', async ({
 	await expect(page.getByText(updatedName)).not.toBeVisible()
 })
 
+test('can create, edit, and delete about me categories using dialogs', async ({
+	page,
+	login,
+}) => {
+	const userName = faker.person.firstName()
+	await login({ name: userName })
+
+	// Navigate to About page
+	await page.goto('/dashboard/about')
+	await expect(page).toHaveURL('/dashboard/about')
+
+	// Click Create Category button in the Categories section
+	const categoriesSection = page
+		.locator('text=About Me Categories')
+		.locator('..')
+	await categoriesSection.getByRole('button', { name: 'Create' }).click()
+
+	// Wait for dialog to open
+	await expect(page.getByRole('dialog')).toBeVisible()
+	await expect(
+		page.getByRole('heading', { name: 'Create Category' }),
+	).toBeVisible()
+
+	// Fill out the category form
+	const categoryName = faker.lorem.words(2)
+	const categoryDescription = faker.lorem.sentence()
+
+	await page.getByLabel('Name').fill(categoryName)
+	await page.getByLabel('Description (Optional)').fill(categoryDescription)
+
+	// Submit the form
+	await page.getByRole('button', { name: 'Create Category' }).click()
+
+	// Wait for dialog to close and verify category appears in the list
+	await expect(page.getByRole('dialog')).not.toBeVisible()
+	await expect(page.getByText(categoryName)).toBeVisible()
+
+	// Edit the category by clicking on its name
+	await page.getByText(categoryName).click()
+
+	// Wait for edit dialog to open
+	await expect(page.getByRole('dialog')).toBeVisible()
+	await expect(
+		page.getByRole('heading', { name: 'Edit Category' }),
+	).toBeVisible()
+
+	// Update the category name
+	const updatedCategoryName = faker.lorem.words(2)
+	await page.getByLabel('Name').clear()
+	await page.getByLabel('Name').fill(updatedCategoryName)
+	await page.getByRole('button', { name: 'Save Changes' }).click()
+
+	// Wait for dialog to close and verify updated name appears
+	await expect(page.getByRole('dialog')).not.toBeVisible()
+	await expect(page.getByText(updatedCategoryName)).toBeVisible()
+
+	// Delete the category using the dropdown menu
+	const categoryRow = page
+		.getByRole('row')
+		.filter({ hasText: updatedCategoryName })
+	await categoryRow.getByRole('button', { name: 'Open menu' }).click()
+
+	// Handle the confirmation dialog
+	page.on('dialog', (dialog) => dialog.accept())
+	await page.getByRole('button', { name: 'Delete' }).click()
+
+	// Verify the category is deleted
+	await expect(page.getByText(updatedCategoryName)).not.toBeVisible()
+})
+
 test('displays existing about me sections from seed data', async ({
 	page,
 	login,
