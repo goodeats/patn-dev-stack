@@ -1,22 +1,21 @@
 import { invariantResponse } from '@epic-web/invariant'
-import {
-	type LoaderFunctionArgs,
-	useLoaderData,
-	useActionData,
-	type MetaFunction,
-} from 'react-router'
+import { type SEOHandle } from '@nasa-gcn/remix-seo'
+import { type LoaderFunctionArgs, type MetaFunction } from 'react-router'
 import {
 	AppContainerContent,
 	AppContainerGroup,
 } from '#app/components/app-container.tsx'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
-import { APP_NAME } from '#app/utils/app-name.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
-import { type action as aboutEditorAction } from './__about-editor.server.tsx'
+import { type Route } from './+types/about.$aboutId_.edit.ts'
 import { AboutEditor } from './__about-editor.tsx'
 
 export { action } from './__about-editor.server.tsx'
+
+export const handle: SEOHandle = {
+	getSitemapEntries: () => null,
+}
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
 	const userId = await requireUserId(request)
@@ -40,7 +39,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 	invariantResponse(aboutMe, 'About Me item not found', { status: 404 })
 
 	const categories = await prisma.aboutMeCategory.findMany({
-		where: { isPublished: true }, // Consider if all categories should be shown for admin regardless of published status
+		where: { isPublished: true },
 		select: {
 			id: true,
 			name: true,
@@ -51,9 +50,11 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 	return { aboutMe, categories }
 }
 
-export default function DashboardAboutEditRoute() {
-	const { aboutMe, categories } = useLoaderData<typeof loader>()
-	const actionData = useActionData<typeof aboutEditorAction>()
+export default function DashboardAboutEditRoute({
+	loaderData,
+	actionData,
+}: Route.ComponentProps) {
+	const { aboutMe, categories } = loaderData
 
 	return (
 		<AppContainerContent
@@ -74,10 +75,10 @@ export default function DashboardAboutEditRoute() {
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
 	const aboutMeName = data?.aboutMe?.name ?? 'About Me Item'
 	return [
-		{ title: `Edit ${aboutMeName} | Dashboard | ${APP_NAME}` },
+		{ title: `Edit ${aboutMeName} | Dashboard` },
 		{
 			name: 'description',
-			content: `Edit ${aboutMeName} on ${APP_NAME}`,
+			content: `Edit ${aboutMeName} details`,
 		},
 	]
 }

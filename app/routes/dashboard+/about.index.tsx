@@ -258,7 +258,7 @@ const aboutMeColumns = (): ColumnDef<AboutMeDataItem>[] => [
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align="end" className="w-[160px]">
 					<DropdownMenuItem asChild>
-						<Link to={row.original.id}>Edit</Link>
+						<Link to={`${row.original.id}/edit`}>Edit</Link>
 					</DropdownMenuItem>
 					<DropdownMenuSeparator />
 					<DropdownMenuItem asChild>

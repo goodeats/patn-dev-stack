@@ -10,79 +10,59 @@ import { Form, useActionData } from 'react-router'
 import { z } from 'zod'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { floatingToolbarClassName } from '#app/components/floating-toolbar.tsx'
-import { ErrorList, Field, TextareaField } from '#app/components/forms.tsx'
+import {
+	ErrorList,
+	Field,
+	SelectField,
+	TextareaField,
+} from '#app/components/forms.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { Label } from '#app/components/ui/label.tsx'
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from '#app/components/ui/select.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
 import { useIsPending } from '#app/utils/misc.tsx'
-import { type action } from './__about-editor.server.tsx'
-import { type loader as editLoader } from './about.$aboutId.edit.tsx'
-import { type loader as newLoader } from './about.new.tsx'
+import { type Info } from './+types/about.$aboutId_.edit.ts'
 
 const nameMinLength = 1
 const nameMaxLength = 100
 const contentMinLength = 1
 const contentMaxLength = 10000
+const descriptionMinLength = 1
 const descriptionMaxLength = 500
 
 export const AboutEditorSchema = z.object({
 	id: z.string().optional(),
 	name: z.string().min(nameMinLength).max(nameMaxLength),
 	content: z.string().min(contentMinLength).max(contentMaxLength),
-	description: z.string().max(descriptionMaxLength).optional().nullable(),
+	description: z
+		.string()
+		.min(descriptionMinLength)
+		.max(descriptionMaxLength)
+		.optional()
+		.nullable(),
 	aboutMeCategoryId: z.string({ required_error: 'Category is required' }),
 	isPublished: z.boolean().default(false),
 })
 
-type Category = {
-	id: string
-	name: string
-}
-
-type AboutMeSchemaType = z.infer<typeof AboutEditorSchema>
-
-type AboutEditorProps =
-	| {
-			aboutMe: AboutMeSchemaType & { id: string }
-			categories: Category[]
-	  }
-	| {
-			aboutMe?: undefined
-			categories: Category[]
-	  }
-
 export function AboutEditor({
 	aboutMe,
 	categories,
-}: AboutEditorProps & {
-	actionData?: ReturnType<typeof useActionData<typeof action>>
+	actionData,
+}: {
+	aboutMe: Info['loaderData']['aboutMe']
+	categories: Info['loaderData']['categories']
+	actionData?: Info['actionData']
 }) {
 	const isPending = useIsPending()
-	const lastResult = useActionData<typeof action>()?.result
 
 	const [form, fields] = useForm({
 		id: 'about-editor',
 		constraint: getZodConstraint(AboutEditorSchema),
-		lastResult: lastResult,
+		lastResult: actionData?.result,
 		onValidate({ formData }) {
-			const parsedData = parseWithZod(formData, { schema: AboutEditorSchema })
-			if (parsedData.status === 'success') {
-				parsedData.value.isPublished = formData.get('isPublished') === 'true'
-			}
-			return parsedData
+			return parseWithZod(formData, { schema: AboutEditorSchema })
 		},
 		defaultValue: {
-			name: aboutMe?.name ?? '',
-			content: aboutMe?.content ?? '',
-			description: aboutMe?.description ?? '',
-			aboutMeCategoryId: aboutMe?.aboutMeCategoryId ?? '',
+			...aboutMe,
 			isPublished:
 				aboutMe?.isPublished === undefined ? true : aboutMe.isPublished,
 		},
@@ -129,32 +109,21 @@ export function AboutEditor({
 							}}
 							errors={fields.description.errors}
 						/>
-						<div>
-							<Label htmlFor={fields.aboutMeCategoryId.id}>Category</Label>
-							<Select
-								name={fields.aboutMeCategoryId.name}
-								defaultValue={fields.aboutMeCategoryId.initialValue}
-								disabled={isPending}
-								required
-							>
-								<SelectTrigger id={fields.aboutMeCategoryId.id}>
-									<SelectValue placeholder="Select a category" />
-								</SelectTrigger>
-								<SelectContent>
-									{categories.map((category: Category) => (
-										<SelectItem key={category.id} value={category.id}>
-											{category.name}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-							<div className="min-h-[32px] px-4 pt-1 pb-3">
-								<ErrorList
-									id={fields.aboutMeCategoryId.errorId}
-									errors={fields.aboutMeCategoryId.errors}
-								/>
-							</div>
-						</div>
+						<SelectField
+							labelProps={{ children: 'Category' }}
+							selectProps={{
+								name: fields.aboutMeCategoryId.name,
+								defaultValue: fields.aboutMeCategoryId.initialValue,
+								disabled: isPending,
+								required: true,
+							}}
+							options={categories.map((category) => ({
+								value: category.id,
+								label: category.name,
+							}))}
+							errors={fields.aboutMeCategoryId.errors}
+							placeholder="Select a category"
+						/>
 
 						<div className="flex items-center space-x-2">
 							<input
