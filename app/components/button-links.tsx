@@ -61,6 +61,23 @@ export const BackLink = ({
 	)
 }
 
+export const NewLink = ({
+	label = 'New',
+	to = 'new',
+	variant = 'default',
+	...props
+}: Omit<BaseLinkButtonProps, 'to'> & { to?: string }) => {
+	return (
+		<LinkButton
+			label={label}
+			to={to}
+			variant={variant}
+			iconName="plus"
+			{...props}
+		/>
+	)
+}
+
 export const EditLink = ({
 	label = 'Edit',
 	to = 'edit',

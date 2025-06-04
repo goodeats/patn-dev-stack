@@ -14,7 +14,7 @@ import {
 	AppContainerContent,
 	AppContainerGroup,
 } from '#app/components/app-container.tsx'
-import { BackLink } from '#app/components/button-links.tsx'
+import { BackLink, NewLink } from '#app/components/button-links.tsx'
 import {
 	DataTable,
 	createDataTableSelectColumn,
@@ -23,6 +23,12 @@ import {
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { TooltipDataTableRowLink } from '#app/components/tooltip-links.tsx'
 import { Button } from '#app/components/ui/button.tsx'
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+} from '#app/components/ui/dialog.tsx'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -502,14 +508,7 @@ export default function DashboardAboutIndexRoute({
 					columns={memoizedAboutMeColumns}
 					data={aboutMeData}
 					getRowId={(row) => row.id}
-					toolbarActions={
-						<Button asChild>
-							<Link to="new">
-								<Icon name="plus" className="mr-2" />
-								Create
-							</Link>
-						</Button>
-					}
+					toolbarActions={<NewLink />}
 					filterFields={[
 						{ accessorKey: 'content', placeholder: 'Filter content...' },
 						{
@@ -529,7 +528,7 @@ export default function DashboardAboutIndexRoute({
 					toolbarActions={
 						<Button onClick={handleCreateCategory}>
 							<Icon name="plus" className="mr-2" />
-							Create
+							New
 						</Button>
 					}
 					filterFields={[
@@ -542,14 +541,25 @@ export default function DashboardAboutIndexRoute({
 				/>
 			</AppContainerGroup>
 
-			<AboutCategoryEditor
-				category={currentCategory}
-				actionData={
-					actionData && 'result' in actionData ? actionData : undefined
-				}
+			<Dialog
 				open={categoryDialogOpen}
 				onOpenChange={handleCategoryDialogChange}
-			/>
+			>
+				<DialogContent className="max-w-2xl">
+					<DialogHeader>
+						<DialogTitle>
+							{currentCategory?.id ? 'Edit Category' : 'Create Category'}
+						</DialogTitle>
+					</DialogHeader>
+					<AboutCategoryEditor
+						category={currentCategory}
+						actionData={
+							actionData && 'result' in actionData ? actionData : undefined
+						}
+						onClose={() => handleCategoryDialogChange(false)}
+					/>
+				</DialogContent>
+			</Dialog>
 		</AppContainerContent>
 	)
 }

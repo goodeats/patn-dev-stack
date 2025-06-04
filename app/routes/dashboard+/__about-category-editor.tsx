@@ -7,16 +7,12 @@ import {
 import { getZodConstraint, parseWithZod } from '@conform-to/zod'
 import { Form } from 'react-router'
 import { z } from 'zod'
+import { AppContainerContent } from '#app/components/app-container.tsx'
+import { nonFloatingToolbarClassName } from '#app/components/floating-toolbar.tsx'
 import { ErrorList, Field, ToggleField } from '#app/components/forms.tsx'
 import { Button } from '#app/components/ui/button.tsx'
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from '#app/components/ui/dialog.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
-import { useIsPending } from '#app/utils/misc.tsx'
+import { cn, useIsPending } from '#app/utils/misc.tsx'
 import {
 	CheckboxFieldSchema,
 	StringMinMaxLengthSchema,
@@ -32,8 +28,7 @@ export const AboutCategoryEditorSchema = z.object({
 export function AboutCategoryEditor({
 	category,
 	actionData,
-	open,
-	onOpenChange,
+	onClose,
 }: {
 	category?: {
 		id: string
@@ -42,8 +37,7 @@ export function AboutCategoryEditor({
 		isPublished: boolean
 	} | null
 	actionData?: { result: any }
-	open: boolean
-	onOpenChange: (open: boolean) => void
+	onClose?: () => void
 }) {
 	const isPending = useIsPending()
 
@@ -63,114 +57,108 @@ export function AboutCategoryEditor({
 	})
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="max-w-2xl">
-				<DialogHeader>
-					<DialogTitle>
-						{category?.id ? 'Edit Category' : 'Create Category'}
-					</DialogTitle>
-				</DialogHeader>
+		<AppContainerContent>
+			<FormProvider context={form.context}>
+				<Form
+					method="POST"
+					className="flex flex-col gap-y-4 overflow-x-hidden overflow-y-auto px-2"
+					{...getFormProps(form)}
+				>
+					<button type="submit" className="hidden" />
+					{category?.id ? (
+						<input type="hidden" name="id" value={category.id} />
+					) : null}
 
-				<FormProvider context={form.context}>
-					<Form
-						method="POST"
-						className="flex flex-col gap-y-4"
-						{...getFormProps(form)}
+					<div className="flex flex-col gap-1">
+						<Field
+							labelProps={{ children: 'Name' }}
+							inputProps={{
+								autoFocus: true,
+								...getInputProps(fields.name, { type: 'text' }),
+								placeholder: 'Enter category name',
+							}}
+							errors={fields.name.errors}
+						/>
+
+						<Field
+							labelProps={{ children: 'Description (Optional)' }}
+							inputProps={{
+								...getInputProps(fields.description, { type: 'text' }),
+								placeholder: 'Brief description of this category',
+							}}
+							errors={fields.description.errors}
+						/>
+
+						<ToggleField
+							labelProps={{ children: 'Published' }}
+							buttonProps={{
+								...getInputProps(fields.isPublished, { type: 'checkbox' }),
+								name: fields.isPublished.name,
+								form: form.id,
+								value: 'true',
+								defaultChecked: Boolean(fields.isPublished.initialValue),
+								disabled: isPending,
+							}}
+							errors={fields.isPublished.errors}
+							variant="switch"
+						/>
+					</div>
+
+					<ErrorList id={form.errorId} errors={form.errors} />
+				</Form>
+
+				<div className={cn(nonFloatingToolbarClassName, 'mt-10')}>
+					{onClose && (
+						<Button
+							type="button"
+							variant="outline"
+							onClick={onClose}
+							disabled={isPending}
+						>
+							Cancel
+						</Button>
+					)}
+					<Button
+						variant="destructive"
+						{...form.reset.getButtonProps()}
+						disabled={isPending}
 					>
-						<button type="submit" className="hidden" />
-						{category?.id ? (
-							<input type="hidden" name="id" value={category.id} />
-						) : null}
-
-						<div className="flex flex-col gap-4">
-							<Field
-								labelProps={{ children: 'Name' }}
-								inputProps={{
-									autoFocus: true,
-									...getInputProps(fields.name, { type: 'text' }),
-									placeholder: 'Enter category name',
-								}}
-								errors={fields.name.errors}
-							/>
-
-							<Field
-								labelProps={{ children: 'Description (Optional)' }}
-								inputProps={{
-									...getInputProps(fields.description, { type: 'text' }),
-									placeholder: 'Brief description of this category',
-								}}
-								errors={fields.description.errors}
-							/>
-
-							<ToggleField
-								labelProps={{ children: 'Published' }}
-								buttonProps={{
-									...getInputProps(fields.isPublished, { type: 'checkbox' }),
-									name: fields.isPublished.name,
-									form: form.id,
-									value: 'true',
-									defaultChecked: Boolean(fields.isPublished.initialValue),
-									disabled: isPending,
-								}}
-								errors={fields.isPublished.errors}
-								variant="switch"
-							/>
-						</div>
-
-						<ErrorList id={form.errorId} errors={form.errors} />
-
-						<div className="flex justify-end gap-2 pt-4">
-							<Button
-								type="button"
-								variant="outline"
-								onClick={() => onOpenChange(false)}
-								disabled={isPending}
-							>
-								Cancel
-							</Button>
-							<Button
-								variant="destructive"
-								{...form.reset.getButtonProps()}
-								disabled={isPending}
-							>
-								Reset
-							</Button>
-							<StatusButton
-								form={form.id}
-								type="submit"
-								name="intent"
-								value={category?.id ? 'updateCategory' : 'createCategory'}
-								disabled={isPending}
-								status={isPending ? 'pending' : 'idle'}
-							>
-								{category?.id ? 'Save Changes' : 'Create Category'}
-							</StatusButton>
-							{category?.id ? (
-								<StatusButton
-									form={form.id}
-									type="submit"
-									name="intent"
-									value="deleteCategory"
-									variant="destructive"
-									disabled={isPending}
-									status={isPending ? 'pending' : 'idle'}
-									onClick={(e) => {
-										if (
-											!confirm(
-												'Are you sure you want to delete this category? This will also delete all associated About Me sections.',
-											)
-										) {
-											e.preventDefault()
-										}
-									}}
-								>
-									Delete
-								</StatusButton>
-							) : null}
-						</div>
-					</Form>
-				</FormProvider>
-			</DialogContent>
-		</Dialog>
+						Reset
+					</Button>
+					<StatusButton
+						form={form.id}
+						type="submit"
+						name="intent"
+						value={category?.id ? 'updateCategory' : 'createCategory'}
+						disabled={isPending}
+						status={isPending ? 'pending' : 'idle'}
+					>
+						{category?.id ? 'Save Changes' : 'Create Category'}
+					</StatusButton>
+					{category?.id ? (
+						<StatusButton
+							form={form.id}
+							type="submit"
+							name="intent"
+							value="deleteCategory"
+							variant="destructive"
+							disabled={isPending}
+							status={isPending ? 'pending' : 'idle'}
+							onClick={(e) => {
+								if (
+									!confirm(
+										'Are you sure you want to delete this category? This will also delete all associated About Me sections.',
+									)
+								) {
+									e.preventDefault()
+								}
+							}}
+						>
+							Delete
+						</StatusButton>
+					) : null}
+				</div>
+			</FormProvider>
+		</AppContainerContent>
 	)
 }
