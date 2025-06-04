@@ -6,7 +6,13 @@ import {
 } from '#app/components/app-container.tsx'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { Button } from '#app/components/ui/button.tsx'
-import { Card, CardContent } from '#app/components/ui/card.tsx'
+import {
+	Card,
+	CardContent,
+	CardTitle,
+	CardHeader,
+	CardDescription,
+} from '#app/components/ui/card.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { APP_NAME } from '#app/utils/app-name.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
@@ -53,7 +59,7 @@ export default function DashboardAboutDetailsRoute() {
 
 	return (
 		<AppContainerContent id="about-details-content" className="container py-6">
-			<AppContainerGroup>
+			<AppContainerGroup className="px-0">
 				<div className="mb-6 flex items-center justify-between">
 					<h1 className="text-2xl font-bold">{aboutMe.name}</h1>
 					<div className="flex gap-2">
@@ -73,15 +79,16 @@ export default function DashboardAboutDetailsRoute() {
 				</div>
 
 				<Card>
-					<CardContent className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-6">
+					<CardHeader>
+						<CardTitle>{aboutMe.name}</CardTitle>
+						<CardDescription>
+							{aboutMe.description ?? 'No description'}
+						</CardDescription>
+					</CardHeader>
+					<CardContent className="flex flex-col gap-6 md:grid md:grid-cols-[auto_1fr] md:gap-x-4 md:gap-y-6">
 						<h3 className="text-lg font-semibold">Content</h3>
 						<p className="prose prose-sm text-muted-foreground sm:prose-base max-w-none break-words whitespace-pre-wrap">
 							{aboutMe.content}
-						</p>
-
-						<h3 className="text-lg font-semibold">Description</h3>
-						<p className="text-muted-foreground text-sm">
-							{aboutMe.description}
 						</p>
 
 						<h3 className="text-lg font-semibold">Category</h3>
