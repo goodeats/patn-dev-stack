@@ -3,9 +3,10 @@ import { invariantResponse } from '@epic-web/invariant'
 import { data, redirect, type ActionFunctionArgs } from 'react-router'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
+import { redirectWithToast } from '#app/utils/toast.server.ts'
 import { AboutEditorSchema } from './__about-editor.tsx'
 
-export async function action({ request, params }: ActionFunctionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
 	const userId = await requireUserId(request)
 	const formData = await request.formData()
 	const intent = formData.get('intent')
@@ -17,13 +18,24 @@ export async function action({ request, params }: ActionFunctionArgs) {
 			'ID is required for deletion',
 		)
 
-		await prisma.aboutMe.deleteMany({
+		const deleted = await prisma.aboutMe.delete({
 			where: {
 				id: aboutId,
 				userId,
 			},
 		})
-		return redirect('/dashboard/about')
+
+		if (!deleted) {
+			return redirectWithToast('/dashboard/about', {
+				title: 'About Me item not found',
+				description: 'The item was not found.',
+			})
+		}
+
+		return redirectWithToast('/dashboard/about', {
+			title: `${deleted.name} deleted`,
+			description: 'The about me item has been deleted successfully.',
+		})
 	}
 
 	const submission = await parseWithZod(formData, {
@@ -47,48 +59,39 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 	if (submission.status !== 'success') {
 		return data(
-			{ result: submission.reply({ hideFields: ['id'] }) }, // hide 'id' from client errors if it was part of submission
+			{ result: submission.reply() },
 			{ status: submission.status === 'error' ? 400 : 200 },
 		)
 	}
 
-	const { id, name, content, description, aboutMeCategoryId, isPublished } =
-		submission.value
+	const {
+		id: aboutId,
+		name,
+		content,
+		description,
+		aboutMeCategoryId,
+		isPublished,
+	} = submission.value
 
-	if (intent === 'create') {
-		const newAboutMe = await prisma.aboutMe.create({
-			data: {
-				name,
-				content,
-				description,
-				aboutMeCategoryId,
-				isPublished,
-				userId,
-			},
-			select: { id: true },
-		})
-		return redirect(`/dashboard/about/${newAboutMe.id}`)
-	}
+	const updatedAboutMe = await prisma.aboutMe.upsert({
+		select: { id: true },
+		where: { id: aboutId },
+		create: {
+			name,
+			content,
+			description,
+			aboutMeCategoryId,
+			isPublished,
+			userId,
+		},
+		update: {
+			name,
+			content,
+			description,
+			aboutMeCategoryId,
+			isPublished,
+		},
+	})
 
-	if (intent === 'update') {
-		invariantResponse(id, 'ID is required for update')
-		const updatedAboutMe = await prisma.aboutMe.update({
-			where: {
-				id: id,
-				// userId check already done in superRefine for safety, but can be repeated here
-			},
-			data: {
-				name,
-				content,
-				description,
-				aboutMeCategoryId,
-				isPublished,
-			},
-			select: { id: true },
-		})
-		return redirect(`/dashboard/about/${updatedAboutMe.id}`)
-	}
-
-	// Should not happen if intent is correctly set on buttons
-	return data({ result: submission.reply() }, { status: 400 })
+	return redirect(`/dashboard/about/${updatedAboutMe.id}`)
 }

@@ -12,11 +12,9 @@ import { AppContainerContent } from '#app/components/app-container.tsx'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { nonFloatingToolbarClassName } from '#app/components/floating-toolbar.tsx'
 import {
-	CheckboxField,
 	ErrorList,
 	Field,
 	SelectField,
-	SwitchField,
 	TextareaField,
 	ToggleField,
 } from '#app/components/forms.tsx'
