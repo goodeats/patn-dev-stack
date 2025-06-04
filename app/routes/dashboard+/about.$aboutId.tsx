@@ -6,6 +6,7 @@ import {
 } from '#app/components/app-container.tsx'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { Button } from '#app/components/ui/button.tsx'
+import { Card, CardContent } from '#app/components/ui/card.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { APP_NAME } from '#app/utils/app-name.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
@@ -71,37 +72,29 @@ export default function DashboardAboutDetailsRoute() {
 					</div>
 				</div>
 
-				<div className="bg-card text-card-foreground space-y-4 rounded-lg border p-6 shadow-sm">
-					<div>
+				<Card>
+					<CardContent className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-6">
 						<h3 className="text-lg font-semibold">Content</h3>
 						<p className="prose prose-sm text-muted-foreground sm:prose-base max-w-none break-words whitespace-pre-wrap">
 							{aboutMe.content}
 						</p>
-					</div>
 
-					{aboutMe.description ? (
-						<div>
-							<h3 className="text-lg font-semibold">Description</h3>
-							<p className="text-muted-foreground text-sm">
-								{aboutMe.description}
-							</p>
-						</div>
-					) : null}
+						<h3 className="text-lg font-semibold">Description</h3>
+						<p className="text-muted-foreground text-sm">
+							{aboutMe.description}
+						</p>
 
-					<div>
 						<h3 className="text-lg font-semibold">Category</h3>
 						<p className="text-muted-foreground text-sm">
 							{aboutMe.aboutMeCategory.name}
 						</p>
-					</div>
 
-					<div>
 						<h3 className="text-lg font-semibold">Status</h3>
 						<p className="text-muted-foreground text-sm">
 							{aboutMe.isPublished ? 'Published' : 'Draft'}
 						</p>
-					</div>
-				</div>
+					</CardContent>
+				</Card>
 			</AppContainerGroup>
 		</AppContainerContent>
 	)
