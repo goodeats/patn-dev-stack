@@ -6,8 +6,7 @@ import { prisma } from '#app/utils/db.server.ts'
 import { createToastHeaders } from '#app/utils/toast.server.ts'
 import { AboutCategoryEditorSchema } from './__about-category-editor.tsx'
 
-export async function handleCategoryAction({ request }: ActionFunctionArgs) {
-	const formData = await request.formData()
+export async function handleCategoryAction(formData: FormData) {
 	const intent = formData.get('intent')
 
 	if (intent === 'deleteCategory') {

@@ -102,7 +102,7 @@ export async function action(args: ActionFunctionArgs) {
 		intent === 'updateCategory' ||
 		intent === 'deleteCategory'
 	) {
-		return handleCategoryAction(args)
+		return handleCategoryAction(formData)
 	}
 
 	if (intent === 'deleteAboutMe') {
