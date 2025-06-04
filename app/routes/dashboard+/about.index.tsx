@@ -37,6 +37,7 @@ import {
 	DropdownMenuTrigger,
 } from '#app/components/ui/dropdown-menu.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
+import { Switch } from '#app/components/ui/switch.tsx'
 import { APP_NAME } from '#app/utils/app-name.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
@@ -69,7 +70,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 				},
 			},
 		},
-		orderBy: { updatedAt: 'desc' },
+		orderBy: { createdAt: 'desc' },
 	})
 
 	const aboutMeCategoryData = await prisma.aboutMeCategory.findMany({
@@ -244,19 +245,15 @@ const aboutMeColumns = (): ColumnDef<AboutMeDataItem>[] => [
 				>
 					<input type="hidden" name="aboutId" value={aboutMe.id} />
 					<input type="hidden" name="intent" value="toggleAboutMeIsPublished" />
-					<input
-						type="checkbox"
-						name="isPublished"
-						value="true"
+					<Switch
 						checked={isOptimisticPublished}
-						onChange={(e) => {
+						onCheckedChange={(checked) => {
 							const formData = new FormData()
 							formData.set('intent', 'toggleAboutMeIsPublished')
 							formData.set('aboutId', aboutMe.id)
-							formData.set('isPublished', String(e.target.checked))
+							formData.set('isPublished', String(checked))
 							void fetcher.submit(formData, { method: 'post' })
 						}}
-						className="size-4 cursor-pointer"
 						aria-label={`Toggle publish status for ${aboutMe.name}`}
 					/>
 				</fetcher.Form>
@@ -370,19 +367,15 @@ const aboutMeCategoryColumns = (
 						name="intent"
 						value="toggleAboutMeCategoryIsPublished"
 					/>
-					<input
-						type="checkbox"
-						name="isPublished"
-						value="true"
+					<Switch
 						checked={isOptimisticPublished}
-						onChange={(e) => {
+						onCheckedChange={(checked) => {
 							const formData = new FormData()
 							formData.set('intent', 'toggleAboutMeCategoryIsPublished')
 							formData.set('categoryId', category.id)
-							formData.set('isPublished', String(e.target.checked))
+							formData.set('isPublished', String(checked))
 							void fetcher.submit(formData, { method: 'post' })
 						}}
-						className="size-4 cursor-pointer"
 						aria-label={`Toggle publish status for ${category.name}`}
 					/>
 				</fetcher.Form>
