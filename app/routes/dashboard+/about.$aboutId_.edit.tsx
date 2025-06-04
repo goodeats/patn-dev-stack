@@ -5,6 +5,7 @@ import {
 	AppContainerContent,
 	AppContainerGroup,
 } from '#app/components/app-container.tsx'
+import { BackLink } from '#app/components/button-links.tsx'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
@@ -57,11 +58,16 @@ export default function DashboardAboutEditRoute({
 	const { aboutMe, categories } = loaderData
 
 	return (
-		<AppContainerContent
-			id="about-edit-content"
-			className="container h-full py-6"
-		>
-			<AppContainerGroup className="h-full">
+		<AppContainerContent id="about-edit-content" className="container py-6">
+			<AppContainerGroup className="px-0">
+				<BackLink label="Back to About" className="self-start" />
+			</AppContainerGroup>
+
+			<AppContainerGroup className="px-0">
+				<h1 className="text-2xl font-bold">Edit {aboutMe.name}</h1>
+			</AppContainerGroup>
+
+			<AppContainerGroup className="px-0">
 				<AboutEditor
 					aboutMe={aboutMe}
 					categories={categories}

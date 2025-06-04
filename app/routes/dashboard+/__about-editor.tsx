@@ -8,8 +8,12 @@ import {
 import { getZodConstraint, parseWithZod } from '@conform-to/zod'
 import { Form } from 'react-router'
 import { z } from 'zod'
+import { AppContainerContent } from '#app/components/app-container.tsx'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
-import { floatingToolbarClassName } from '#app/components/floating-toolbar.tsx'
+import {
+	floatingToolbarClassName,
+	nonFloatingToolbarClassName,
+} from '#app/components/floating-toolbar.tsx'
 import {
 	CheckboxField,
 	ErrorList,
@@ -19,7 +23,7 @@ import {
 } from '#app/components/forms.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
-import { useIsPending } from '#app/utils/misc.tsx'
+import { cn, useIsPending } from '#app/utils/misc.tsx'
 import {
 	CheckboxFieldSchema,
 	StringMinMaxLengthSchema,
@@ -62,11 +66,11 @@ export function AboutEditor({
 	})
 
 	return (
-		<div className="absolute inset-0">
+		<AppContainerContent>
 			<FormProvider context={form.context}>
 				<Form
 					method="POST"
-					className="flex h-full flex-col gap-y-4 overflow-x-hidden overflow-y-auto px-10 pt-12 pb-28"
+					className="flex flex-col gap-y-4 overflow-x-hidden overflow-y-auto px-2"
 					{...getFormProps(form)}
 				>
 					<button type="submit" className="hidden" />
@@ -132,7 +136,7 @@ export function AboutEditor({
 					</div>
 					<ErrorList id={form.errorId} errors={form.errors} />
 				</Form>
-				<div className={floatingToolbarClassName}>
+				<div className={cn(nonFloatingToolbarClassName, 'mt-10')}>
 					<Button variant="destructive" {...form.reset.getButtonProps()}>
 						Reset
 					</Button>
@@ -166,7 +170,7 @@ export function AboutEditor({
 					) : null}
 				</div>
 			</FormProvider>
-		</div>
+		</AppContainerContent>
 	)
 }
 
