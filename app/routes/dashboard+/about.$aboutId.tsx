@@ -1,24 +1,23 @@
 import { invariantResponse } from '@epic-web/invariant'
+import { type SEOHandle } from '@nasa-gcn/remix-seo'
 import { type LoaderFunctionArgs } from 'react-router'
 import {
 	AppContainerContent,
 	AppContainerGroup,
 } from '#app/components/app-container.tsx'
-import { BackLink, EditLink } from '#app/components/button-links.tsx'
-import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import {
-	Card,
-	CardContent,
-	CardTitle,
-	CardHeader,
-	CardDescription,
-	CardDetailsValue,
-	CardDetailsItem,
-} from '#app/components/ui/card.tsx'
-import { APP_NAME } from '#app/utils/app-name.ts'
+	EntityDetailsCard,
+	EntityDetailsLinks,
+} from '#app/components/entity-details.tsx'
+import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
+import { CardDetailsValue, CardDetailsItem } from '#app/components/ui/card.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { type Route } from './+types/about.$aboutId.ts'
+
+export const handle: SEOHandle = {
+	getSitemapEntries: () => null,
+}
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
 	const userId = await requireUserId(request)
@@ -59,40 +58,37 @@ export default function DashboardAboutDetailsRoute({
 	return (
 		<AppContainerContent id="about-details-content" className="container py-6">
 			<AppContainerGroup className="px-0">
-				<div className="mb-6 flex items-center justify-between">
-					<BackLink label="Back to Abouts" />
-					<EditLink />
-				</div>
+				<EntityDetailsLinks backLabel="Back to Abouts" />
 			</AppContainerGroup>
 
 			<AppContainerGroup className="px-0">
-				<Card>
-					<CardHeader>
-						<CardTitle className="text-2xl">{aboutMe.name}</CardTitle>
-						<CardDescription>
+				<h1 className="text-2xl font-bold">{aboutMe.name}</h1>
+			</AppContainerGroup>
+
+			<AppContainerGroup className="px-0">
+				<EntityDetailsCard>
+					<CardDetailsItem label="Content">
+						<CardDetailsValue variant="prose">
+							{aboutMe.content}
+						</CardDetailsValue>
+					</CardDetailsItem>
+
+					<CardDetailsItem label="Description">
+						<CardDetailsValue variant="prose">
 							{aboutMe.description ?? 'No description'}
-						</CardDescription>
-					</CardHeader>
-					<CardContent variant="details">
-						<CardDetailsItem label="Content">
-							<CardDetailsValue variant="prose">
-								{aboutMe.content}
-							</CardDetailsValue>
-						</CardDetailsItem>
+						</CardDetailsValue>
+					</CardDetailsItem>
 
-						<CardDetailsItem label="Category">
-							<CardDetailsValue>
-								{aboutMe.aboutMeCategory.name}
-							</CardDetailsValue>
-						</CardDetailsItem>
+					<CardDetailsItem label="Category">
+						<CardDetailsValue>{aboutMe.aboutMeCategory.name}</CardDetailsValue>
+					</CardDetailsItem>
 
-						<CardDetailsItem label="Status">
-							<CardDetailsValue>
-								{aboutMe.isPublished ? 'Published' : 'Draft'}
-							</CardDetailsValue>
-						</CardDetailsItem>
-					</CardContent>
-				</Card>
+					<CardDetailsItem label="Status">
+						<CardDetailsValue>
+							{aboutMe.isPublished ? 'Published' : 'Draft'}
+						</CardDetailsValue>
+					</CardDetailsItem>
+				</EntityDetailsCard>
 			</AppContainerGroup>
 		</AppContainerContent>
 	)
@@ -101,10 +97,10 @@ export default function DashboardAboutDetailsRoute({
 export const meta: Route.MetaFunction = ({ data }) => {
 	const aboutMeName = data?.aboutMe?.name ?? 'About Me'
 	return [
-		{ title: `${aboutMeName} | Dashboard | ${APP_NAME}` },
+		{ title: `${aboutMeName} | Dashboard` },
 		{
 			name: 'description',
-			content: `Details for ${aboutMeName} on ${APP_NAME}`,
+			content: `Details for ${aboutMeName}`,
 		},
 	]
 }

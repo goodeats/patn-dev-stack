@@ -1,4 +1,5 @@
 import { invariantResponse } from '@epic-web/invariant'
+import { type SEOHandle } from '@nasa-gcn/remix-seo'
 import { type ColumnDef } from '@tanstack/react-table'
 import * as React from 'react'
 import {
@@ -34,6 +35,10 @@ import { APP_NAME } from '#app/utils/app-name.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { type Route, type Info } from './+types/about.index.ts'
+
+export const handle: SEOHandle = {
+	getSitemapEntries: () => null,
+}
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	const userId = await requireUserId(request)

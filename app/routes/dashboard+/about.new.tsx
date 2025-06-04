@@ -1,3 +1,4 @@
+import { type SEOHandle } from '@nasa-gcn/remix-seo'
 import {
 	type LoaderFunctionArgs,
 	useLoaderData,
@@ -16,6 +17,10 @@ import { type action as aboutEditorAction } from './__about-editor.server.tsx'
 import { AboutEditor } from './__about-editor.tsx'
 
 export { action } from './__about-editor.server.tsx'
+
+export const handle: SEOHandle = {
+	getSitemapEntries: () => null,
+}
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	await requireUserId(request)

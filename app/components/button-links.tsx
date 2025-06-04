@@ -48,7 +48,7 @@ export const BackLink = ({
 	relative = 'path',
 	variant = 'ghost',
 	...props
-}: BaseLinkButtonProps & { to?: string }) => {
+}: Omit<BaseLinkButtonProps, 'to'> & { to?: string }) => {
 	return (
 		<LinkButton
 			label={label}
@@ -66,7 +66,7 @@ export const EditLink = ({
 	to = 'edit',
 	variant = 'outline',
 	...props
-}: BaseLinkButtonProps) => {
+}: Omit<BaseLinkButtonProps, 'to'> & { to?: string }) => {
 	return (
 		<LinkButton
 			label={label}

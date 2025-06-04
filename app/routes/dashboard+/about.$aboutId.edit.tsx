@@ -13,8 +13,6 @@ import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { APP_NAME } from '#app/utils/app-name.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
-// Assuming a +types file might not be strictly necessary if we type inline or it's conventional
-// import { type Route } from './+types/about.$aboutId.edit.ts'
 import { type action as aboutEditorAction } from './__about-editor.server.tsx'
 import { AboutEditor } from './__about-editor.tsx'
 
