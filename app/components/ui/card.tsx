@@ -60,12 +60,22 @@ function CardAction({ className, ...props }: React.ComponentProps<'div'>) {
 		/>
 	)
 }
-
-function CardContent({ className, ...props }: React.ComponentProps<'div'>) {
+function CardContent({
+	className,
+	variant,
+	...props
+}: React.ComponentProps<'div'> & {
+	variant?: 'default' | 'details'
+}) {
 	return (
 		<div
 			data-slot="card-content"
-			className={cn('px-6', className)}
+			className={cn(
+				'px-6',
+				variant === 'details' &&
+					'flex flex-col gap-4 md:grid md:grid-cols-[minmax(120px,auto)_1fr] md:items-baseline md:gap-x-8 md:gap-y-6',
+				className,
+			)}
 			{...props}
 		/>
 	)
@@ -128,19 +138,6 @@ function CardDetailsValue({
 	)
 }
 
-function CardDetailsGrid({ className, ...props }: React.ComponentProps<'div'>) {
-	return (
-		<div
-			data-slot="details-grid"
-			className={cn(
-				'flex flex-col gap-4 md:grid md:grid-cols-[minmax(120px,auto)_1fr] md:items-baseline md:gap-x-8 md:gap-y-6',
-				className,
-			)}
-			{...props}
-		/>
-	)
-}
-
 export {
 	Card,
 	CardHeader,
@@ -151,5 +148,4 @@ export {
 	CardContent,
 	CardDetailsItem,
 	CardDetailsValue,
-	CardDetailsGrid,
 }

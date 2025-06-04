@@ -12,7 +12,6 @@ import {
 	CardTitle,
 	CardHeader,
 	CardDescription,
-	CardDetailsGrid,
 	CardDetailsValue,
 	CardDetailsItem,
 } from '#app/components/ui/card.tsx'
@@ -88,26 +87,24 @@ export default function DashboardAboutDetailsRoute() {
 							{aboutMe.description ?? 'No description'}
 						</CardDescription>
 					</CardHeader>
-					<CardContent>
-						<CardDetailsGrid>
-							<CardDetailsItem label="Content">
-								<CardDetailsValue variant="prose">
-									{aboutMe.content}
-								</CardDetailsValue>
-							</CardDetailsItem>
+					<CardContent variant="details">
+						<CardDetailsItem label="Content">
+							<CardDetailsValue variant="prose">
+								{aboutMe.content}
+							</CardDetailsValue>
+						</CardDetailsItem>
 
-							<CardDetailsItem label="Category">
-								<CardDetailsValue>
-									{aboutMe.aboutMeCategory.name}
-								</CardDetailsValue>
-							</CardDetailsItem>
+						<CardDetailsItem label="Category">
+							<CardDetailsValue>
+								{aboutMe.aboutMeCategory.name}
+							</CardDetailsValue>
+						</CardDetailsItem>
 
-							<CardDetailsItem label="Status">
-								<CardDetailsValue>
-									{aboutMe.isPublished ? 'Published' : 'Draft'}
-								</CardDetailsValue>
-							</CardDetailsItem>
-						</CardDetailsGrid>
+						<CardDetailsItem label="Status">
+							<CardDetailsValue>
+								{aboutMe.isPublished ? 'Published' : 'Draft'}
+							</CardDetailsValue>
+						</CardDetailsItem>
 					</CardContent>
 				</Card>
 			</AppContainerGroup>
