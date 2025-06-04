@@ -6,41 +6,33 @@ import {
 	useForm,
 } from '@conform-to/react'
 import { getZodConstraint, parseWithZod } from '@conform-to/zod'
-import { Form, useActionData } from 'react-router'
+import { Form } from 'react-router'
 import { z } from 'zod'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { floatingToolbarClassName } from '#app/components/floating-toolbar.tsx'
 import {
+	CheckboxField,
 	ErrorList,
 	Field,
 	SelectField,
 	TextareaField,
 } from '#app/components/forms.tsx'
 import { Button } from '#app/components/ui/button.tsx'
-import { Label } from '#app/components/ui/label.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
 import { useIsPending } from '#app/utils/misc.tsx'
+import {
+	CheckboxFieldSchema,
+	StringMinMaxLengthSchema,
+} from '#app/utils/zod-helpers.tsx'
 import { type Info } from './+types/about.$aboutId_.edit.ts'
-
-const nameMinLength = 1
-const nameMaxLength = 100
-const contentMinLength = 1
-const contentMaxLength = 10000
-const descriptionMinLength = 1
-const descriptionMaxLength = 500
 
 export const AboutEditorSchema = z.object({
 	id: z.string().optional(),
-	name: z.string().min(nameMinLength).max(nameMaxLength),
-	content: z.string().min(contentMinLength).max(contentMaxLength),
-	description: z
-		.string()
-		.min(descriptionMinLength)
-		.max(descriptionMaxLength)
-		.optional()
-		.nullable(),
+	name: StringMinMaxLengthSchema(1, 100),
+	content: StringMinMaxLengthSchema(1, 10000),
+	description: StringMinMaxLengthSchema(1, 500).optional().nullable(),
 	aboutMeCategoryId: z.string({ required_error: 'Category is required' }),
-	isPublished: z.boolean().default(false),
+	isPublished: CheckboxFieldSchema.default(false),
 })
 
 export function AboutEditor({
@@ -125,24 +117,18 @@ export function AboutEditor({
 							placeholder="Select a category"
 						/>
 
-						<div className="flex items-center space-x-2">
-							<input
-								{...getInputProps(fields.isPublished, { type: 'checkbox' })}
-								id={fields.isPublished.id}
-								name={fields.isPublished.name}
-								defaultChecked={Boolean(fields.isPublished.initialValue)}
-								value="true"
-								className="size-4"
-								disabled={isPending}
-							/>
-							<Label htmlFor={fields.isPublished.id}>Published</Label>
-							<div className="min-h-[32px] px-4 pt-1 pb-3">
-								<ErrorList
-									id={fields.isPublished.errorId}
-									errors={fields.isPublished.errors}
-								/>
-							</div>
-						</div>
+						<CheckboxField
+							labelProps={{ children: 'Published' }}
+							buttonProps={{
+								...getInputProps(fields.isPublished, { type: 'checkbox' }),
+								name: fields.isPublished.name,
+								form: form.id,
+								value: 'true',
+								defaultChecked: Boolean(fields.isPublished.initialValue),
+								disabled: isPending,
+							}}
+							errors={fields.isPublished.errors}
+						/>
 					</div>
 					<ErrorList id={form.errorId} errors={form.errors} />
 				</Form>
