@@ -13,7 +13,7 @@ test('can create, edit, and delete about me sections', async ({
 	await expect(page).toHaveURL('/dashboard/about')
 
 	// Click Add Section button
-	await page.getByRole('link', { name: 'Add Section' }).click()
+	await page.getByRole('link', { name: 'Create' }).click()
 	await expect(page).toHaveURL('/dashboard/about/new')
 
 	// Fill out the form

@@ -1,0 +1,8 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+
+ Do not use imports from `@remix-run`, use `react-router` instead.
+ Do not import `json` from `react-router` use `data` instead, and only if we are returning response status or headers.
