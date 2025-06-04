@@ -81,6 +81,66 @@ function CardFooter({ className, ...props }: React.ComponentProps<'div'>) {
 	)
 }
 
+type DetailsItemProps = {
+	label: string
+} & React.ComponentProps<'div'>
+
+function CardDetailsItem({ label, className, ...props }: DetailsItemProps) {
+	return (
+		<>
+			<CardDetailsLabel className={className}>{label}</CardDetailsLabel>
+			<div data-slot="details-value" {...props} />
+		</>
+	)
+}
+
+function CardDetailsLabel({
+	className,
+	...props
+}: React.ComponentProps<'div'>) {
+	return (
+		<div
+			data-slot="details-label"
+			className={cn('text-foreground text-base font-medium', className)}
+			{...props}
+		/>
+	)
+}
+
+function CardDetailsValue({
+	className,
+	variant,
+	...props
+}: React.ComponentProps<'div'> & {
+	variant?: 'default' | 'prose'
+}) {
+	return (
+		<div
+			data-slot="details-value"
+			className={cn(
+				'text-muted-foreground text-sm',
+				variant === 'prose' &&
+					'prose prose-sm sm:prose-base max-w-none break-words whitespace-pre-wrap',
+				className,
+			)}
+			{...props}
+		/>
+	)
+}
+
+function CardDetailsGrid({ className, ...props }: React.ComponentProps<'div'>) {
+	return (
+		<div
+			data-slot="details-grid"
+			className={cn(
+				'flex flex-col gap-4 md:grid md:grid-cols-[minmax(120px,auto)_1fr] md:items-baseline md:gap-x-8 md:gap-y-6',
+				className,
+			)}
+			{...props}
+		/>
+	)
+}
+
 export {
 	Card,
 	CardHeader,
@@ -89,4 +149,7 @@ export {
 	CardAction,
 	CardDescription,
 	CardContent,
+	CardDetailsItem,
+	CardDetailsValue,
+	CardDetailsGrid,
 }

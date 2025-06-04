@@ -12,6 +12,9 @@ import {
 	CardTitle,
 	CardHeader,
 	CardDescription,
+	CardDetailsGrid,
+	CardDetailsValue,
+	CardDetailsItem,
 } from '#app/components/ui/card.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { APP_NAME } from '#app/utils/app-name.ts'
@@ -85,21 +88,26 @@ export default function DashboardAboutDetailsRoute() {
 							{aboutMe.description ?? 'No description'}
 						</CardDescription>
 					</CardHeader>
-					<CardContent className="flex flex-col gap-4 md:grid md:grid-cols-[minmax(120px,auto)_1fr] md:items-baseline md:gap-x-8 md:gap-y-6">
-						<h3 className="text-foreground text-base font-medium">Content</h3>
-						<p className="prose prose-sm text-muted-foreground sm:prose-base max-w-none text-sm break-words whitespace-pre-wrap">
-							{aboutMe.content}
-						</p>
+					<CardContent>
+						<CardDetailsGrid>
+							<CardDetailsItem label="Content">
+								<CardDetailsValue variant="prose">
+									{aboutMe.content}
+								</CardDetailsValue>
+							</CardDetailsItem>
 
-						<h3 className="text-foreground text-base font-medium">Category</h3>
-						<p className="text-muted-foreground text-sm">
-							{aboutMe.aboutMeCategory.name}
-						</p>
+							<CardDetailsItem label="Category">
+								<CardDetailsValue>
+									{aboutMe.aboutMeCategory.name}
+								</CardDetailsValue>
+							</CardDetailsItem>
 
-						<h3 className="text-foreground text-base font-medium">Status</h3>
-						<p className="text-muted-foreground text-sm">
-							{aboutMe.isPublished ? 'Published' : 'Draft'}
-						</p>
+							<CardDetailsItem label="Status">
+								<CardDetailsValue>
+									{aboutMe.isPublished ? 'Published' : 'Draft'}
+								</CardDetailsValue>
+							</CardDetailsItem>
+						</CardDetailsGrid>
 					</CardContent>
 				</Card>
 			</AppContainerGroup>
