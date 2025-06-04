@@ -1,5 +1,6 @@
 import { parseWithZod } from '@conform-to/zod'
 import { invariantResponse } from '@epic-web/invariant'
+import { createId as cuid } from '@paralleldrive/cuid2'
 import { data, redirect, type ActionFunctionArgs } from 'react-router'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
@@ -53,6 +54,12 @@ export async function action({ request }: ActionFunctionArgs) {
 					path: ['id'],
 				})
 			}
+		}).transform(async (data) => {
+			const aboutId = data.id ?? cuid()
+			return {
+				...data,
+				id: aboutId,
+			}
 		}),
 		async: true,
 	})
@@ -77,6 +84,7 @@ export async function action({ request }: ActionFunctionArgs) {
 		select: { id: true },
 		where: { id: aboutId },
 		create: {
+			id: aboutId,
 			name,
 			content,
 			description,

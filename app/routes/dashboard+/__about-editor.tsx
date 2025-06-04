@@ -146,7 +146,7 @@ export function AboutEditor({
 						disabled={isPending}
 						status={isPending ? 'pending' : 'idle'}
 					>
-						{aboutMe?.id ? 'Save Changes' : 'Create Section'}
+						{aboutMe?.id ? 'Save Changes' : 'Create About Me'}
 					</StatusButton>
 					{aboutMe?.id ? (
 						<StatusButton

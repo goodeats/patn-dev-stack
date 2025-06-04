@@ -73,7 +73,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 			createdAt: true,
 			updatedAt: true,
 		},
-		orderBy: { updatedAt: 'desc' },
+		orderBy: { createdAt: 'desc' },
 	})
 
 	return { aboutMeData, aboutMeCategoryData }

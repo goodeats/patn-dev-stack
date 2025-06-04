@@ -10,7 +10,6 @@ import {
 } from '#app/components/app-container.tsx'
 import { BackLink } from '#app/components/button-links.tsx'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
-import { APP_NAME } from '#app/utils/app-name.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { type Route } from './+types/about.new.ts'
@@ -61,10 +60,10 @@ export default function DashboardAboutNewRoute() {
 
 export const meta: Route.MetaFunction = () => {
 	return [
-		{ title: `Create About Me | Dashboard | ${APP_NAME}` },
+		{ title: `Create About Me | Dashboard ` },
 		{
 			name: 'description',
-			content: `Create a new About Me section on ${APP_NAME}`,
+			content: `Create a new About Me section`,
 		},
 	]
 }
