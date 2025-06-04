@@ -5,17 +5,23 @@ import * as React from 'react'
 import {
 	type ActionFunctionArgs,
 	type LoaderFunctionArgs,
+	data,
 	Form,
 	Link,
 	useFetcher,
 } from 'react-router'
-import { AppContainerContent } from '#app/components/app-container.tsx'
+import {
+	AppContainerContent,
+	AppContainerGroup,
+} from '#app/components/app-container.tsx'
+import { BackLink } from '#app/components/button-links.tsx'
 import {
 	DataTable,
 	createDataTableSelectColumn,
 	DataTableSortHeader,
 } from '#app/components/data-table.tsx'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
+import { TooltipDataTableRowLink } from '#app/components/tooltip-links.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import {
 	DropdownMenu,
@@ -25,15 +31,10 @@ import {
 	DropdownMenuTrigger,
 } from '#app/components/ui/dropdown-menu.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from '#app/components/ui/tooltip.tsx'
 import { APP_NAME } from '#app/utils/app-name.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
+import { createToastHeaders } from '#app/utils/toast.server.ts'
 import { type Route, type Info } from './+types/about.index.ts'
 
 export const handle: SEOHandle = {
@@ -97,7 +98,17 @@ export async function action({ request }: ActionFunctionArgs) {
 			},
 		})
 
-		return { type: 'success', entity: 'aboutMe' } as const
+		return data(
+			{ type: 'success', entity: 'aboutMe' },
+			{
+				status: 200,
+				headers: await createToastHeaders({
+					title: 'About Me Section Deleted',
+					description: 'About Me section deleted successfully!',
+					type: 'success',
+				}),
+			},
+		)
 	}
 
 	if (intent === 'toggleAboutMeIsPublished') {
@@ -164,20 +175,11 @@ const aboutMeColumns = (): ColumnDef<AboutMeDataItem>[] => [
 		accessorKey: 'name',
 		header: 'Name',
 		cell: ({ row }) => (
-			<TooltipProvider>
-				<Tooltip>
-					<TooltipTrigger asChild>
-						<Link to={row.original.id} className="hover:underline">
-							{row.original.name}
-						</Link>
-					</TooltipTrigger>
-					{row.original.description && (
-						<TooltipContent>
-							<p className="max-w-xs break-words">{row.original.description}</p>
-						</TooltipContent>
-					)}
-				</Tooltip>
-			</TooltipProvider>
+			<TooltipDataTableRowLink
+				to={row.original.id}
+				label={row.original.name}
+				description={row.original.description}
+			/>
 		),
 	},
 	{
@@ -297,23 +299,11 @@ const aboutMeCategoryColumns = (): ColumnDef<AboutMeCategoryDataItem>[] => [
 		accessorKey: 'name',
 		header: 'Name',
 		cell: ({ row }) => (
-			<TooltipProvider>
-				<Tooltip>
-					<TooltipTrigger asChild>
-						<Link
-							to={`categories/${row.original.id}`}
-							className="hover:underline"
-						>
-							{row.original.name}
-						</Link>
-					</TooltipTrigger>
-					{row.original.description && (
-						<TooltipContent>
-							<p className="max-w-xs break-words">{row.original.description}</p>
-						</TooltipContent>
-					)}
-				</Tooltip>
-			</TooltipProvider>
+			<TooltipDataTableRowLink
+				to={`categories/${row.original.id}`}
+				label={row.original.name}
+				description={row.original.description}
+			/>
 		),
 	},
 	{
@@ -437,8 +427,16 @@ export default function DashboardAboutIndexRoute({
 
 	return (
 		<AppContainerContent id="about-me-content" className="container space-y-8">
-			<div>
-				<h1 className="mb-4 text-2xl font-bold">About Me Sections</h1>
+			<AppContainerGroup className="px-0">
+				<BackLink label="Back to Dashboard" className="self-start" />
+			</AppContainerGroup>
+
+			<AppContainerGroup className="px-0">
+				<h1 className="text-2xl font-bold">About Me</h1>
+			</AppContainerGroup>
+
+			<AppContainerGroup className="px-0">
+				<h1 className="text-xl font-bold">About Me Sections</h1>
 				<DataTable
 					columns={memoizedAboutMeColumns}
 					data={aboutMeData}
@@ -447,7 +445,7 @@ export default function DashboardAboutIndexRoute({
 						<Button asChild>
 							<Link to="new">
 								<Icon name="plus" className="mr-2" />
-								Create Section
+								Create
 							</Link>
 						</Button>
 					}
@@ -459,10 +457,10 @@ export default function DashboardAboutIndexRoute({
 						},
 					]}
 				/>
-			</div>
+			</AppContainerGroup>
 
-			<div>
-				<h1 className="mb-4 text-2xl font-bold">About Me Categories</h1>
+			<AppContainerGroup className="px-0">
+				<h1 className="text-xl font-bold">About Me Categories</h1>
 				<DataTable
 					columns={memoizedAboutMeCategoryColumns}
 					data={aboutMeCategoryData}
@@ -471,7 +469,7 @@ export default function DashboardAboutIndexRoute({
 						<Button asChild>
 							<Link to="categories/new">
 								<Icon name="plus" className="mr-2" />
-								Create Category
+								Create
 							</Link>
 						</Button>
 					}
@@ -483,7 +481,7 @@ export default function DashboardAboutIndexRoute({
 						},
 					]}
 				/>
-			</div>
+			</AppContainerGroup>
 		</AppContainerContent>
 	)
 }

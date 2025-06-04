@@ -41,7 +41,7 @@ export function AboutEditor({
 	categories,
 	actionData,
 }: {
-	aboutMe: Info['loaderData']['aboutMe']
+	aboutMe?: Info['loaderData']['aboutMe']
 	categories: Info['loaderData']['categories']
 	actionData?: Info['actionData']
 }) {

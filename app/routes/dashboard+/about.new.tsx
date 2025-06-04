@@ -8,6 +8,7 @@ import {
 	AppContainerContent,
 	AppContainerGroup,
 } from '#app/components/app-container.tsx'
+import { BackLink } from '#app/components/button-links.tsx'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { APP_NAME } from '#app/utils/app-name.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
@@ -42,11 +43,16 @@ export default function DashboardAboutNewRoute() {
 	const actionData = useActionData<typeof aboutEditorAction>()
 
 	return (
-		<AppContainerContent
-			id="about-new-content"
-			className="container h-full py-6"
-		>
-			<AppContainerGroup className="h-full">
+		<AppContainerContent id="about-new-content" className="container py-6">
+			<AppContainerGroup className="px-0">
+				<BackLink label="Back to Abouts" className="self-start" />
+			</AppContainerGroup>
+
+			<AppContainerGroup className="px-0">
+				<h1 className="text-2xl font-bold">Create New About</h1>
+			</AppContainerGroup>
+
+			<AppContainerGroup className="px-0">
 				<AboutEditor categories={categories} actionData={actionData} />
 			</AppContainerGroup>
 		</AppContainerContent>
