@@ -17,6 +17,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from './ui/select.tsx'
+import { Switch } from './ui/switch.tsx'
 import { Textarea } from './ui/textarea.tsx'
 
 export type ListOfErrors = Array<string | null | undefined> | null | undefined
@@ -205,6 +206,125 @@ export function CheckboxField({
 				{errorId ? <ErrorList id={errorId} errors={errors} /> : null}
 			</div>
 		</div>
+	)
+}
+
+export function SwitchField({
+	labelProps,
+	switchProps,
+	errors,
+	className,
+}: {
+	labelProps: React.ComponentProps<'label'>
+	switchProps: React.ComponentProps<typeof Switch> & {
+		name: string
+		form: string
+		value?: string
+		key?: string
+		defaultChecked?: boolean
+	}
+	errors?: ListOfErrors
+	className?: string
+}) {
+	const { key, defaultChecked, ...restSwitchProps } = switchProps
+	const fallbackId = useId()
+	const checkedValue = switchProps.value ?? 'on'
+	const input = useInputControl({
+		key,
+		name: switchProps.name,
+		formId: switchProps.form,
+		initialValue: defaultChecked ? checkedValue : undefined,
+	})
+	const id = switchProps.id ?? fallbackId
+	const errorId = errors?.length ? `${id}-error` : undefined
+
+	return (
+		<div className={className}>
+			<div className="flex items-center gap-3">
+				<Switch
+					{...restSwitchProps}
+					id={id}
+					aria-invalid={errorId ? true : undefined}
+					aria-describedby={errorId}
+					checked={input.value === checkedValue}
+					onCheckedChange={(checked) => {
+						input.change(checked ? checkedValue : '')
+						switchProps.onCheckedChange?.(checked)
+					}}
+					onFocus={(event) => {
+						input.focus()
+						switchProps.onFocus?.(event)
+					}}
+					onBlur={(event) => {
+						input.blur()
+						switchProps.onBlur?.(event)
+					}}
+				/>
+				<label
+					htmlFor={id}
+					{...labelProps}
+					className="text-body-xs text-muted-foreground cursor-pointer"
+				/>
+			</div>
+			<div className="px-4 pt-1 pb-3">
+				{errorId ? <ErrorList id={errorId} errors={errors} /> : null}
+			</div>
+		</div>
+	)
+}
+
+export function ToggleField({
+	labelProps,
+	buttonProps,
+	errors,
+	className,
+	variant = 'checkbox',
+}: {
+	labelProps: React.ComponentProps<'label'>
+	buttonProps: (CheckboxProps | React.ComponentProps<typeof Switch>) & {
+		name: string
+		form: string
+		value?: string
+		key?: string
+		defaultChecked?: boolean
+	}
+	errors?: ListOfErrors
+	className?: string
+	variant?: 'checkbox' | 'switch'
+}) {
+	if (variant === 'switch') {
+		return (
+			<SwitchField
+				labelProps={labelProps}
+				switchProps={
+					buttonProps as React.ComponentProps<typeof Switch> & {
+						name: string
+						form: string
+						value?: string
+						key?: string
+						defaultChecked?: boolean
+					}
+				}
+				errors={errors}
+				className={className}
+			/>
+		)
+	}
+
+	// Fallback to checkbox
+	return (
+		<CheckboxField
+			labelProps={labelProps}
+			buttonProps={
+				buttonProps as CheckboxProps & {
+					name: string
+					form: string
+					value?: string
+				}
+			}
+			errors={errors}
+			className={className}
+		/>
 	)
 }
 

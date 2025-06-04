@@ -10,16 +10,15 @@ import { Form } from 'react-router'
 import { z } from 'zod'
 import { AppContainerContent } from '#app/components/app-container.tsx'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
-import {
-	floatingToolbarClassName,
-	nonFloatingToolbarClassName,
-} from '#app/components/floating-toolbar.tsx'
+import { nonFloatingToolbarClassName } from '#app/components/floating-toolbar.tsx'
 import {
 	CheckboxField,
 	ErrorList,
 	Field,
 	SelectField,
+	SwitchField,
 	TextareaField,
+	ToggleField,
 } from '#app/components/forms.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
@@ -121,7 +120,7 @@ export function AboutEditor({
 							placeholder="Select a category"
 						/>
 
-						<CheckboxField
+						<ToggleField
 							labelProps={{ children: 'Published' }}
 							buttonProps={{
 								...getInputProps(fields.isPublished, { type: 'checkbox' }),
@@ -132,6 +131,7 @@ export function AboutEditor({
 								disabled: isPending,
 							}}
 							errors={fields.isPublished.errors}
+							variant="switch"
 						/>
 					</div>
 					<ErrorList id={form.errorId} errors={form.errors} />
@@ -160,7 +160,7 @@ export function AboutEditor({
 							disabled={isPending}
 							status={isPending ? 'pending' : 'idle'}
 							onClick={(e) => {
-								if (!confirm('Are you sure you want to delete this section?')) {
+								if (!confirm('Are you sure you want to delete this item?')) {
 									e.preventDefault()
 								}
 							}}
