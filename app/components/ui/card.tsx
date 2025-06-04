@@ -60,6 +60,7 @@ function CardAction({ className, ...props }: React.ComponentProps<'div'>) {
 		/>
 	)
 }
+
 function CardContent({
 	className,
 	variant,
@@ -91,16 +92,22 @@ function CardFooter({ className, ...props }: React.ComponentProps<'div'>) {
 	)
 }
 
-type DetailsItemProps = {
-	label: string
-} & React.ComponentProps<'div'>
-
-function CardDetailsItem({ label, className, ...props }: DetailsItemProps) {
+function CardDetailsItem({
+	label,
+	className,
+	...props
+}: React.ComponentProps<'div'> & { label: string }) {
 	return (
-		<>
-			<CardDetailsLabel className={className}>{label}</CardDetailsLabel>
-			<div data-slot="details-value" {...props} />
-		</>
+		<div
+			className={cn(
+				'contents md:contents', // Use contents display to work with parent grid
+				className,
+			)}
+			{...props}
+		>
+			<CardDetailsLabel>{label}</CardDetailsLabel>
+			{props.children}
+		</div>
 	)
 }
 

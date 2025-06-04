@@ -1,11 +1,11 @@
 import { invariantResponse } from '@epic-web/invariant'
-import { type LoaderFunctionArgs, Link, useLoaderData } from 'react-router'
+import { type LoaderFunctionArgs } from 'react-router'
 import {
 	AppContainerContent,
 	AppContainerGroup,
 } from '#app/components/app-container.tsx'
+import { BackLink, EditLink } from '#app/components/button-links.tsx'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
-import { Button } from '#app/components/ui/button.tsx'
 import {
 	Card,
 	CardContent,
@@ -15,7 +15,6 @@ import {
 	CardDetailsValue,
 	CardDetailsItem,
 } from '#app/components/ui/card.tsx'
-import { Icon } from '#app/components/ui/icon.tsx'
 import { APP_NAME } from '#app/utils/app-name.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
@@ -49,37 +48,24 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
 	invariantResponse(aboutMe, 'About Me item not found', { status: 404 })
 
-	console.log('about.$aboutId server - view mode')
-
 	return { aboutMe }
 }
 
-export default function DashboardAboutDetailsRoute() {
-	const { aboutMe } = useLoaderData<typeof loader>()
-
-	console.log('about.$aboutId client - view mode')
+export default function DashboardAboutDetailsRoute({
+	loaderData,
+}: Route.ComponentProps) {
+	const { aboutMe } = loaderData
 
 	return (
 		<AppContainerContent id="about-details-content" className="container py-6">
 			<AppContainerGroup className="px-0">
 				<div className="mb-6 flex items-center justify-between">
-					<h1 className="text-2xl font-bold">{aboutMe.name}</h1>
-					<div className="flex gap-2">
-						<Link to={`/dashboard/about/${aboutMe.id}/edit`}>
-							<Button variant="outline" size="sm">
-								<Icon name="pencil-1" className="mr-2" />
-								Edit
-							</Button>
-						</Link>
-						<Link to="/dashboard/about">
-							<Button variant="ghost" size="sm">
-								<Icon name="arrow-left" className="mr-2" />
-								Back to List
-							</Button>
-						</Link>
-					</div>
+					<BackLink label="Back to Abouts" />
+					<EditLink />
 				</div>
+			</AppContainerGroup>
 
+			<AppContainerGroup className="px-0">
 				<Card>
 					<CardHeader>
 						<CardTitle className="text-2xl">{aboutMe.name}</CardTitle>
