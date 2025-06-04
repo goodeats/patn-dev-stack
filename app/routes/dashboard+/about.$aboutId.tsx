@@ -1,12 +1,5 @@
 import { invariantResponse } from '@epic-web/invariant'
-import {
-	type ActionFunctionArgs,
-	type LoaderFunctionArgs,
-	redirect,
-	Form,
-	Link,
-	useNavigation,
-} from 'react-router'
+import { type LoaderFunctionArgs, Link, useLoaderData } from 'react-router'
 import {
 	AppContainerContent,
 	AppContainerGroup,
@@ -14,16 +7,6 @@ import {
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
-import { Input } from '#app/components/ui/input.tsx'
-import { Label } from '#app/components/ui/label.tsx'
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from '#app/components/ui/select.tsx'
-import { Textarea } from '#app/components/ui/textarea.tsx'
 import { APP_NAME } from '#app/utils/app-name.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
@@ -49,7 +32,6 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 			aboutMeCategoryId: true,
 			aboutMeCategory: {
 				select: {
-					id: true,
 					name: true,
 				},
 			},
@@ -58,191 +40,68 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
 	invariantResponse(aboutMe, 'About Me item not found', { status: 404 })
 
-	const categories = await prisma.aboutMeCategory.findMany({
-		where: { isPublished: true },
-		select: {
-			id: true,
-			name: true,
-		},
-		orderBy: { name: 'asc' },
-	})
+	console.log('about.$aboutId server - view mode')
 
-	console.log('about.$aboutId server')
-
-	return { aboutMe, categories }
+	return { aboutMe }
 }
 
-export async function action({ request, params }: ActionFunctionArgs) {
-	const userId = await requireUserId(request)
-	const { aboutId } = params
+export default function DashboardAboutDetailsRoute() {
+	const { aboutMe } = useLoaderData<typeof loader>()
 
-	invariantResponse(aboutId, 'About ID is required')
-
-	const formData = await request.formData()
-	const intent = formData.get('intent')
-
-	if (intent === 'delete') {
-		await prisma.aboutMe.deleteMany({
-			where: {
-				id: aboutId,
-				userId,
-			},
-		})
-
-		return redirect('/dashboard/about')
-	}
-
-	if (intent === 'update') {
-		const name = formData.get('name')
-		const content = formData.get('content')
-		const description = formData.get('description')
-		const aboutMeCategoryId = formData.get('aboutMeCategoryId')
-		const isPublished = formData.get('isPublished') === 'true'
-
-		invariantResponse(typeof name === 'string', 'Name is required')
-		invariantResponse(typeof content === 'string', 'Content is required')
-		invariantResponse(
-			typeof aboutMeCategoryId === 'string',
-			'Category is required',
-		)
-
-		await prisma.aboutMe.updateMany({
-			where: {
-				id: aboutId,
-				userId,
-			},
-			data: {
-				name,
-				content,
-				description: typeof description === 'string' ? description : null,
-				aboutMeCategoryId,
-				isPublished,
-			},
-		})
-
-		return null
-	}
-
-	throw new Error(`Invalid intent: ${intent}`)
-}
-
-export default function DashboardAboutDetailsRoute({
-	loaderData,
-}: Route.ComponentProps) {
-	const { aboutMe, categories } = loaderData
-	const navigation = useNavigation()
-	const isSubmitting = navigation.state !== 'idle'
-
-	console.log('about.$aboutId client')
+	console.log('about.$aboutId client - view mode')
 
 	return (
 		<AppContainerContent id="about-details-content" className="container py-6">
 			<AppContainerGroup>
 				<div className="mb-6 flex items-center justify-between">
-					<h1 className="text-2xl font-bold">Edit About Me Section</h1>
-					<Link to="/dashboard/about">
-						<Button variant="ghost" size="sm">
-							<Icon name="arrow-left" className="mr-2" />
-							Back to List
-						</Button>
-					</Link>
+					<h1 className="text-2xl font-bold">{aboutMe.name}</h1>
+					<div className="flex gap-2">
+						<Link to={`/dashboard/about/${aboutMe.id}/edit`}>
+							<Button variant="outline" size="sm">
+								<Icon name="pencil-1" className="mr-2" />
+								Edit
+							</Button>
+						</Link>
+						<Link to="/dashboard/about">
+							<Button variant="ghost" size="sm">
+								<Icon name="arrow-left" className="mr-2" />
+								Back to List
+							</Button>
+						</Link>
+					</div>
 				</div>
 
-				<Form method="post" className="space-y-6">
-					<div className="space-y-4">
-						<div>
-							<Label htmlFor="name">Name</Label>
-							<Input
-								id="name"
-								name="name"
-								defaultValue={aboutMe.name}
-								required
-								disabled={isSubmitting}
-							/>
-						</div>
-
-						<div>
-							<Label htmlFor="content">Content</Label>
-							<Textarea
-								id="content"
-								name="content"
-								defaultValue={aboutMe.content}
-								required
-								disabled={isSubmitting}
-								rows={6}
-							/>
-						</div>
-
-						<div>
-							<Label htmlFor="description">Description (Optional)</Label>
-							<Input
-								id="description"
-								name="description"
-								defaultValue={aboutMe.description || ''}
-								disabled={isSubmitting}
-							/>
-						</div>
-
-						<div>
-							<Label htmlFor="aboutMeCategoryId">Category</Label>
-							<Select
-								name="aboutMeCategoryId"
-								defaultValue={aboutMe.aboutMeCategoryId}
-								disabled={isSubmitting}
-							>
-								<SelectTrigger>
-									<SelectValue placeholder="Select a category" />
-								</SelectTrigger>
-								<SelectContent>
-									{categories.map((category) => (
-										<SelectItem key={category.id} value={category.id}>
-											{category.name}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-						</div>
-
-						<div className="flex items-center space-x-2">
-							<input
-								type="checkbox"
-								id="isPublished"
-								name="isPublished"
-								value="true"
-								defaultChecked={aboutMe.isPublished}
-								disabled={isSubmitting}
-								className="size-4"
-							/>
-							<Label htmlFor="isPublished">Published</Label>
-						</div>
+				<div className="bg-card text-card-foreground space-y-4 rounded-lg border p-6 shadow-sm">
+					<div>
+						<h3 className="text-lg font-semibold">Content</h3>
+						<p className="prose prose-sm text-muted-foreground sm:prose-base max-w-none break-words whitespace-pre-wrap">
+							{aboutMe.content}
+						</p>
 					</div>
 
-					<div className="flex gap-4">
-						<Button
-							type="submit"
-							name="intent"
-							value="update"
-							disabled={isSubmitting}
-						>
-							{isSubmitting ? 'Saving...' : 'Save Changes'}
-						</Button>
+					{aboutMe.description ? (
+						<div>
+							<h3 className="text-lg font-semibold">Description</h3>
+							<p className="text-muted-foreground text-sm">
+								{aboutMe.description}
+							</p>
+						</div>
+					) : null}
 
-						<Button
-							type="submit"
-							name="intent"
-							value="delete"
-							variant="destructive"
-							disabled={isSubmitting}
-							onClick={(e) => {
-								if (!confirm('Are you sure you want to delete this section?')) {
-									e.preventDefault()
-								}
-							}}
-						>
-							Delete
-						</Button>
+					<div>
+						<h3 className="text-lg font-semibold">Category</h3>
+						<p className="text-muted-foreground text-sm">
+							{aboutMe.aboutMeCategory.name}
+						</p>
 					</div>
-				</Form>
+
+					<div>
+						<h3 className="text-lg font-semibold">Status</h3>
+						<p className="text-muted-foreground text-sm">
+							{aboutMe.isPublished ? 'Published' : 'Draft'}
+						</p>
+					</div>
+				</div>
 			</AppContainerGroup>
 		</AppContainerContent>
 	)
@@ -251,10 +110,10 @@ export default function DashboardAboutDetailsRoute({
 export const meta: Route.MetaFunction = ({ data }) => {
 	const aboutMeName = data?.aboutMe?.name ?? 'About Me'
 	return [
-		{ title: `Edit ${aboutMeName} | Dashboard | ${APP_NAME}` },
+		{ title: `${aboutMeName} | Dashboard | ${APP_NAME}` },
 		{
 			name: 'description',
-			content: `Edit ${aboutMeName} on ${APP_NAME}`,
+			content: `Details for ${aboutMeName} on ${APP_NAME}`,
 		},
 	]
 }
