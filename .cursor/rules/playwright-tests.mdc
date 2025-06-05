@@ -15,4 +15,10 @@ const categoryValue = await page
   .getByRole('combobox', { name: 'Category' })
   .textContent()
 await expect(categoryValue).toBe(category.name)
+
+// for validating errors
+const categoryError = page
+  .getByRole('combobox', { name: 'Category' })
+  .locator('xpath=./following-sibling::div')
+await expect(categoryError).toHaveText('Category is required')
 ```
