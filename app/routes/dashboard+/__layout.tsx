@@ -9,6 +9,7 @@ import {
 	IconSearch,
 	IconSettings,
 	IconAddressBook,
+	IconTools,
 } from '@tabler/icons-react'
 import * as React from 'react'
 import {
@@ -133,6 +134,11 @@ const navMain: DynamicNavLink[] = [
 		label: 'About',
 		to: 'about',
 		icon: IconListDetails,
+	},
+	{
+		label: 'Skills',
+		to: 'skills',
+		icon: IconTools,
 	},
 	{
 		label: 'Projects',

@@ -1,11 +1,12 @@
 import { invariantResponse } from '@epic-web/invariant'
+import { type SEOHandle } from '@nasa-gcn/remix-seo'
 import { type LoaderFunctionArgs } from 'react-router'
 import {
 	AppContainerContent,
 	AppContainerGroup,
 } from '#app/components/app-container.tsx'
 import { ChartAreaInteractive } from '#app/components/chart-area-interactive.tsx'
-import { DataTable } from '#app/components/data-table.tsx'
+import { DashboardDataTableDemo } from '#app/components/dashboard-data-table-demo.tsx'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { SectionCards } from '#app/components/section-cards.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
@@ -14,6 +15,10 @@ import { APP_NAME } from '#app/utils/app-name.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { type Route } from './+types/route.ts'
+
+export const handle: SEOHandle = {
+	getSitemapEntries: () => null,
+}
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	const userId = await requireUserId(request)
@@ -34,7 +39,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	return { user, userJoinedDisplay: user.createdAt.toLocaleDateString() }
 }
 
-export default function DashboardRoute() {
+export default function DashboardIndexRoute() {
 	return (
 		<AppContainerContent id="dashboard-content" className="container">
 			<AppContainerGroup>
@@ -44,7 +49,7 @@ export default function DashboardRoute() {
 				<ChartAreaInteractive />
 			</AppContainerGroup>
 			<AppContainerGroup>
-				<DataTable data={dashboardData} />
+				<DashboardDataTableDemo data={dashboardData} />
 			</AppContainerGroup>
 			<AppContainerGroup>
 				<Spacer size="xs" />

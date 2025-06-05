@@ -61,11 +61,22 @@ function CardAction({ className, ...props }: React.ComponentProps<'div'>) {
 	)
 }
 
-function CardContent({ className, ...props }: React.ComponentProps<'div'>) {
+function CardContent({
+	className,
+	variant,
+	...props
+}: React.ComponentProps<'div'> & {
+	variant?: 'default' | 'details'
+}) {
 	return (
 		<div
 			data-slot="card-content"
-			className={cn('px-6', className)}
+			className={cn(
+				'px-6',
+				variant === 'details' &&
+					'flex flex-col gap-4 md:grid md:grid-cols-[minmax(120px,auto)_1fr] md:items-baseline md:gap-x-8 md:gap-y-6',
+				className,
+			)}
 			{...props}
 		/>
 	)
@@ -81,6 +92,59 @@ function CardFooter({ className, ...props }: React.ComponentProps<'div'>) {
 	)
 }
 
+function CardDetailsItem({
+	label,
+	className,
+	...props
+}: React.ComponentProps<'div'> & { label: string }) {
+	return (
+		<div
+			className={cn(
+				'contents md:contents', // Use contents display to work with parent grid
+				className,
+			)}
+			{...props}
+		>
+			<CardDetailsLabel>{label}</CardDetailsLabel>
+			{props.children}
+		</div>
+	)
+}
+
+function CardDetailsLabel({
+	className,
+	...props
+}: React.ComponentProps<'div'>) {
+	return (
+		<div
+			data-slot="details-label"
+			className={cn('text-foreground text-base font-medium', className)}
+			{...props}
+		/>
+	)
+}
+
+function CardDetailsValue({
+	className,
+	variant,
+	...props
+}: React.ComponentProps<'div'> & {
+	variant?: 'default' | 'prose'
+}) {
+	return (
+		<div
+			data-slot="details-value"
+			className={cn(
+				'text-muted-foreground text-sm',
+				variant === 'prose' &&
+					'prose prose-sm sm:prose-base max-w-none break-words whitespace-pre-wrap',
+				className,
+			)}
+			{...props}
+		/>
+	)
+}
+
 export {
 	Card,
 	CardHeader,
@@ -89,4 +153,6 @@ export {
 	CardAction,
 	CardDescription,
 	CardContent,
+	CardDetailsItem,
+	CardDetailsValue,
 }
