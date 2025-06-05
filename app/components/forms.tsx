@@ -259,6 +259,7 @@ export function SwitchField({
 						input.blur()
 						switchProps.onBlur?.(event)
 					}}
+					type="button"
 				/>
 				<label
 					htmlFor={id}

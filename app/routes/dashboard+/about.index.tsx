@@ -495,7 +495,7 @@ export default function DashboardAboutIndexRoute({
 				<h1 className="text-2xl font-bold">About Me</h1>
 			</AppContainerGroup>
 
-			<AppContainerGroup className="px-0">
+			<AppContainerGroup id="about-me-sections" className="px-0">
 				<h1 className="text-xl font-bold">About Me Sections</h1>
 				<DataTable
 					columns={memoizedAboutMeColumns}
@@ -512,7 +512,7 @@ export default function DashboardAboutIndexRoute({
 				/>
 			</AppContainerGroup>
 
-			<AppContainerGroup className="px-0">
+			<AppContainerGroup id="about-me-categories" className="px-0">
 				<h1 className="text-xl font-bold">About Me Categories</h1>
 				<DataTable
 					columns={memoizedAboutMeCategoryColumns}

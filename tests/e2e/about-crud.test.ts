@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker'
-import { expect, test } from '#tests/playwright-utils.ts'
+import { expect, scrollDown, test, waitFor } from '#tests/playwright-utils.ts'
 
 test('can create about me section', async ({
 	page,
@@ -104,6 +104,8 @@ test('can edit about me section', async ({
 	await page.getByRole('combobox', { name: 'Category' }).click()
 	await page.getByRole('option', { name: category2.name }).click()
 	await page.getByRole('switch', { name: 'Published' }).click() // unpublish
+	// Scroll to the bottom of the page to ensure all elements are visible
+	await scrollDown(page, { mode: 'bottom' })
 	await page.getByRole('button', { name: 'Save Changes' }).click()
 
 	// Should redirect back to the view page after saving
@@ -113,7 +115,7 @@ test('can edit about me section', async ({
 	await expect(page.getByText(updatedContent)).toBeVisible()
 	await expect(page.getByText(updatedDescription)).toBeVisible()
 	await expect(page.getByText(category2.name)).toBeVisible()
-	await expect(page.getByText('Draft')).not.toBeVisible()
+	await expect(page.getByText('Draft')).toBeVisible()
 
 	// Go back to list to ensure it's visible there too (optional sanity check)
 	await page.getByRole('link', { name: 'Back to Abouts' }).click()
@@ -168,7 +170,7 @@ test('can create about me category using dialog', async ({ page, login }) => {
 	const categoriesSection = page
 		.locator('text=About Me Categories')
 		.locator('..')
-	await categoriesSection.getByRole('button', { name: 'Create' }).click()
+	await categoriesSection.getByRole('button', { name: 'New' }).click()
 
 	// Wait for dialog to open
 	await expect(page.getByRole('dialog')).toBeVisible()
@@ -188,7 +190,7 @@ test('can create about me category using dialog', async ({ page, login }) => {
 
 	// Wait for dialog to close and verify category appears in the list
 	await expect(page.getByRole('dialog')).not.toBeVisible()
-	await expect(page.getByText(categoryName)).toBeVisible()
+	await expect(categoriesSection.getByText(categoryName)).toBeVisible()
 })
 
 test('can edit about me category using dialog', async ({
@@ -209,7 +211,10 @@ test('can edit about me category using dialog', async ({
 	await page.goto('/dashboard/about')
 
 	// Edit the category by clicking on its name
-	await page.getByText(category.name).click()
+	const categoriesSection = page
+		.locator('text=About Me Categories')
+		.locator('..')
+	await categoriesSection.getByText(category.name).click()
 
 	// Wait for edit dialog to open
 	await expect(page.getByRole('dialog')).toBeVisible()
@@ -225,7 +230,7 @@ test('can edit about me category using dialog', async ({
 
 	// Wait for dialog to close and verify updated name appears
 	await expect(page.getByRole('dialog')).not.toBeVisible()
-	await expect(page.getByText(updatedCategoryName)).toBeVisible()
+	await expect(categoriesSection.getByText(updatedCategoryName)).toBeVisible()
 })
 
 test('can delete about me category using dialog', async ({
@@ -246,7 +251,12 @@ test('can delete about me category using dialog', async ({
 	await page.goto('/dashboard/about')
 
 	// Delete the category using the dropdown menu
-	const categoryRow = page.getByRole('row').filter({ hasText: category.name })
+	const categoriesSection = page
+		.locator('text=About Me Categories')
+		.locator('..')
+	const categoryRow = categoriesSection
+		.getByRole('row')
+		.filter({ hasText: category.name })
 	await categoryRow.getByRole('button', { name: 'Open menu' }).click()
 
 	// Handle the confirmation dialog
@@ -254,7 +264,7 @@ test('can delete about me category using dialog', async ({
 	await page.getByRole('button', { name: 'Delete' }).click()
 
 	// Verify the category is deleted
-	await expect(page.getByText(category.name)).not.toBeVisible()
+	await expect(categoriesSection.getByText(category.name)).not.toBeVisible()
 })
 
 test('displays existing about me sections from list page', async ({
@@ -267,7 +277,7 @@ test('displays existing about me sections from list page', async ({
 
 	// Create two categories
 	const category1 = await insertNewAboutMeCategory({
-		name: 'Work Experience',
+		name: 'Background',
 		description: 'Professional background',
 	})
 
@@ -294,13 +304,34 @@ test('displays existing about me sections from list page', async ({
 	await page.goto('/dashboard/about')
 	await expect(page).toHaveURL('/dashboard/about')
 
-	// Verify categories are visible
-	await expect(page.getByText(category1.name)).toBeVisible()
-	await expect(page.getByText(category2.name)).toBeVisible()
+	// Verify about me sections are visible in the about me section with specific column reference
+	const aboutMeSection = page.locator('#about-me-sections')
+	const aboutMeTable = aboutMeSection.locator('table')
+	await expect(
+		aboutMeTable
+			.getByRole('columnheader', { name: /name/i })
+			.getByText(aboutMe1.name),
+	).toBeVisible()
+	await expect(
+		aboutMeTable
+			.getByRole('columnheader', { name: /name/i })
+			.getByText(aboutMe2.name),
+	).toBeVisible()
+	await expect(
+		aboutMeTable
+			.getByRole('columnheader', { name: /category/i })
+			.getByText(category1.name),
+	).toBeVisible()
+	await expect(
+		aboutMeTable
+			.getByRole('columnheader', { name: /category/i })
+			.getByText(category2.name),
+	).toBeVisible()
 
-	// Verify about me sections are visible
-	await expect(page.getByText(aboutMe1.name)).toBeVisible()
-	await expect(page.getByText(aboutMe2.name)).toBeVisible()
+	// Verify categories are visible in the categories section
+	const categoriesSection = page.getByRole('region', { name: /categories/i })
+	await expect(categoriesSection.getByText(category1.name)).toBeVisible()
+	await expect(categoriesSection.getByText(category2.name)).toBeVisible()
 })
 
 test('toggles "Published" status for an About Me Section from list page', async ({

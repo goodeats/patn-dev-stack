@@ -155,3 +155,66 @@ export async function waitFor<ReturnValue>(
 	}
 	throw lastError
 }
+
+/**
+ * Helper function to scroll down the page with different scrolling options.
+ * This can be useful for testing lazy-loaded content or infinite scroll.
+ *
+ * @param page - The Playwright page object to perform the scrolling on.
+ * @param options - Configuration options for scrolling behavior.
+ * @param options.mode - The scrolling mode: 'bottom' to scroll to the very bottom, 'halfPage' to scroll half a page height, or 'fullPage' to scroll a full page height.
+ * @param options.maxAttempts - Maximum number of scroll attempts before giving up (default: 10). Only applicable when mode is 'bottom'.
+ * @returns A promise that resolves when the scrolling action is complete.
+ */
+export async function scrollDown(
+	page: any,
+	options: {
+		mode: 'bottom' | 'halfPage' | 'fullPage'
+		maxAttempts?: number
+	} = { mode: 'bottom', maxAttempts: 10 },
+): Promise<void> {
+	const { mode, maxAttempts = 10 } = options
+
+	if (mode === 'bottom') {
+		let attempts = 0
+		let lastHeight = 0
+
+		while (attempts < maxAttempts) {
+			// Get the current scroll height
+			await page.evaluate(() => document.documentElement.scrollHeight)
+
+			// Scroll to the bottom of the current view
+			await page.evaluate(() =>
+				window.scrollTo(0, document.documentElement.scrollHeight),
+			)
+
+			// Wait for potential new content to load
+			await page.waitForTimeout(500)
+
+			// Check the new scroll height after scrolling
+			const newHeight = await page.evaluate(
+				() => document.documentElement.scrollHeight,
+			)
+
+			// If the height hasn't changed, we've likely reached the bottom
+			if (newHeight === lastHeight) {
+				break
+			}
+
+			lastHeight = newHeight
+			attempts++
+		}
+	} else if (mode === 'halfPage' || mode === 'fullPage') {
+		// Get the viewport height
+		const viewportHeight = await page.evaluate(() => window.innerHeight)
+		// Calculate scroll distance based on mode
+		const scrollDistance =
+			mode === 'halfPage' ? viewportHeight / 2 : viewportHeight
+		// Perform the scroll
+		await page.evaluate((distance: number) => {
+			window.scrollBy(0, distance)
+		}, scrollDistance)
+		// Wait for potential new content to load
+		await page.waitForTimeout(500)
+	}
+}
