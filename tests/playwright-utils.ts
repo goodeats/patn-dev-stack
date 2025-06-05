@@ -1,4 +1,4 @@
-import { test as base } from '@playwright/test'
+import { test as base, type Locator } from '@playwright/test'
 import * as setCookieParser from 'set-cookie-parser'
 import { getSessionExpirationDate, sessionKey } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
@@ -216,5 +216,52 @@ export async function scrollDown(
 		}, scrollDistance)
 		// Wait for potential new content to load
 		await page.waitForTimeout(500)
+	}
+}
+
+/**
+ * Locates all table header cells within a specific locator context.
+ * @param locator - The Playwright locator to search within.
+ * @returns An array of locators for the table header cells.
+ */
+export async function locateTableHeader(locator: Locator): Promise<Locator[]> {
+	return locator.locator('thead').locator('th').all()
+}
+
+/**
+ * Locates a table row by its text content within a specific locator context.
+ * @param locator - The Playwright locator to search within.
+ * @returns A locator for the table rows.
+ */
+export async function locateTableRows(locator: Locator): Promise<Locator[]> {
+	return locator.locator('tbody').locator('tr').all()
+}
+
+/**
+ * Verifies the headers of a table against an expected list of header names.
+ * @param tableLocator - The Playwright locator for the table to check.
+ * @param expectedHeaders - An array of strings representing the expected header names.
+ * @param opts - Optional configuration object to account for additional columns like selection checkboxes or actions.
+ */
+export async function verifyTableHeaders(
+	tableLocator: Locator,
+	expectedHeaders: string[],
+	opts: { hasSelectColumn?: boolean; hasActionsColumn?: boolean } = {
+		hasSelectColumn: false,
+		hasActionsColumn: false,
+	},
+): Promise<void> {
+	const { hasSelectColumn = false, hasActionsColumn = false } = opts
+	let offset = 0
+	if (hasSelectColumn) offset += 1
+	if (hasActionsColumn) offset += 1
+
+	const tableHeaders = await locateTableHeader(tableLocator)
+	await expect(tableHeaders).toHaveLength(expectedHeaders.length + offset)
+
+	for (let i = 0; i < expectedHeaders.length; i++) {
+		const headerIndex = i + (hasSelectColumn ? 1 : 0)
+		const locator = tableHeaders[headerIndex] as Locator
+		await expect(locator).toHaveText(expectedHeaders[i]!)
 	}
 }
