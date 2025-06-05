@@ -86,13 +86,10 @@ test('can edit about me section', async ({
 	await expect(page.getByLabel('Description (Optional)')).toHaveValue(
 		initialSection.description ?? '',
 	)
-	console.log(
-		'Current category value:',
-		await page.getByRole('combobox', { name: 'Category' }).inputValue(),
-	)
-	await expect(page.getByRole('combobox', { name: 'Category' })).toHaveValue(
-		category.name,
-	)
+	const categoryValue = await page
+		.getByRole('combobox', { name: 'Category' })
+		.textContent()
+	await expect(categoryValue).toBe(category.name)
 
 	// Edit the section
 	const updatedName = faker.lorem.words(3)
