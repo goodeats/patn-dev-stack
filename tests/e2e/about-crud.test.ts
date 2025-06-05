@@ -827,50 +827,55 @@ test('non-published categories are not available for selection', async ({
 test('editing section whose category becomes unpublished', async ({
 	page,
 	login,
+	insertNewAboutMeCategory,
+	insertNewAboutMe,
 }) => {
 	const userName = faker.person.firstName()
-	await login({ name: userName })
+	const user = await login({ name: userName })
+
+	const catX = await insertNewAboutMeCategory({
+		name: `CatXToUnpublish ${faker.lorem.word()}`,
+		isPublished: true,
+	})
+	const catY = await insertNewAboutMeCategory({
+		name: `CatYToStayPublished ${faker.lorem.word()}`,
+		isPublished: true,
+	})
+	const sectionY = await insertNewAboutMe({
+		userId: user.id,
+		aboutMeCategoryId: catX.id,
+		name: `SectionYWithCatX ${faker.lorem.word()}`,
+	})
+
 	await page.goto('/dashboard/about')
 
-	const catXName = `CatXToUnpublish ${faker.lorem.word()}`
-	const sectionYName = `SectionYWithCatX ${faker.lorem.word()}`
-
-	// Create CatX (published)
-	const categoriesSection = page
-		.locator('text=About Me Categories')
-		.locator('..')
-	await categoriesSection.getByRole('button', { name: 'Create' }).click()
-	await page.getByLabel('Name').fill(catXName)
-	await page.getByRole('button', { name: 'Create Category' }).click()
-
-	// Create SectionY and assign to CatX
-	await page.getByRole('link', { name: 'New' }).click()
-	await page.getByLabel('Name').fill(sectionYName)
-	await page.getByLabel('Content').fill(faker.lorem.paragraph())
-	await page.getByRole('combobox', { name: 'Category' }).click()
-	await page.getByRole('option', { name: catXName }).click()
-	await page.getByRole('button', { name: 'Create About Me' }).click() // to view
-	const sectionId = page.url().split('/').pop()
-	await page.getByRole('link', { name: 'Back to Abouts' }).click()
-
 	// Unpublish CatX
-	const catXRow = page.getByRole('row').filter({ hasText: catXName })
-	await catXRow.getByRole('switch').click()
+	const catXRow = categoriesSection(page)
+		.getByRole('row')
+		.filter({ hasText: catX.name })
+	const publishSwitch = await catXRow.getByRole('switch', {
+		name: `Toggle publish status for ${catX.name}`,
+	})
+	await expect(publishSwitch).toBeChecked()
+	await publishSwitch.click()
+	await expect(publishSwitch).not.toBeChecked()
+
 	await page.reload()
 
 	// Navigate to edit SectionY
-	await page.goto(`/dashboard/about/${sectionId}/edit`)
+	await page.goto(`/dashboard/about/${sectionY.id}/edit`)
 
 	// Assert: Category select field shows CatX, but CatX is not in dropdown options
 	// The value of the select might be the ID, so we check the text content of the selected item if possible
-	// For Playwright, getByRole('combobox').inputValue() or .textContent() might give the displayed text
-	await expect(page.getByRole('combobox', { name: 'Category' })).toHaveValue(
-		catXName.toLowerCase(),
-	) // Or check ID if value is ID
+	// For Playwright, getByRole('combobox').textContent() might give the displayed text
+	const categoryValue = await page
+		.getByRole('combobox', { name: 'Category' })
+		.textContent()
+	await expect(categoryValue).toBe('') // empty string because it's not published
 
 	await page.getByRole('combobox', { name: 'Category' }).click()
-	await expect(page.getByRole('option', { name: catXName })).not.toBeVisible()
-	await expect(page.getByRole('option', { name: 'Professional' })).toBeVisible() // Assuming Professional is still an option
+	await expect(page.getByRole('option', { name: catX.name })).not.toBeVisible()
+	await expect(page.getByRole('option', { name: catY.name })).toBeVisible()
 	await page.keyboard.press('Escape')
 
 	// Attempt to save without changing category
@@ -880,26 +885,11 @@ test('editing section whose category becomes unpublished', async ({
 	await page.getByRole('button', { name: 'Save Changes' }).click()
 
 	// Assert save is successful (redirects to view page)
-	await expect(page).toHaveURL(`/dashboard/about/${sectionId}`)
+	await expect(page).toHaveURL(`/dashboard/about/${sectionY.id}`)
 	await expect(
 		page.locator('text=Content').locator('xpath=following-sibling::*[1]'),
 	).toHaveText(newContent)
 	await expect(
 		page.locator('text=Category').locator('xpath=following-sibling::*[1]'),
-	).toHaveText(catXName) // Still associated
-
-	// Cleanup
-	await page.goto('/dashboard/about')
-	// Delete section first if category deletion doesn't cascade or if you want to be sure
-	const sectionRow = page.getByRole('row').filter({ hasText: sectionYName })
-	if (await sectionRow.isVisible()) {
-		await sectionRow.getByRole('button', { name: 'Open menu' }).click()
-		page.once('dialog', (d) => d.accept())
-		await page.getByRole('button', { name: 'Delete' }).click()
-	}
-
-	const catXRowToDel = page.getByRole('row').filter({ hasText: catXName })
-	await catXRowToDel.getByRole('button', { name: 'Open menu' }).click()
-	page.once('dialog', (d) => d.accept())
-	await page.getByRole('button', { name: 'Delete' }).click()
+	).toHaveText(catY.name) // associated gets changed
 })
