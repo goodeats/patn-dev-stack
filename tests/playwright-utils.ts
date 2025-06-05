@@ -229,15 +229,6 @@ export async function locateTableHeader(locator: Locator): Promise<Locator[]> {
 }
 
 /**
- * Locates a table row by its text content within a specific locator context.
- * @param locator - The Playwright locator to search within.
- * @returns A locator for the table rows.
- */
-export async function locateTableRows(locator: Locator): Promise<Locator[]> {
-	return locator.locator('tbody').locator('tr').all()
-}
-
-/**
  * Verifies the headers of a table against an expected list of header names.
  * @param tableLocator - The Playwright locator for the table to check.
  * @param expectedHeaders - An array of strings representing the expected header names.
@@ -263,5 +254,73 @@ export async function verifyTableHeaders(
 		const headerIndex = i + (hasSelectColumn ? 1 : 0)
 		const locator = tableHeaders[headerIndex] as Locator
 		await expect(locator).toHaveText(expectedHeaders[i]!)
+	}
+}
+
+export const testDateToday = new Date().toLocaleDateString('en-US', {
+	month: 'numeric',
+	day: 'numeric',
+	year: 'numeric',
+}) // test created and updated are today, formatted as M/D/YYYY
+
+/**
+ * Locates a table row by its text content within a specific locator context.
+ * @param locator - The Playwright locator to search within.
+ * @returns A locator for the table rows.
+ */
+export async function locateTableRows(locator: Locator): Promise<Locator[]> {
+	return locator.locator('tbody').locator('tr').all()
+}
+
+/**
+ * Verifies the data of a specific row in a table against expected cell values.
+ * @param tableLocator - The Playwright locator for the table to check.
+ * @param rowIndex - The index of the row to verify.
+ * @param expectedData - An array of strings representing the expected cell values for the row.
+ * @param opts - Optional configuration object to account for additional columns like selection checkboxes.
+ */
+export async function verifyTableRowData(
+	tableLocator: Locator,
+	rowIndex: number,
+	expectedData: string[],
+	opts: { hasSelectColumn?: boolean } = {
+		hasSelectColumn: false,
+	},
+): Promise<void> {
+	const { hasSelectColumn = false } = opts
+	const rows = await locateTableRows(tableLocator)
+	await expect(rows.length).toBeGreaterThan(rowIndex)
+
+	const row = rows[rowIndex] as Locator
+	const cells = await row.locator('td').all()
+
+	let startIndex = hasSelectColumn ? 1 : 0
+	for (let i = 0; i < expectedData.length; i++) {
+		const cellIndex = startIndex + i
+		const cell = cells[cellIndex] as Locator
+		await expect(cell).toHaveText(expectedData[i]!)
+	}
+}
+
+/**
+ * Verifies the data of multiple rows in a table against expected cell values for each row.
+ * @param tableLocator - The Playwright locator for the table to check.
+ * @param expectedDataArrays - An array of arrays, where each inner array contains strings representing the expected cell values for a row.
+ * @param opts - Optional configuration object to account for additional columns like selection checkboxes.
+ */
+export async function verifyMultipleTableRowsData(
+	tableLocator: Locator,
+	expectedDataArrays: string[][],
+	opts: { hasSelectColumn?: boolean } = {
+		hasSelectColumn: false,
+	},
+): Promise<void> {
+	for (let rowIndex = 0; rowIndex < expectedDataArrays.length; rowIndex++) {
+		await verifyTableRowData(
+			tableLocator,
+			rowIndex,
+			expectedDataArrays[rowIndex]!,
+			opts,
+		)
 	}
 }

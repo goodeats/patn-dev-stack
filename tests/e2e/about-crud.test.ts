@@ -7,7 +7,10 @@ import {
 	locateTableRows,
 	scrollDown,
 	test,
+	testDateToday,
+	verifyMultipleTableRowsData,
 	verifyTableHeaders,
+	verifyTableRowData,
 	waitFor,
 } from '#tests/playwright-utils.ts'
 
@@ -330,36 +333,55 @@ test('displays existing about me sections from list page', async ({
 		hasActionsColumn: true,
 	})
 
-	// const aboutMeTableRows = await locateTableRows(aboutMeTable)
-	// const aboutMe1Row = await locateTableCell(aboutMeTable, aboutMe1.name, 0)
-	// const aboutMe2Row = await locateTableCell(aboutMeTable, aboutMe2.name, 0)
-	// const category1Row = await locateTableCell(aboutMeTable, category1.name, 1)
-	// const category2Row = await locateTableCell(aboutMeTable, category2.name, 1)
-	// await expect(
-	// 	aboutMeTable
-	// 		.getByRole('columnheader', { name: /name/i })
-	// 		.getByText(aboutMe1.name),
-	// ).toBeVisible()
-	// await expect(
-	// 	aboutMeTable
-	// 		.getByRole('columnheader', { name: /name/i })
-	// 		.getByText(aboutMe2.name),
-	// ).toBeVisible()
-	// await expect(
-	// 	aboutMeTable
-	// 		.getByRole('columnheader', { name: /category/i })
-	// 		.getByText(category1.name),
-	// ).toBeVisible()
-	// await expect(
-	// 	aboutMeTable
-	// 		.getByRole('columnheader', { name: /category/i })
-	// 		.getByText(category2.name),
-	// ).toBeVisible()
+	await verifyTableRowData(
+		aboutMeTable,
+		0,
+		[
+			aboutMe2.name,
+			aboutMe2.content,
+			category2.name,
+			testDateToday,
+			testDateToday,
+		],
+		{ hasSelectColumn: true },
+	)
+	await verifyTableRowData(
+		aboutMeTable,
+		1,
+		[
+			aboutMe1.name,
+			aboutMe1.content,
+			category1.name,
+			testDateToday,
+			testDateToday,
+		],
+		{ hasSelectColumn: true },
+	)
+	await verifyMultipleTableRowsData(
+		aboutMeTable,
+		[
+			[
+				aboutMe2.name,
+				aboutMe2.content,
+				category2.name,
+				testDateToday,
+				testDateToday,
+			],
+			[
+				aboutMe1.name,
+				aboutMe1.content,
+				category1.name,
+				testDateToday,
+				testDateToday,
+			],
+		],
+		{ hasSelectColumn: true },
+	)
 
-	// Verify categories are visible in the categories section
-	const categoriesSection = page.getByRole('region', { name: /categories/i })
-	await expect(categoriesSection.getByText(category1.name)).toBeVisible()
-	await expect(categoriesSection.getByText(category2.name)).toBeVisible()
+	// // Verify categories are visible in the categories section
+	// const categoriesSection = page.getByRole('region', { name: /categories/i })
+	// await expect(categoriesSection.getByText(category1.name)).toBeVisible()
+	// await expect(categoriesSection.getByText(category2.name)).toBeVisible()
 })
 
 test('toggles "Published" status for an About Me Section from list page', async ({
