@@ -11,7 +11,8 @@ import {
 } from '#app/utils/user-validation'
 import { login, logout } from '#tests/actions/auth.ts'
 import { readEmail } from '#tests/mocks/utils.ts'
-import { createUser, expect, test as base } from '#tests/playwright-utils.ts'
+import { createUser } from '#tests/models/user-test-setup.ts'
+import { expect, test as base } from '#tests/playwright-utils.ts'
 
 // This file contains end-to-end tests for the user onboarding process.
 // It covers different scenarios including signing up with email verification links and codes,
