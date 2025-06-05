@@ -7,14 +7,6 @@ import {
 import { UniqueEnforcer } from 'enforce-unique'
 import { prisma } from '#app/utils/db.server.ts'
 
-export type GetOrInsertUserOptions = {
-	id?: string
-	username?: UserModel['username']
-	password?: string
-	email?: UserModel['email']
-	name?: UserModel['name']
-}
-
 export type AboutMeCategoryPlaywright = {
 	id: string
 	name: string
@@ -48,6 +40,7 @@ export function createAboutMeCategoryData(
 
 export async function getOrInsertAboutMeCategory({
 	id,
+	name,
 	...rest
 }: CreateAboutMeCategoryOptions = {}): Promise<AboutMeCategoryPlaywright> {
 	const select = {
@@ -61,13 +54,22 @@ export async function getOrInsertAboutMeCategory({
 			select,
 			where: { id },
 		})
-	} else {
-		const data = createAboutMeCategoryData(rest)
-		return await prisma.aboutMeCategory.create({
-			select,
-			data,
-		})
 	}
+	if (name) {
+		const existingCategory = await prisma.aboutMeCategory.findUnique({
+			where: { name },
+			select,
+		})
+		if (existingCategory) {
+			return existingCategory
+		}
+	}
+
+	const data = createAboutMeCategoryData({ name, ...rest })
+	return await prisma.aboutMeCategory.create({
+		select,
+		data,
+	})
 }
 
 // AboutMe Types and Functions

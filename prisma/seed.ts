@@ -3,11 +3,15 @@ import { prisma } from '#app/utils/db.server.ts'
 import { MOCK_CODE_GITHUB } from '#app/utils/providers/constants'
 import {
 	createPassword,
-	createUser,
 	getNoteImages,
 	getUserImages,
 } from '#tests/db-utils.ts'
 import { insertGitHubUser } from '#tests/mocks/github.ts'
+import {
+	getOrInsertAboutMe,
+	getOrInsertAboutMeCategory,
+} from '#tests/models/about-test-setup.ts'
+import { createUser } from '#tests/models/user-test-setup.ts'
 
 async function seed() {
 	console.log('🌱 Seeding...')
@@ -260,20 +264,8 @@ async function seed() {
 	] as const
 
 	for (const category of aboutMeCategoryData) {
-		await prisma.aboutMeCategory.create({
-			data: {
-				name: category.name,
-				description: category.description,
-			},
-		})
+		await getOrInsertAboutMeCategory(category)
 	}
-
-	const aboutMeCategories = await prisma.aboutMeCategory.findMany({
-		select: { id: true, name: true },
-	})
-	const aboutMeCategoriesMap = new Map(
-		aboutMeCategories.map((c) => [c.name, c.id]),
-	)
 
 	const aboutMeContent = [
 		{
@@ -298,14 +290,12 @@ async function seed() {
 	] as const
 
 	for (const aboutMe of aboutMeContent) {
-		await prisma.aboutMe.create({
-			data: {
-				name: aboutMe.name,
-				description: aboutMe.description,
-				content: aboutMe.content,
-				userId: pat.id,
-				aboutMeCategoryId: aboutMeCategoriesMap.get(aboutMe.category)!,
-			},
+		await getOrInsertAboutMe({
+			userId: pat.id,
+			name: aboutMe.name,
+			description: aboutMe.description,
+			content: aboutMe.content,
+			aboutMeCategoryName: aboutMe.category,
 		})
 	}
 

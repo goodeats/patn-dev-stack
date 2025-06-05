@@ -3,14 +3,15 @@
  */
 import { faker } from '@faker-js/faker'
 import { render, screen } from '@testing-library/react'
-import { createRoutesStub, redirect } from 'react-router'
+import { createRoutesStub } from 'react-router'
 import setCookieParser from 'set-cookie-parser'
 import { test, expect } from 'vitest'
 import { loader as rootLoader } from '#app/root.tsx'
 import { getSessionExpirationDate, sessionKey } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { authSessionStorage } from '#app/utils/session.server.ts'
-import { createUser, getUserImages } from '#tests/db-utils.ts'
+import { getUserImages } from '#tests/db-utils.ts'
+import { createUser } from '#tests/models/user-test-setup.ts'
 import { default as UsernameRoute, loader } from './$username.tsx'
 
 test('The user profile when not logged in as self', async () => {

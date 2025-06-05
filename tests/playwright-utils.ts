@@ -25,6 +25,8 @@ import {
 } from './models/user-test-setup.ts'
 
 export * from './db-utils.ts'
+export * from './models/user-test-setup.ts'
+export * from './models/about-test-setup.ts'
 
 export const test = base.extend<{
 	insertNewUser(options?: GetOrInsertUserOptions): Promise<UserPlaywright>

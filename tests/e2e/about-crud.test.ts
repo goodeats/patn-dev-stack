@@ -86,8 +86,12 @@ test('can edit about me section', async ({
 	await expect(page.getByLabel('Description (Optional)')).toHaveValue(
 		initialSection.description ?? '',
 	)
+	console.log(
+		'Current category value:',
+		await page.getByRole('combobox', { name: 'Category' }).inputValue(),
+	)
 	await expect(page.getByRole('combobox', { name: 'Category' })).toHaveValue(
-		category.name.toLowerCase(),
+		category.name,
 	)
 
 	// Edit the section
@@ -155,10 +159,7 @@ test('can delete about me section from list page', async ({
 	await expect(page.getByText(sectionToDelete.name)).not.toBeVisible()
 })
 
-test('can create, edit, and delete about me categories using dialogs', async ({
-	page,
-	login,
-}) => {
+test('can create about me category using dialog', async ({ page, login }) => {
 	const userName = faker.person.firstName()
 	await login({ name: userName })
 
@@ -191,9 +192,27 @@ test('can create, edit, and delete about me categories using dialogs', async ({
 	// Wait for dialog to close and verify category appears in the list
 	await expect(page.getByRole('dialog')).not.toBeVisible()
 	await expect(page.getByText(categoryName)).toBeVisible()
+})
+
+test('can edit about me category using dialog', async ({
+	page,
+	login,
+	insertNewAboutMeCategory,
+}) => {
+	const userName = faker.person.firstName()
+	await login({ name: userName })
+
+	// Create a category to edit
+	const category = await insertNewAboutMeCategory({
+		name: faker.lorem.words(2),
+		description: faker.lorem.sentence(),
+	})
+
+	// Navigate to About page
+	await page.goto('/dashboard/about')
 
 	// Edit the category by clicking on its name
-	await page.getByText(categoryName).click()
+	await page.getByText(category.name).click()
 
 	// Wait for edit dialog to open
 	await expect(page.getByRole('dialog')).toBeVisible()
@@ -210,11 +229,27 @@ test('can create, edit, and delete about me categories using dialogs', async ({
 	// Wait for dialog to close and verify updated name appears
 	await expect(page.getByRole('dialog')).not.toBeVisible()
 	await expect(page.getByText(updatedCategoryName)).toBeVisible()
+})
+
+test('can delete about me category using dialog', async ({
+	page,
+	login,
+	insertNewAboutMeCategory,
+}) => {
+	const userName = faker.person.firstName()
+	await login({ name: userName })
+
+	// Create a category to delete
+	const category = await insertNewAboutMeCategory({
+		name: faker.lorem.words(2),
+		description: faker.lorem.sentence(),
+	})
+
+	// Navigate to About page
+	await page.goto('/dashboard/about')
 
 	// Delete the category using the dropdown menu
-	const categoryRow = page
-		.getByRole('row')
-		.filter({ hasText: updatedCategoryName })
+	const categoryRow = page.getByRole('row').filter({ hasText: category.name })
 	await categoryRow.getByRole('button', { name: 'Open menu' }).click()
 
 	// Handle the confirmation dialog
@@ -222,22 +257,53 @@ test('can create, edit, and delete about me categories using dialogs', async ({
 	await page.getByRole('button', { name: 'Delete' }).click()
 
 	// Verify the category is deleted
-	await expect(page.getByText(updatedCategoryName)).not.toBeVisible()
+	await expect(page.getByText(category.name)).not.toBeVisible()
 })
 
-test('displays existing about me sections from seed data', async ({
+test('displays existing about me sections from list page', async ({
 	page,
 	login,
+	insertNewAboutMe,
+	insertNewAboutMeCategory,
 }) => {
-	// Login as the seeded admin user
-	await login({ username: 'pat' })
+	const user = await login()
+
+	// Create two categories
+	const category1 = await insertNewAboutMeCategory({
+		name: 'Work Experience',
+		description: 'Professional background',
+	})
+
+	const category2 = await insertNewAboutMeCategory({
+		name: 'Education',
+		description: 'Academic history',
+	})
+
+	// Create two about me sections
+	const aboutMe1 = await insertNewAboutMe({
+		userId: user.id,
+		name: 'Software Engineer',
+		content: 'My experience as a developer',
+		aboutMeCategoryId: category1.id,
+	})
+
+	const aboutMe2 = await insertNewAboutMe({
+		userId: user.id,
+		name: 'University Degree',
+		content: 'My educational background',
+		aboutMeCategoryId: category2.id,
+	})
 
 	await page.goto('/dashboard/about')
 	await expect(page).toHaveURL('/dashboard/about')
 
-	// Check for seeded content
-	await expect(page.getByText('Professional')).toBeVisible()
-	await expect(page.getByText('Personal')).toBeVisible()
+	// Verify categories are visible
+	await expect(page.getByText(category1.name)).toBeVisible()
+	await expect(page.getByText(category2.name)).toBeVisible()
+
+	// Verify about me sections are visible
+	await expect(page.getByText(aboutMe1.name)).toBeVisible()
+	await expect(page.getByText(aboutMe2.name)).toBeVisible()
 })
 
 test('toggles "Published" status for an About Me Section from list page', async ({
@@ -245,9 +311,13 @@ test('toggles "Published" status for an About Me Section from list page', async 
 	login,
 	insertNewUser,
 	insertNewAboutMe,
+	insertNewAboutMeCategory,
 }) => {
 	const user = await insertNewUser()
 	await login({ id: user.id })
+	const category = await insertNewAboutMeCategory({
+		name: 'Professional',
+	})
 	await page.goto('/dashboard/about')
 
 	// Create a section to toggle using the new helper
@@ -256,7 +326,7 @@ test('toggles "Published" status for an About Me Section from list page', async 
 		userId: user.id,
 		name: sectionName,
 		content: faker.lorem.paragraph(),
-		aboutMeCategoryName: 'Professional', // Assumes Professional category exists or will be created by helper
+		aboutMeCategoryId: category.id,
 		isPublished: true,
 	})
 
@@ -291,9 +361,6 @@ test('toggles "Published" status for an About Me Section from list page', async 
 		.filter({ hasText: sectionName })
 		.getByRole('switch')
 	await expect(reloadedSwitchChecked).toBeChecked()
-
-	// Cleanup: Delete the section
-	// The helper will automatically clean up the section after the test
 })
 
 test('validates About Me Section creation and editing', async ({
