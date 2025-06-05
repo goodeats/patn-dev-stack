@@ -270,7 +270,7 @@ const aboutMeColumns = (): ColumnDef<AboutMeDataItem>[] => [
 						className="data-[state=open]:bg-muted flex size-8 p-0"
 					>
 						<Icon name="dots-horizontal" className="size-4" />
-						<span className="sr-only">Open menu</span>
+						<span className="sr-only">Open about section menu</span>
 					</Button>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align="end" className="w-[160px]">
@@ -392,7 +392,7 @@ const aboutMeCategoryColumns = (
 						className="data-[state=open]:bg-muted flex size-8 p-0"
 					>
 						<Icon name="dots-horizontal" className="size-4" />
-						<span className="sr-only">Open menu</span>
+						<span className="sr-only">Open about category menu</span>
 					</Button>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align="end" className="w-[160px]">

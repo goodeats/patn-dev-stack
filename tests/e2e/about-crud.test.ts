@@ -1,4 +1,5 @@
 import { faker } from '@faker-js/faker'
+import { type Page } from '@playwright/test'
 import {
 	expect,
 	scrollDown,
@@ -7,6 +8,9 @@ import {
 	verifyMultipleTableRowsData,
 	verifyTableHeaders,
 } from '#tests/playwright-utils.ts'
+
+const aboutMeSection = (page: Page) => page.locator('#about-me-sections')
+const categoriesSection = (page: Page) => page.locator('#about-me-categories')
 
 test('can create about me section', async ({
 	page,
@@ -648,14 +652,16 @@ test('validates About Me Category creation in dialog', async ({
 	const categoriesSection = page
 		.locator('text=About Me Categories')
 		.locator('..')
-	await categoriesSection.getByRole('button', { name: 'Create' }).click()
+	await categoriesSection.getByRole('button', { name: 'New' }).click()
 
 	await expect(page.getByRole('dialog')).toBeVisible()
 	await page.getByRole('button', { name: 'Create Category' }).click() // Attempt submit with empty name
 
-	// Assuming error messages are like "Name is required"
 	await expect(
-		page.getByRole('dialog').getByText('Name is required'),
+		page
+			.getByRole('dialog')
+			.locator('#about-category-editor-name-error')
+			.getByText('Required'),
 	).toBeVisible()
 	await expect(page.getByRole('dialog')).toBeVisible() // Dialog should still be open
 
@@ -667,135 +673,113 @@ test('validates About Me Category creation in dialog', async ({
 test('deletion of Category also deletes its associated About Me Sections', async ({
 	page,
 	login,
+	insertNewAboutMeCategory,
+	insertNewAboutMe,
 }) => {
 	const userName = faker.person.firstName()
-	await login({ name: userName })
+	const user = await login({ name: userName })
+
+	const categoryToDelete = await insertNewAboutMeCategory({
+		name: `CatToDelete ${faker.lorem.word()}`,
+	})
+	const aboutMeSectionToBeDeletedByCategory = await insertNewAboutMe({
+		userId: user.id,
+		aboutMeCategoryId: categoryToDelete.id,
+	})
+
 	await page.goto('/dashboard/about')
 
-	// 1. Create a new category
-	const categoryToDeleteName = `CatToDelete ${faker.lorem.word()}`
-	const categoriesSection = page
-		.locator('text=About Me Categories')
-		.locator('..')
-	await categoriesSection.getByRole('button', { name: 'Create' }).click()
-	await page.getByLabel('Name').fill(categoryToDeleteName)
-	await page.getByRole('button', { name: 'Create Category' }).click()
-	await expect(page.getByText(categoryToDeleteName)).toBeVisible()
-
-	// 2. Create a new "About Me Section" and assign it to "CategoryToDelete"
-	const sectionInDeletedCategoryName = `SectionInDelCat ${faker.lorem.word()}`
-	await page.getByRole('link', { name: 'New' }).click()
-	await page.getByLabel('Name').fill(sectionInDeletedCategoryName)
-	await page.getByLabel('Content').fill(faker.lorem.paragraph())
-	await page.getByRole('combobox', { name: 'Category' }).click()
-	await page.getByRole('option', { name: categoryToDeleteName }).click()
-	await page.getByRole('button', { name: 'Create About Me' }).click()
-	await page.getByRole('link', { name: 'Back to Abouts' }).click()
-	await expect(page.getByText(sectionInDeletedCategoryName)).toBeVisible()
+	await expect(
+		aboutMeSection(page).getByText(categoryToDelete.name),
+	).toBeVisible()
+	await expect(
+		categoriesSection(page).getByText(categoryToDelete.name),
+	).toBeVisible()
+	await expect(
+		aboutMeSection(page).getByText(aboutMeSectionToBeDeletedByCategory.name),
+	).toBeVisible()
 
 	// 3. Delete "CategoryToDelete"
 	const categoryRow = page
 		.getByRole('row')
-		.filter({ hasText: categoryToDeleteName })
-	await categoryRow.getByRole('button', { name: 'Open menu' }).click()
+		.filter({ hasText: categoryToDelete.name })
+	await categoryRow
+		.getByRole('button', { name: 'Open about category menu' })
+		.click()
 	page.on('dialog', (dialog) => dialog.accept()) // Accepts the "are you sure? this will delete sections"
 	await page.getByRole('button', { name: 'Delete' }).click()
 
 	// 4. Assertions
-	await expect(page.getByText(categoryToDeleteName)).not.toBeVisible()
-	await expect(page.getByText(sectionInDeletedCategoryName)).not.toBeVisible()
+	await expect(
+		aboutMeSection(page).getByText(categoryToDelete.name),
+	).not.toBeVisible()
+	await expect(
+		categoriesSection(page).getByText(categoryToDelete.name),
+	).not.toBeVisible()
+	await expect(
+		aboutMeSection(page).getByText(aboutMeSectionToBeDeletedByCategory.name),
+	).not.toBeVisible()
 })
 
 test('filters About Me Categories on the list page', async ({
 	page,
 	login,
+	insertNewAboutMeCategory,
 }) => {
 	const userName = faker.person.firstName()
 	await login({ name: userName })
+
+	const cat1 = await insertNewAboutMeCategory({
+		name: `FilterCat1 ${faker.lorem.word()}`,
+		description: `UniqueDesc1 ${faker.string.uuid()}`,
+	})
+	const cat2 = await insertNewAboutMeCategory({
+		name: `FilterCat2 ${faker.lorem.word()}`,
+		description: `UniqueDesc2 ${faker.string.uuid()}`,
+	})
+
 	await page.goto('/dashboard/about')
 
-	const catName1 = `FilterCat1 ${faker.lorem.word()}`
-	const catDesc1 = `UniqueDesc1 ${faker.string.uuid()}`
-	const catName2 = `FilterCat2 ${faker.lorem.word()}`
-	const catDesc2 = `UniqueDesc2 ${faker.string.uuid()}`
-
-	// Create categories
-	const categoriesSection = page
-		.locator('text=About Me Categories')
-		.locator('..')
-	await categoriesSection.getByRole('button', { name: 'Create' }).click()
-	await page.getByLabel('Name').fill(catName1)
-	await page.getByLabel('Description (Optional)').fill(catDesc1)
-	await page.getByRole('button', { name: 'Create Category' }).click()
-
-	await categoriesSection.getByRole('button', { name: 'Create' }).click()
-	await page.getByLabel('Name').fill(catName2)
-	await page.getByLabel('Description (Optional)').fill(catDesc2)
-	await page.getByRole('button', { name: 'Create Category' }).click()
-
 	// Filter by name
-	await page.getByPlaceholder('Filter name...').fill(catName1)
-	await expect(page.getByText(catName1)).toBeVisible()
-	await expect(page.getByText(catName2)).not.toBeVisible()
+	await page.getByPlaceholder('Filter name...').fill(cat1.name)
+	await expect(page.getByText(cat1.name)).toBeVisible()
+	await expect(page.getByText(cat2.name)).not.toBeVisible()
 
 	// Filter by description
 	await page.getByPlaceholder('Filter name...').clear()
-	await page.getByPlaceholder('Filter description...').fill(catDesc2)
-	await expect(page.getByText(catName1)).not.toBeVisible()
-	await expect(page.getByText(catName2)).toBeVisible()
-
-	// Cleanup
-	const row1 = page.getByRole('row').filter({ hasText: catName1 })
-	await row1.getByRole('button', { name: 'Open menu' }).click()
-	page.once('dialog', (dialog) => dialog.accept())
-	await page.getByRole('button', { name: 'Delete' }).click()
-
-	const row2 = page.getByRole('row').filter({ hasText: catName2 })
-	await row2.getByRole('button', { name: 'Open menu' }).click()
-	page.once('dialog', (dialog) => dialog.accept())
-	await page.getByRole('button', { name: 'Delete' }).click()
+	await page
+		.getByPlaceholder('Filter description...')
+		.fill(cat2.description ?? '')
+	await expect(page.getByText(cat1.name)).not.toBeVisible()
+	await expect(page.getByText(cat2.name)).toBeVisible()
 })
 
 test('non-published categories are not available for selection', async ({
 	page,
 	login,
+	insertNewAboutMeCategory,
 }) => {
 	const userName = faker.person.firstName()
 	await login({ name: userName })
+
+	const publishedCat = await insertNewAboutMeCategory({
+		name: `PublishedCat ${faker.lorem.word()}`,
+		isPublished: true,
+	})
+	const unpublishedCat = await insertNewAboutMeCategory({
+		name: `UnpublishedCat ${faker.lorem.word()}`,
+		isPublished: false,
+	})
+
 	await page.goto('/dashboard/about')
-
-	const publishedCatName = `PublishedCat ${faker.lorem.word()}`
-	const unpublishedCatName = `UnpublishedCat ${faker.lorem.word()}`
-
-	// Create PublishedCat
-	const categoriesSection = page
-		.locator('text=About Me Categories')
-		.locator('..')
-	await categoriesSection.getByRole('button', { name: 'Create' }).click()
-	await page.getByLabel('Name').fill(publishedCatName)
-	await page.getByRole('button', { name: 'Create Category' }).click()
-
-	// Create UnpublishedCat
-	await categoriesSection.getByRole('button', { name: 'Create' }).click()
-	await page.getByLabel('Name').fill(unpublishedCatName)
-	await page.getByRole('button', { name: 'Create Category' }).click()
-
-	// Unpublish UnpublishedCat
-	const unpublishedCatRow = page
-		.getByRole('row')
-		.filter({ hasText: unpublishedCatName })
-	const publishSwitch = unpublishedCatRow.getByRole('switch')
-	await publishSwitch.click() // unpublish
-	await page.reload() // ensure it's saved
-
 	// Navigate to create section page
-	await page.getByRole('link', { name: 'New' }).click()
+	await aboutMeSection(page).getByRole('link', { name: 'New' }).click()
 	await page.getByRole('combobox', { name: 'Category' }).click()
 	await expect(
-		page.getByRole('option', { name: publishedCatName }),
+		page.getByRole('option', { name: publishedCat.name }),
 	).toBeVisible()
 	await expect(
-		page.getByRole('option', { name: unpublishedCatName }),
+		page.getByRole('option', { name: unpublishedCat.name }),
 	).not.toBeVisible()
 	await page.keyboard.press('Escape') // Close combobox
 
@@ -804,31 +788,37 @@ test('non-published categories are not available for selection', async ({
 	await page.getByLabel('Name').fill(sectionName)
 	await page.getByLabel('Content').fill(faker.lorem.paragraph())
 	await page.getByRole('combobox', { name: 'Category' }).click()
-	await page.getByRole('option', { name: publishedCatName }).click()
+	await page.getByRole('option', { name: publishedCat.name }).click()
 	await page.getByRole('button', { name: 'Create About Me' }).click() // to view page
 
 	// Navigate to edit page of this section
 	await page.getByRole('link', { name: 'Edit' }).click()
 	await page.getByRole('combobox', { name: 'Category' }).click()
 	await expect(
-		page.getByRole('option', { name: publishedCatName }),
+		page.getByRole('option', { name: publishedCat.name }),
 	).toBeVisible()
 	await expect(
-		page.getByRole('option', { name: unpublishedCatName }),
+		page.getByRole('option', { name: unpublishedCat.name }),
 	).not.toBeVisible()
 	await page.keyboard.press('Escape')
 
 	// Cleanup
 	await page.goto('/dashboard/about')
-	const pubCatRow = page.getByRole('row').filter({ hasText: publishedCatName })
-	await pubCatRow.getByRole('button', { name: 'Open menu' }).click()
+	const pubCatRow = categoriesSection(page)
+		.getByRole('row')
+		.filter({ hasText: publishedCat.name })
+	await pubCatRow
+		.getByRole('button', { name: 'Open about category menu' })
+		.click()
 	page.once('dialog', (dialog) => dialog.accept())
 	await page.getByRole('button', { name: 'Delete' }).click()
 
-	const unpubCatRow = page
+	const unpubCatRow = categoriesSection(page)
 		.getByRole('row')
-		.filter({ hasText: unpublishedCatName })
-	await unpubCatRow.getByRole('button', { name: 'Open menu' }).click()
+		.filter({ hasText: unpublishedCat.name })
+	await unpubCatRow
+		.getByRole('button', { name: 'Open about category menu' })
+		.click()
 	page.once('dialog', (dialog) => dialog.accept())
 	await page.getByRole('button', { name: 'Delete' }).click()
 	// Section will be auto-deleted with category if cascade delete works, or delete manually
