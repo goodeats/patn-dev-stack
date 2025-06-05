@@ -320,7 +320,7 @@ test('displays existing about me sections from list page', async ({
 	// Verify about me sections are visible in the about me section with specific column reference
 	const aboutMeSection = page.locator('#about-me-sections')
 	const aboutMeTable = aboutMeSection.locator('table')
-	const expectedHeaders = [
+	const aboutMeExpectedHeaders = [
 		'Name',
 		'Content',
 		'Category',
@@ -328,35 +328,12 @@ test('displays existing about me sections from list page', async ({
 		'Updated At',
 		'Published',
 	]
-	await verifyTableHeaders(aboutMeTable, expectedHeaders, {
+	await verifyTableHeaders(aboutMeTable, aboutMeExpectedHeaders, {
 		hasSelectColumn: true,
 		hasActionsColumn: true,
 	})
 
-	await verifyTableRowData(
-		aboutMeTable,
-		0,
-		[
-			aboutMe2.name,
-			aboutMe2.content,
-			category2.name,
-			testDateToday,
-			testDateToday,
-		],
-		{ hasSelectColumn: true },
-	)
-	await verifyTableRowData(
-		aboutMeTable,
-		1,
-		[
-			aboutMe1.name,
-			aboutMe1.content,
-			category1.name,
-			testDateToday,
-			testDateToday,
-		],
-		{ hasSelectColumn: true },
-	)
+	// createdat desc
 	await verifyMultipleTableRowsData(
 		aboutMeTable,
 		[
@@ -378,10 +355,39 @@ test('displays existing about me sections from list page', async ({
 		{ hasSelectColumn: true },
 	)
 
-	// // Verify categories are visible in the categories section
-	// const categoriesSection = page.getByRole('region', { name: /categories/i })
-	// await expect(categoriesSection.getByText(category1.name)).toBeVisible()
-	// await expect(categoriesSection.getByText(category2.name)).toBeVisible()
+	const categoriesSection = page.locator('#about-me-categories')
+	const categoriesTable = categoriesSection.locator('table')
+	const categoriesExpectedHeaders = [
+		'Name',
+		'Description',
+		'Created At',
+		'Updated At',
+		'Published',
+	]
+	await verifyTableHeaders(categoriesTable, categoriesExpectedHeaders, {
+		hasSelectColumn: true,
+		hasActionsColumn: true,
+	})
+
+	// createdat desc
+	await verifyMultipleTableRowsData(
+		categoriesTable,
+		[
+			[
+				category2.name,
+				category2.description ?? '',
+				testDateToday,
+				testDateToday,
+			],
+			[
+				category1.name,
+				category1.description ?? '',
+				testDateToday,
+				testDateToday,
+			],
+		],
+		{ hasSelectColumn: true },
+	)
 })
 
 test('toggles "Published" status for an About Me Section from list page', async ({
