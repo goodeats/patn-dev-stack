@@ -1,13 +1,14 @@
 import { faker } from '@faker-js/faker'
 import { expect, test } from '#tests/playwright-utils.ts'
 
-test('can create, view, edit, and delete about me sections', async ({
+test('can create about me section', async ({
 	page,
 	login,
 	insertNewAboutMeCategory,
 }) => {
 	const userName = faker.person.firstName()
 	await login({ name: userName })
+	const category = await insertNewAboutMeCategory()
 
 	// Navigate to About page
 	await page.goto('/dashboard/about')
@@ -21,7 +22,6 @@ test('can create, view, edit, and delete about me sections', async ({
 	const sectionName = faker.lorem.words(3)
 	const sectionContent = faker.lorem.paragraph()
 	const sectionDescription = faker.lorem.sentence()
-	const category = await insertNewAboutMeCategory()
 	const categoryToSelect = category.name
 
 	await page.getByLabel('Name').fill(sectionName)
@@ -37,7 +37,6 @@ test('can create, view, edit, and delete about me sections', async ({
 	// Should redirect to the new section's view page
 	const viewPageRegex = new RegExp(`/dashboard/about/[a-zA-Z0-9]+$`)
 	await expect(page).toHaveURL(viewPageRegex)
-	const sectionId = page.url().split('/').pop()
 
 	// Verify the data is displayed on the view page
 	await expect(page.getByRole('heading', { name: sectionName })).toBeVisible()
@@ -47,40 +46,105 @@ test('can create, view, edit, and delete about me sections', async ({
 	await expect(page.getByText(sectionDescription)).toBeVisible()
 	await expect(page.getByText('Category')).toBeVisible()
 	await expect(page.getByText(categoryToSelect)).toBeVisible()
+	await expect(page.getByText('Status')).toBeVisible()
+	await expect(page.getByText('Published')).toBeVisible()
+})
+
+test('can edit about me section', async ({
+	page,
+	login,
+	insertNewUser,
+	insertNewAboutMeCategory,
+	insertNewAboutMe,
+}) => {
+	const user = await insertNewUser()
+	await login({ id: user.id })
+	const category = await insertNewAboutMeCategory({
+		name: 'Test Category for Edit',
+	})
+	const category2 = await insertNewAboutMeCategory({
+		name: 'Test Category for Edit 2',
+	})
+
+	const initialSection = await insertNewAboutMe({
+		userId: user.id,
+		name: faker.lorem.words(3),
+		content: faker.lorem.paragraph(),
+		description: faker.lorem.sentence(),
+		aboutMeCategoryId: category.id,
+	})
+
+	await page.goto(`/dashboard/about/${initialSection.id}`)
 
 	// Navigate to the edit page for this section
 	await page.getByRole('link', { name: 'Edit' }).click()
-	await expect(page).toHaveURL(`/dashboard/about/${sectionId}/edit`)
+	await expect(page).toHaveURL(`/dashboard/about/${initialSection.id}/edit`)
 
 	// Verify the data is displayed in the edit form
-	await expect(page.getByLabel('Name')).toHaveValue(sectionName)
-	await expect(page.getByLabel('Content')).toHaveValue(sectionContent)
+	await expect(page.getByLabel('Name')).toHaveValue(initialSection.name)
+	await expect(page.getByLabel('Content')).toHaveValue(initialSection.content)
 	await expect(page.getByLabel('Description (Optional)')).toHaveValue(
-		sectionDescription,
+		initialSection.description ?? '',
 	)
 	await expect(page.getByRole('combobox', { name: 'Category' })).toHaveValue(
-		categoryToSelect.toLowerCase(),
-	) // combobox value might be the ID
+		category.name.toLowerCase(),
+	)
 
 	// Edit the section
 	const updatedName = faker.lorem.words(3)
+	const updatedContent = faker.lorem.paragraph()
+	const updatedDescription = faker.lorem.sentence()
 	await page.getByLabel('Name').clear()
 	await page.getByLabel('Name').fill(updatedName)
+	await page.getByLabel('Content').clear()
+	await page.getByLabel('Content').fill(updatedContent)
+	await page.getByLabel('Description (Optional)').clear()
+	await page.getByLabel('Description (Optional)').fill(updatedDescription)
+	await page.getByRole('combobox', { name: 'Category' }).click()
+	await page.getByRole('option', { name: category2.name }).click()
+	await page.getByRole('switch', { name: 'Published' }).click() // unpublish
 	await page.getByRole('button', { name: 'Save Changes' }).click()
 
 	// Should redirect back to the view page after saving
+	const viewPageRegex = new RegExp(`/dashboard/about/${initialSection.id}$`)
 	await expect(page).toHaveURL(viewPageRegex)
 	await expect(page.getByRole('heading', { name: updatedName })).toBeVisible()
+	await expect(page.getByText(updatedContent)).toBeVisible()
+	await expect(page.getByText(updatedDescription)).toBeVisible()
+	await expect(page.getByText(category2.name)).toBeVisible()
+	await expect(page.getByText('Draft')).not.toBeVisible()
 
-	// Go back to list
+	// Go back to list to ensure it's visible there too (optional sanity check)
 	await page.getByRole('link', { name: 'Back to Abouts' }).click()
 	await expect(page).toHaveURL('/dashboard/about')
-
-	// Verify the updated name appears in the list
 	await expect(page.getByText(updatedName)).toBeVisible()
+})
+
+test('can delete about me section from list page', async ({
+	page,
+	login,
+	insertNewUser,
+	insertNewAboutMeCategory,
+	insertNewAboutMe,
+}) => {
+	const user = await insertNewUser()
+	await login({ id: user.id })
+	const category = await insertNewAboutMeCategory({
+		name: 'Test Category for Delete',
+	})
+
+	const sectionToDelete = await insertNewAboutMe({
+		userId: user.id,
+		name: `SectionToDelete ${faker.lorem.word()}`,
+		content: faker.lorem.paragraph(),
+		aboutMeCategoryId: category.id,
+	})
+
+	await page.goto('/dashboard/about')
+	await expect(page.getByText(sectionToDelete.name)).toBeVisible()
 
 	// Delete the section from the list page
-	const row = page.getByRole('row').filter({ hasText: updatedName })
+	const row = page.getByRole('row').filter({ hasText: sectionToDelete.name })
 	await row.getByRole('button', { name: 'Open menu' }).click()
 
 	// Handle the confirmation dialog
@@ -88,7 +152,7 @@ test('can create, view, edit, and delete about me sections', async ({
 	await page.getByRole('button', { name: 'Delete' }).click()
 
 	// Verify the section is deleted
-	await expect(page.getByText(updatedName)).not.toBeVisible()
+	await expect(page.getByText(sectionToDelete.name)).not.toBeVisible()
 })
 
 test('can create, edit, and delete about me categories using dialogs', async ({
