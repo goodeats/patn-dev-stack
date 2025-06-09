@@ -1,54 +1,37 @@
 import { type Locator, type Page, expect } from '@playwright/test'
 import { scrollDown } from '#tests/playwright-utils'
+import { BasePageEditorPOM, type BaseEditorData } from './base/editor.pom'
 
-interface SectionData {
-	name: string
+export interface SectionData extends BaseEditorData {
 	content: string
-	description?: string
 	categoryName?: string
 }
 
-export class DashboardAboutMeEditorPage {
-	readonly page: Page
-	readonly nameInput: Locator
+export class DashboardAboutMeEditorPage extends BasePageEditorPOM<SectionData> {
 	readonly contentInput: Locator
-	readonly descriptionInput: Locator
 	readonly categorySelect: Locator
 	readonly publishSwitch: Locator
-	readonly createButton: Locator
-	readonly saveButton: Locator
-	readonly deleteButton: Locator
-	readonly nameError: Locator
 	readonly contentError: Locator
 	readonly categoryError: Locator
 
 	constructor(page: Page) {
-		this.page = page
-		this.nameInput = page.getByLabel('Name')
+		super(page, 'about-me-editor')
+		this.url = '/dashboard/about'
 		this.contentInput = page.getByLabel('Content')
-		this.descriptionInput = page.getByLabel('Description (Optional)')
 		this.categorySelect = page.getByRole('combobox', { name: 'Category' })
 		this.publishSwitch = page.getByRole('switch', { name: 'Published' })
-		this.createButton = page.getByRole('button', { name: 'Create About Me' })
-		this.saveButton = page.getByRole('button', { name: 'Save Changes' })
-		this.deleteButton = page.getByRole('button', { name: 'Delete' })
-		this.nameError = page
-			.locator('#about-editor-name-error')
-			.getByText('Required')
-		this.contentError = page
-			.locator('#about-editor-content-error')
-			.getByText('Required')
+		this.contentError = page.locator('#about-editor-content-error')
 		this.categoryError = this.categorySelect.locator(
 			'xpath=./following-sibling::div',
 		)
 	}
 
-	async gotoNew() {
-		await this.page.goto('/dashboard/about/new')
+	override async gotoNew(): Promise<void> {
+		await this.page.goto(`${this.url}/new`)
 	}
 
-	async gotoEdit(sectionId: string) {
-		await this.page.goto(`/dashboard/about/${sectionId}/edit`)
+	override async gotoEdit(id: string): Promise<void> {
+		await this.page.goto(`${this.url}/${id}/edit`)
 	}
 
 	async openCategoryDropdown() {

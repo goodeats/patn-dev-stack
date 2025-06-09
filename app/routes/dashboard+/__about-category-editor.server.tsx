@@ -1,7 +1,7 @@
 import { parseWithZod } from '@conform-to/zod'
 import { invariantResponse } from '@epic-web/invariant'
 import { createId as cuid } from '@paralleldrive/cuid2'
-import { data, type ActionFunctionArgs } from 'react-router'
+import { data } from 'react-router'
 import { prisma } from '#app/utils/db.server.ts'
 import { createToastHeaders } from '#app/utils/toast.server.ts'
 import { AboutCategoryEditorSchema } from './__about-category-editor.tsx'

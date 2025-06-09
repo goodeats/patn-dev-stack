@@ -3,8 +3,10 @@ import {
 	DialogDrivenDataTablePOM,
 	MenuDrivenDataTablePOM,
 } from '../base/data-table.pom'
+import { DashboardAboutCategoryEditorDialog } from '../dashboard-about-category-editor-dialog'
+import { DashboardAboutMeEditorPage } from '../dashboard-about-me-editor-page'
 
-export class AboutMeSectionsTable extends MenuDrivenDataTablePOM {
+export class AboutMeSectionsTable extends MenuDrivenDataTablePOM<DashboardAboutMeEditorPage> {
 	// --- Configuration for MenuDrivenDataTablePOM ---
 	readonly expectedHeaders: string[] = [
 		'Name',
@@ -51,8 +53,14 @@ export class AboutMeSectionsTable extends MenuDrivenDataTablePOM {
 		await this.categoryFilter.clear()
 	}
 
-	async edit(name: string): Promise<void> {
-		await super.edit(name)
+	async edit(name: string): Promise<DashboardAboutMeEditorPage> {
+		const row = this.getRow(name)
+		await row.getByRole('button', { name: this.menuName }).click()
+		await this.page.getByRole('menuitem', { name: 'Edit' }).click()
+
+		// Construct and return the editor page object
+		return new DashboardAboutMeEditorPage(this.page)
+		// await super.edit(name)
 		// return new DashboardAboutMeEditorPage(this.page)
 	}
 
@@ -67,7 +75,7 @@ export class AboutMeSectionsTable extends MenuDrivenDataTablePOM {
 	}
 }
 
-export class AboutMeCategoriesTable extends DialogDrivenDataTablePOM {
+export class AboutMeCategoriesTable extends DialogDrivenDataTablePOM<DashboardAboutCategoryEditorDialog> {
 	// --- Configuration for DialogDrivenDataTablePOM ---
 	readonly expectedHeaders: string[] = [
 		'Name',
@@ -114,9 +122,17 @@ export class AboutMeCategoriesTable extends DialogDrivenDataTablePOM {
 		await this.descriptionFilter.clear()
 	}
 
-	async edit(name: string): Promise<void> {
-		await super.edit(name)
-		//
+	// async edit(name: string): Promise<void> {
+	// 	await super.edit(name)
+	// 	//
+	// }
+	async edit(name: string): Promise<DashboardAboutCategoryEditorDialog> {
+		await this.getRow(name).getByRole('button', { name }).click()
+
+		// Construct and return the editor dialog object
+		const dialog = new DashboardAboutCategoryEditorDialog(this.page)
+		await dialog.waitUntilVisible() // Good practice to wait for dialog to be ready
+		return dialog
 	}
 
 	// Example of implementing the fluent editor pattern

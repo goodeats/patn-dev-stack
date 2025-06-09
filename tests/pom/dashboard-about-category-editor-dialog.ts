@@ -1,79 +1,13 @@
-import { type Locator, type Page, expect } from '@playwright/test'
+import { type Page } from '@playwright/test'
+import { BaseDialogEditorPOM } from './base/editor.pom'
 
 interface CategoryData {
 	name: string
 	description?: string
 }
 
-export class DashboardAboutCategoryEditorDialog {
-	readonly page: Page
-	readonly dialog: Locator
-	readonly nameInput: Locator
-	readonly descriptionInput: Locator
-	readonly createButton: Locator
-	readonly saveButton: Locator
-	readonly cancelButton: Locator
-	readonly nameError: Locator
-
+export class DashboardAboutCategoryEditorDialog extends BaseDialogEditorPOM<CategoryData> {
 	constructor(page: Page) {
-		this.page = page
-		this.dialog = page.getByRole('dialog')
-		this.nameInput = this.dialog.getByLabel('Name')
-		this.descriptionInput = this.dialog.getByLabel('Description (Optional)')
-		this.createButton = this.dialog.getByRole('button', {
-			name: 'Create Category',
-		})
-		this.saveButton = this.dialog.getByRole('button', { name: 'Save Changes' })
-		this.cancelButton = this.dialog.getByRole('button', { name: 'Cancel' })
-		this.nameError = this.dialog
-			.locator('#about-category-editor-name-error')
-			.getByText('Required')
-	}
-
-	async fillName(name: string) {
-		await this.nameInput.fill(name)
-	}
-
-	async fillDescription(description: string) {
-		await this.descriptionInput.fill(description)
-	}
-
-	async fillForm({ name, description }: CategoryData) {
-		await this.nameInput.fill(name)
-		if (description) {
-			await this.descriptionInput.fill(description)
-		}
-	}
-
-	async create(data: CategoryData) {
-		await this.fillForm(data)
-		await this.createButton.click()
-		await expect(this.dialog).not.toBeVisible()
-	}
-
-	async clickCreateButton() {
-		await this.createButton.click()
-	}
-
-	async update(data: CategoryData) {
-		await this.fillForm(data)
-		await this.saveButton.click()
-		await expect(this.dialog).not.toBeVisible()
-	}
-
-	async clickSaveButton() {
-		await this.saveButton.click()
-	}
-
-	async clearName() {
-		await this.nameInput.clear()
-	}
-
-	async verifyRequiredNameError(isVisible: boolean = true) {
-		if (isVisible) {
-			await expect(this.nameError.getByText('Required')).toBeVisible()
-		} else {
-			await expect(this.nameError.getByText('Required')).not.toBeVisible()
-		}
+		super(page, 'about-category-editor')
 	}
 }

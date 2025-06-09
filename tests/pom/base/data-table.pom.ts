@@ -3,6 +3,7 @@ import {
 	verifyMultipleTableRowsData,
 	verifyTableHeaders,
 } from '#tests/helpers/table-locator'
+import { type IEditorPOM } from './editor.pom'
 
 export abstract class BaseDataTablePOM {
 	readonly table: Locator
@@ -105,14 +106,17 @@ export abstract class BaseDataTablePOM {
 }
 
 // For tables where actions are in a '...' dropdown menu.
-export abstract class MenuDrivenDataTablePOM extends BaseDataTablePOM {
+export abstract class MenuDrivenDataTablePOM<
+	TEditPOM extends IEditorPOM,
+> extends BaseDataTablePOM {
 	abstract readonly menuName: string
 
-	async edit(name: string): Promise<void> {
-		const row = this.getRow(name)
-		await row.getByRole('button', { name: this.menuName }).click()
-		await this.page.getByRole('menuitem', { name: 'Edit' }).click()
-	}
+	abstract edit(name: string): Promise<TEditPOM>
+	// async edit(name: string): Promise<TEditPOM> {
+	// 	const row = this.getRow(name)
+	// 	await row.getByRole('button', { name: this.menuName }).click()
+	// 	await this.page.getByRole('menuitem', { name: 'Edit' }).click()
+	// }
 
 	async delete(name: string): Promise<void> {
 		this.page.on('dialog', (dialog) => dialog.accept())
@@ -126,16 +130,18 @@ export abstract class MenuDrivenDataTablePOM extends BaseDataTablePOM {
 }
 
 // For tables where clicking the name opens an edit dialog.
-export abstract class DialogDrivenDataTablePOM extends BaseDataTablePOM {
-	// Delete is often still in a menu, so we need the menu name here too.
+export abstract class DialogDrivenDataTablePOM<
+	TEditPOM extends IEditorPOM,
+> extends BaseDataTablePOM {
 	abstract readonly menuName: string
 
 	// The 'edit' action is fundamentally different for this pattern.
 	// Clicking on the name should open the dialog.
 	// it may be in the menu too
-	async edit(name: string): Promise<void> {
-		await this.getRow(name).getByRole('button', { name }).click()
-	}
+	// async edit(name: string): Promise<void> {
+	// 	await this.getRow(name).getByRole('button', { name }).click()
+	// }
+	abstract edit(name: string): Promise<TEditPOM>
 
 	async delete(name: string): Promise<void> {
 		this.page.on('dialog', (dialog) => dialog.accept())
@@ -145,29 +151,5 @@ export abstract class DialogDrivenDataTablePOM extends BaseDataTablePOM {
 		// const menu = row.getByRole('menu')
 		// await menu.getByRole('button', { name: 'Delete' }).click()
 		await this.page.getByRole('menuitem', { name: 'Delete' }).click()
-	}
-}
-
-export abstract class BaseDialogDataTablePOM extends BaseDataTablePOM {
-	readonly nameFilter: Locator
-	readonly descriptionFilter?: Locator // Optional, as SkillCategory doesn't have it
-
-	constructor(page: Page, container: Locator, hasDescription: boolean = true) {
-		super(page, container)
-		this.nameFilter = this.getFilterByPlaceholder('Filter name...')
-		if (hasDescription) {
-			this.descriptionFilter = this.getFilterByPlaceholder(
-				'Filter description...',
-			)
-		}
-	}
-
-	// assumes clicking the name opens the dialog
-	async edit(name: string): Promise<void> {
-		await this.getRow(name).getByRole('button', { name }).click()
-	}
-
-	async delete(name: string, menuName: string): Promise<void> {
-		await super.delete(name, menuName)
 	}
 }
