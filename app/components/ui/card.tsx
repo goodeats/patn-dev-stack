@@ -71,12 +71,7 @@ function CardContent({
 	return (
 		<div
 			data-slot="card-content"
-			className={cn(
-				'px-6',
-				variant === 'details' &&
-					'flex flex-col gap-4 md:grid md:grid-cols-[minmax(120px,auto)_1fr] md:items-baseline md:gap-x-8 md:gap-y-6',
-				className,
-			)}
+			className={cn('px-6', className)}
 			{...props}
 		/>
 	)
@@ -87,6 +82,21 @@ function CardFooter({ className, ...props }: React.ComponentProps<'div'>) {
 		<div
 			data-slot="card-footer"
 			className={cn('flex items-center px-6 [.border-t]:pt-6', className)}
+			{...props}
+		/>
+	)
+}
+
+// https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dl
+function CardDetailsList({ className, ...props }: React.ComponentProps<'dl'>) {
+	return (
+		<dl
+			data-slot="card-details-list"
+			className={cn(
+				'px-6',
+				'flex flex-col gap-4 md:grid md:grid-cols-[minmax(120px,auto)_1fr] md:items-baseline md:gap-x-8 md:gap-y-6',
+				className,
+			)}
 			{...props}
 		/>
 	)
@@ -111,12 +121,9 @@ function CardDetailsItem({
 	)
 }
 
-function CardDetailsLabel({
-	className,
-	...props
-}: React.ComponentProps<'div'>) {
+function CardDetailsLabel({ className, ...props }: React.ComponentProps<'dt'>) {
 	return (
-		<div
+		<dt
 			data-slot="details-label"
 			className={cn('text-foreground text-base font-medium', className)}
 			{...props}
@@ -128,11 +135,11 @@ function CardDetailsValue({
 	className,
 	variant,
 	...props
-}: React.ComponentProps<'div'> & {
+}: React.ComponentProps<'dd'> & {
 	variant?: 'default' | 'prose'
 }) {
 	return (
-		<div
+		<dd
 			data-slot="details-value"
 			className={cn(
 				'text-muted-foreground text-sm',
@@ -153,6 +160,7 @@ export {
 	CardAction,
 	CardDescription,
 	CardContent,
+	CardDetailsList,
 	CardDetailsItem,
 	CardDetailsValue,
 }

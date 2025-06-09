@@ -5,6 +5,8 @@ import {
 } from '#tests/helpers/table-locator'
 import { DashboardAboutCategoryEditorDialog } from './dashboard-about-category-editor-dialog'
 
+// https://playwright.dev/docs/pom
+
 export class DashboardAboutPage {
 	readonly page: Page
 	readonly aboutMeSection: Locator

@@ -5,12 +5,8 @@ import {
 	verifyMultipleTableRowsData,
 	verifyTableHeaders,
 } from '#tests/helpers/table-locator.ts'
-import {
-	expect,
-	scrollDown,
-	test,
-	testDateToday,
-} from '#tests/playwright-utils.ts'
+import { expect, test, testDateToday } from '#tests/playwright-utils.ts'
+import { DashboardAboutDetailsPage } from './pom/dashboard-about-details-page'
 import { DashboardAboutMeEditorPage } from './pom/dashboard-about-me-editor-page'
 
 test.describe('About Me Sections', () => {
@@ -24,6 +20,7 @@ test.describe('About Me Sections', () => {
 			const category = await insertNewAboutMeCategory()
 			const dashboardAboutPage = new DashboardAboutPage(page)
 			const editorPage = new DashboardAboutMeEditorPage(page)
+			const detailsPage = new DashboardAboutDetailsPage(page)
 
 			await dashboardAboutPage.goto()
 			await dashboardAboutPage.clickNewSection()
@@ -40,13 +37,13 @@ test.describe('About Me Sections', () => {
 				categoryName: category.name,
 			})
 
-			await expect(
-				page.getByRole('heading', { name: sectionName }),
-			).toBeVisible()
-			await expect(page.getByText(sectionContent)).toBeVisible()
-			await expect(page.getByText(sectionDescription)).toBeVisible()
-			await expect(page.getByText(category.name)).toBeVisible()
-			await expect(page.getByText('Published')).toBeVisible()
+			await detailsPage.verifyDetails({
+				name: sectionName,
+				content: sectionContent,
+				description: sectionDescription,
+				category: category.name,
+				status: 'Published',
+			})
 		})
 
 		test('can edit an existing section', async ({

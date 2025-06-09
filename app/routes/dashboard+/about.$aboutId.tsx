@@ -66,7 +66,7 @@ export default function DashboardAboutDetailsRoute({
 			</AppContainerGroup>
 
 			<AppContainerGroup className="px-0">
-				<EntityDetailsCard>
+				<EntityDetailsCard id="about-details-card">
 					<CardDetailsItem label="Content">
 						<CardDetailsValue variant="prose">
 							{aboutMe.content}

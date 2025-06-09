@@ -5,6 +5,7 @@ import {
 	CardDescription,
 	CardHeader,
 	CardContent,
+	CardDetailsList,
 } from './ui/card'
 
 interface EntityDetailsProps {
@@ -40,7 +41,8 @@ export const EntityDetailsCard = ({
 	description,
 	children,
 	className,
-}: EntityDetailsCardProps) => {
+	...props
+}: React.ComponentProps<'div'> & EntityDetailsCardProps) => {
 	const titleElement = title ? (
 		<CardTitle className="text-2xl">{title}</CardTitle>
 	) : null
@@ -58,9 +60,11 @@ export const EntityDetailsCard = ({
 		) : null
 
 	return (
-		<Card className={className}>
+		<Card className={className} {...props}>
 			{headerElement}
-			<CardContent variant="details">{children}</CardContent>
+			<CardContent>
+				<CardDetailsList>{children}</CardDetailsList>
+			</CardContent>
 		</Card>
 	)
 }
