@@ -149,66 +149,42 @@ test.describe('About Me Sections', () => {
 
 			await dashboardAboutPage.goto()
 
-			// Verify Sections Table
-			const aboutMeTable = dashboardAboutPage.aboutMeTable.table
-			await verifyTableHeaders(
-				aboutMeTable,
+			const aboutMeTable = dashboardAboutPage.aboutMeTable
+			await aboutMeTable.verifyHeaders()
+			await aboutMeTable.verifyData([
 				[
-					'Name',
-					'Content',
-					'Category',
-					'Created At',
-					'Updated At',
-					'Published',
+					aboutMe2.name,
+					aboutMe2.content,
+					category2.name,
+					testDateToday,
+					testDateToday,
 				],
-				{ hasSelectColumn: true, hasActionsColumn: true },
-			)
-			await verifyMultipleTableRowsData(
-				aboutMeTable,
 				[
-					[
-						aboutMe2.name,
-						aboutMe2.content,
-						category2.name,
-						testDateToday,
-						testDateToday,
-					],
-					[
-						aboutMe1.name,
-						aboutMe1.content,
-						category1.name,
-						testDateToday,
-						testDateToday,
-					],
+					aboutMe1.name,
+					aboutMe1.content,
+					category1.name,
+					testDateToday,
+					testDateToday,
 				],
-				{ hasSelectColumn: true },
-			)
+			])
 
 			// Verify Categories Table
-			const categoriesTable = dashboardAboutPage.categoriesTable.table
-			await verifyTableHeaders(
-				categoriesTable,
-				['Name', 'Description', 'Created At', 'Updated At', 'Published'],
-				{ hasSelectColumn: true, hasActionsColumn: true },
-			)
-			await verifyMultipleTableRowsData(
-				categoriesTable,
+			const categoriesTable = dashboardAboutPage.categoriesTable
+			await categoriesTable.verifyHeaders()
+			await categoriesTable.verifyData([
 				[
-					[
-						category2.name,
-						category2.description ?? '',
-						testDateToday,
-						testDateToday,
-					],
-					[
-						category1.name,
-						category1.description ?? '',
-						testDateToday,
-						testDateToday,
-					],
+					category2.name,
+					category2.description ?? '',
+					testDateToday,
+					testDateToday,
 				],
-				{ hasSelectColumn: true },
-			)
+				[
+					category1.name,
+					category1.description ?? '',
+					testDateToday,
+					testDateToday,
+				],
+			])
 		})
 	})
 
