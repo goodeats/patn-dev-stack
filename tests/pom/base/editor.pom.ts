@@ -1,5 +1,11 @@
 import { type Page, type Locator, expect } from '@playwright/test'
 
+export interface IEditorPOM {
+	// A marker interface for all editor Page Object Models.
+	// We can add required methods/properties here in the future.
+	waitUntilVisible(): Promise<void>
+}
+
 // A base interface for data passed to editor methods
 export interface BaseEditorData {
 	name: string

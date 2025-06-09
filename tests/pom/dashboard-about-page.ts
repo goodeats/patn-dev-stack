@@ -4,110 +4,136 @@ import {
 	AboutMeSectionsTable,
 } from './dashboard/about-data-tables.pom'
 import { DashboardAboutCategoryEditorDialog } from './dashboard-about-category-editor-dialog'
+import { DashboardAboutMeEditorPage } from './dashboard-about-me-editor-page'
 
 // https://playwright.dev/docs/pom
 
 export class DashboardAboutPage {
 	readonly page: Page
-	readonly aboutMeSection: Locator
-	readonly categoriesSection: Locator
-	readonly newSectionButton: Locator
-	readonly newCategoryButton: Locator
+	readonly aboutMeSectionContainer: Locator
+	readonly categoriesSectionContainer: Locator
+	private readonly newSectionButton: Locator
+	private readonly newCategoryButton: Locator
+
+	// public interface
 	readonly aboutMeTable: AboutMeSectionsTable
 	readonly categoriesTable: AboutMeCategoriesTable
-	readonly categoryEditorDialog: DashboardAboutCategoryEditorDialog
+
+	// private implementation
+	// readonly categoryEditorDialog: DashboardAboutCategoryEditorDialog
 
 	constructor(page: Page) {
 		this.page = page
-		this.aboutMeSection = page.locator('#about-me-sections')
-		this.categoriesSection = page.locator('#about-me-categories')
-		this.newSectionButton = this.aboutMeSection.getByRole('link', {
+		this.aboutMeSectionContainer = page.locator('#about-me-sections')
+		this.categoriesSectionContainer = page.locator('#about-me-categories')
+		this.newSectionButton = this.aboutMeSectionContainer.getByRole('link', {
 			name: 'New',
 		})
-		this.newCategoryButton = this.categoriesSection.getByRole('button', {
-			name: 'New',
-		})
-		this.aboutMeTable = new AboutMeSectionsTable(page, this.aboutMeSection)
+		this.newCategoryButton = this.categoriesSectionContainer.getByRole(
+			'button',
+			{
+				name: 'New',
+			},
+		)
+		this.aboutMeTable = new AboutMeSectionsTable(
+			page,
+			this.aboutMeSectionContainer,
+		)
 		this.categoriesTable = new AboutMeCategoriesTable(
 			page,
-			this.categoriesSection,
+			this.categoriesSectionContainer,
 		)
-		this.categoryEditorDialog = new DashboardAboutCategoryEditorDialog(page)
+		// this.categoryEditorDialog = new DashboardAboutCategoryEditorDialog(page)
 	}
 
 	async goto() {
 		await this.page.goto('/dashboard/about')
 	}
 
-	async clickNewSection() {
+	// This method now returns the specific editor page POM
+	async createNewSection(): Promise<DashboardAboutMeEditorPage> {
 		await this.newSectionButton.click()
 		await expect(this.page).toHaveURL('/dashboard/about/new')
+		return new DashboardAboutMeEditorPage(this.page)
 	}
 
-	async clickNewCategory() {
+	// This method now returns the specific editor dialog POM
+	async createNewCategory(): Promise<DashboardAboutCategoryEditorDialog> {
 		await this.newCategoryButton.click()
-		await expect(this.categoryEditorDialog.dialog).toBeVisible()
+		const dialog = new DashboardAboutCategoryEditorDialog(this.page)
+		await dialog.waitUntilVisible()
+		return dialog
 	}
 
-	async gotoNewSection() {
-		await this.newSectionButton.click()
-	}
+	// async clickNewSection() {
+	// 	await this.newSectionButton.click()
+	// 	await expect(this.page).toHaveURL('/dashboard/about/new')
+	// }
 
-	getSectionElement(name: string) {
-		return this.aboutMeTable.getRow(name)
-	}
+	// async clickNewCategory() {
+	// 	await this.newCategoryButton.click()
+	// 	await expect(this.categoryEditorDialog.dialog).toBeVisible()
+	// }
 
-	getCategoryElement(name: string) {
-		return this.categoriesTable.getRow(name)
-	}
+	// async gotoNewSection() {
+	// 	await this.newSectionButton.click()
+	// }
 
-	async filterSectionsByContent(content: string) {
-		await this.aboutMeTable.filterByContent(content)
-	}
+	// getSectionElement(name: string) {
+	// 	return this.aboutMeTable.getRow(name)
+	// }
 
-	async clearContentFilter() {
-		await this.aboutMeTable.clearContentFilter()
-	}
+	// getCategoryElement(name: string) {
+	// 	return this.categoriesTable.getRow(name)
+	// }
 
-	async filterSectionsByCategory(category: string) {
-		await this.aboutMeTable.filterByCategory(category)
-	}
+	// async filterSectionsByContent(content: string) {
+	// 	await this.aboutMeTable.filterByContent(content)
+	// }
 
-	getSectionPublishSwitch(name: string) {
-		return this.aboutMeTable.getPublishSwitch(name)
-	}
+	// async clearContentFilter() {
+	// 	await this.aboutMeTable.clearContentFilter()
+	// }
 
-	async clickNewCategoryButton() {
-		await this.clickNewCategory()
-	}
+	// async filterSectionsByCategory(category: string) {
+	// 	await this.aboutMeTable.filterByCategory(category)
+	// }
 
-	async clickCategory(name: string) {
-		await this.categoriesTable.edit(name)
-	}
+	// getSectionPublishSwitch(name: string) {
+	// 	return this.aboutMeTable.getPublishSwitch(name)
+	// }
 
-	async deleteCategory(name: string) {
-		await this.categoriesTable.delete(name)
-	}
+	// async clickNewCategoryButton() {
+	// 	await this.clickNewCategory()
+	// }
 
-	getCategoryPublishSwitch(name: string) {
-		return this.categoriesTable.getPublishSwitch(name)
-	}
+	// async clickCategory(name: string) {
+	// 	await this.categoriesTable.edit(name)
+	// }
 
-	async toggleCategoryPublishStatus(name: string) {
-		await this.categoriesTable.togglePublishStatus(name)
-	}
+	// async deleteCategory(name: string) {
+	// 	await this.categoriesTable.delete(name)
+	// }
 
-	async filterCategoriesByName(name: string) {
-		await this.categoriesTable.filterByName(name)
-	}
+	// getCategoryPublishSwitch(name: string) {
+	// 	return this.categoriesTable.getPublishSwitch(name)
+	// }
 
-	async clearNameFilter() {
-		await this.categoriesTable.clearNameFilter()
-	}
+	// async toggleCategoryPublishStatus(name: string) {
+	// 	await this.categoriesTable.togglePublishStatus(name)
+	// }
 
-	async filterCategoriesByDescription(description: string) {
-		await this.categoriesTable.filterByDescription(description)
-	}
+	// async filterCategoriesByName(name: string) {
+	// 	await this.categoriesTable.filterByName(name)
+	// }
+
+	// async clearNameFilter() {
+	// 	await this.categoriesTable.clearNameFilter()
+	// }
+
+	// async filterCategoriesByDescription(description: string) {
+	// 	await this.categoriesTable.filterByDescription(description)
+	// }
 }
 
 // class AboutMeSectionsTable {
