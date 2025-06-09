@@ -423,6 +423,11 @@ test.describe('About Me Categories', () => {
 			await categoryDialog.clearName()
 			await categoryDialog.clickSaveButton()
 			await categoryDialog.verifyRequiredNameError()
+
+			const updatedCategoryName = faker.lorem.words(2)
+			await categoryDialog.nameInput.fill(updatedCategoryName)
+			await categoryDialog.clickSaveButton()
+			await categoryDialog.verifyRequiredNameError(false)
 		})
 	})
 
@@ -436,6 +441,7 @@ test.describe('About Me Categories', () => {
 			const categoryName = `PublishToggle Cat ${faker.lorem.word()}`
 			await insertNewAboutMeCategory({ name: categoryName, isPublished: true })
 			const dashboardAboutPage = new DashboardAboutPage(page)
+			const categoriesTable = dashboardAboutPage.categoriesTable
 
 			await dashboardAboutPage.goto()
 
