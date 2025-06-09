@@ -354,16 +354,24 @@ test.describe('About Me Categories', () => {
 
 			await dashboardAboutPage.goto()
 			await dashboardAboutPage.clickCategory(category.name)
-			await expect(categoryDialog.dialog).toBeVisible()
 
 			const updatedCategoryName = faker.lorem.words(2)
-			await categoryDialog.fillName(updatedCategoryName)
-			await categoryDialog.clickSaveButton()
+			const updatedCategoryDescription = faker.lorem.sentence()
 
-			await expect(categoryDialog.dialog).not.toBeVisible()
+			await categoryDialog.update({
+				name: updatedCategoryName,
+				description: updatedCategoryDescription,
+			})
+
 			await expect(
 				dashboardAboutPage.getCategoryElement(updatedCategoryName),
 			).toBeVisible()
+			await expect(
+				dashboardAboutPage.getCategoryElement(updatedCategoryDescription),
+			).toBeVisible()
+			await expect(
+				dashboardAboutPage.getCategoryElement(category.name),
+			).not.toBeVisible()
 		})
 
 		test('can be deleted', async ({

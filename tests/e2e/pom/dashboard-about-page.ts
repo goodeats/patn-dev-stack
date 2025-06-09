@@ -184,6 +184,7 @@ class AboutMeCategoriesTable {
 	readonly table: Locator
 	readonly nameFilter: Locator
 	readonly descriptionFilter: Locator
+	readonly categoryEditorDialog: DashboardAboutCategoryEditorDialog
 
 	constructor(page: Page, container: Locator) {
 		this.page = page
@@ -193,6 +194,7 @@ class AboutMeCategoriesTable {
 		this.descriptionFilter = this.container.getByPlaceholder(
 			'Filter description...',
 		)
+		this.categoryEditorDialog = new DashboardAboutCategoryEditorDialog(page)
 	}
 
 	async filterByName(name: string) {
@@ -213,6 +215,7 @@ class AboutMeCategoriesTable {
 
 	async edit(name: string) {
 		await this.getRow(name).getByText(name).click()
+		await expect(this.categoryEditorDialog.dialog).toBeVisible()
 	}
 
 	getPublishSwitch(name: string) {
