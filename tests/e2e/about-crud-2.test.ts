@@ -168,7 +168,6 @@ test.describe('About Me Sections', () => {
 				],
 			])
 
-			// Verify Categories Table
 			const categoriesTable = dashboardAboutPage.categoriesTable
 			await categoriesTable.verifyHeaders()
 			await categoriesTable.verifyData([
@@ -189,70 +188,71 @@ test.describe('About Me Sections', () => {
 	})
 
 	test.describe('Validation', () => {
-		test('validates About Me Section creation and editing', async ({
+		test('validates About Me Section creation', async ({
 			page,
 			login,
 			insertNewAboutMeCategory,
 		}) => {
-			const userName = faker.person.firstName()
-			await login({ name: userName })
-
+			await login({ name: faker.person.firstName() })
 			const category = await insertNewAboutMeCategory({
 				name: 'Professional',
 			})
+			const editorPage = new DashboardAboutMeEditorPage(page)
 
-			// Test creation validation
-			await page.goto('/dashboard/about/new')
-			await page.getByRole('button', { name: 'Create About Me' }).click()
-			await expect(
-				page.locator('#about-editor-name-error').getByText('Required'),
-			).toBeVisible()
-			await expect(
-				page.locator('#about-editor-content-error').getByText('Required'),
-			).toBeVisible()
-			const categoryError = page
-				.getByRole('combobox', { name: 'Category' })
-				.locator('xpath=./following-sibling::div')
-			await expect(categoryError).toHaveText('Category is required')
+			await editorPage.gotoNew()
+			await editorPage.clickCreateButton()
+			await expect(editorPage.nameError.getByText('Required')).toBeVisible()
+			await expect(editorPage.contentError.getByText('Required')).toBeVisible()
+			await expect(editorPage.categoryError).toHaveText('Category is required')
 
-			await page.getByLabel('Name').fill(faker.lorem.words(2))
-			await page.getByRole('button', { name: 'Create About Me' }).click()
+			await editorPage.nameInput.fill(faker.lorem.words(2))
+			await editorPage.clickCreateButton()
+			await expect(editorPage.nameError.getByText('Required')).not.toBeVisible()
+			await expect(editorPage.contentError.getByText('Required')).toBeVisible()
+			await expect(editorPage.categoryError).toHaveText('Category is required')
+
+			await editorPage.contentInput.fill(faker.lorem.paragraph())
+			await editorPage.clickCreateButton()
 			await expect(
-				page.locator('#about-editor-name-error').getByText('Required'),
+				editorPage.contentError.getByText('Required'),
 			).not.toBeVisible()
-			await expect(
-				page.locator('#about-editor-content-error').getByText('Required'),
-			).toBeVisible()
-			await expect(categoryError).toHaveText('Category is required')
+			await expect(editorPage.categoryError).toHaveText('Category is required')
 
-			await page.getByLabel('Content').fill(faker.lorem.paragraph())
-			await page.getByRole('button', { name: 'Create About Me' }).click()
-			await expect(
-				page.locator('#about-editor-content-error').getByText('Required'),
-			).not.toBeVisible()
-			await expect(categoryError).toHaveText('Category is required')
+			// Successfully create with valid data
+			await editorPage.selectCategory(category.name)
+			await editorPage.clickCreateButton()
+			await expect(page).toHaveURL(/\/dashboard\/about\/[a-zA-Z0-9]+$/)
+		})
 
-			// Create a section for edit validation
-			await page.getByRole('combobox', { name: 'Category' }).click()
-			await page.getByRole('option', { name: category.name }).click()
-			await page.getByRole('button', { name: 'Create About Me' }).click() // Redirects to view
+		test('validates About Me Section editing', async ({
+			page,
+			login,
+			insertNewAboutMeCategory,
+			insertNewAboutMe,
+		}) => {
+			const user = await login()
+			const category = await insertNewAboutMeCategory({
+				name: 'Professional',
+			})
+			const section = await insertNewAboutMe({
+				userId: user.id,
+				aboutMeCategoryId: category.id,
+			})
+			const editorPage = new DashboardAboutMeEditorPage(page)
+			const detailsPage = new DashboardAboutDetailsPage(page)
 
-			await page.getByRole('link', { name: 'Edit' }).click()
-			await expect(page).toHaveURL(/\/dashboard\/about\/[a-zA-Z0-9]+\/edit/)
+			await detailsPage.goto(section.id)
+			await detailsPage.clickEdit()
 
 			// Test editing validation
-			await page.getByLabel('Name').clear()
-			await page.getByRole('button', { name: 'Save Changes' }).click()
-			await expect(
-				page.locator('#about-editor-name-error').getByText('Required'),
-			).toBeVisible()
+			await editorPage.clearName()
+			await editorPage.clickSaveButton()
+			await expect(editorPage.nameError.getByText('Required')).toBeVisible()
 
-			await page.getByLabel('Name').fill(faker.lorem.words(2)) // Restore name
-			await page.getByLabel('Content').clear()
-			await page.getByRole('button', { name: 'Save Changes' }).click()
-			await expect(
-				page.locator('#about-editor-content-error').getByText('Required'),
-			).toBeVisible()
+			await editorPage.nameInput.fill(faker.lorem.words(2)) // Restore name
+			await editorPage.clearContent()
+			await editorPage.clickSaveButton()
+			await expect(editorPage.contentError.getByText('Required')).toBeVisible()
 		})
 	})
 
