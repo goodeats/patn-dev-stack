@@ -1,8 +1,8 @@
 import { type Locator, type Page, expect } from '@playwright/test'
 import {
-	verifyMultipleTableRowsData,
-	verifyTableHeaders,
-} from '#tests/helpers/table-locator'
+	AboutMeCategoriesTable,
+	AboutMeSectionsTable,
+} from './dashboard/about-data-tables.pom'
 import { DashboardAboutCategoryEditorDialog } from './dashboard-about-category-editor-dialog'
 
 // https://playwright.dev/docs/pom
@@ -110,147 +110,147 @@ export class DashboardAboutPage {
 	}
 }
 
-class AboutMeSectionsTable {
-	readonly page: Page
-	readonly container: Locator
-	readonly table: Locator
-	readonly contentFilter: Locator
-	readonly categoryFilter: Locator
+// class AboutMeSectionsTable {
+// 	readonly page: Page
+// 	readonly container: Locator
+// 	readonly table: Locator
+// 	readonly contentFilter: Locator
+// 	readonly categoryFilter: Locator
 
-	constructor(page: Page, container: Locator) {
-		this.page = page
-		this.container = container
-		this.table = this.container.locator('table')
-		this.contentFilter = this.container.getByPlaceholder('Filter content...')
-		this.categoryFilter = this.container.getByPlaceholder('Filter category...')
-	}
+// 	constructor(page: Page, container: Locator) {
+// 		this.page = page
+// 		this.container = container
+// 		this.table = this.container.locator('table')
+// 		this.contentFilter = this.container.getByPlaceholder('Filter content...')
+// 		this.categoryFilter = this.container.getByPlaceholder('Filter category...')
+// 	}
 
-	async filterByContent(content: string) {
-		await this.contentFilter.fill(content)
-	}
+// 	async filterByContent(content: string) {
+// 		await this.contentFilter.fill(content)
+// 	}
 
-	async filterByCategory(category: string) {
-		await this.categoryFilter.fill(category)
-	}
+// 	async filterByCategory(category: string) {
+// 		await this.categoryFilter.fill(category)
+// 	}
 
-	async clearContentFilter() {
-		await this.contentFilter.clear()
-	}
+// 	async clearContentFilter() {
+// 		await this.contentFilter.clear()
+// 	}
 
-	getRow(name: string) {
-		return this.table.getByRole('row').filter({ hasText: name })
-	}
+// 	getRow(name: string) {
+// 		return this.table.getByRole('row').filter({ hasText: name })
+// 	}
 
-	getPublishSwitch(name: string) {
-		const row = this.getRow(name)
-		return row.getByRole('switch', {
-			name: `Toggle publish status for ${name}`,
-		})
-	}
+// 	getPublishSwitch(name: string) {
+// 		const row = this.getRow(name)
+// 		return row.getByRole('switch', {
+// 			name: `Toggle publish status for ${name}`,
+// 		})
+// 	}
 
-	async isPublished(name: string) {
-		return this.getPublishSwitch(name).isChecked()
-	}
+// 	async isPublished(name: string) {
+// 		return this.getPublishSwitch(name).isChecked()
+// 	}
 
-	async togglePublishStatus(name: string) {
-		await this.getPublishSwitch(name).click()
-	}
+// 	async togglePublishStatus(name: string) {
+// 		await this.getPublishSwitch(name).click()
+// 	}
 
-	async delete(name: string) {
-		this.page.on('dialog', (dialog) => dialog.accept())
-		const row = this.getRow(name)
-		await row.getByRole('button', { name: 'Open about section menu' }).click()
-		await this.container.page().getByRole('button', { name: 'Delete' }).click()
-	}
+// 	async delete(name: string) {
+// 		this.page.on('dialog', (dialog) => dialog.accept())
+// 		const row = this.getRow(name)
+// 		await row.getByRole('button', { name: 'Open about section menu' }).click()
+// 		await this.container.page().getByRole('button', { name: 'Delete' }).click()
+// 	}
 
-	async verifyHeaders() {
-		await verifyTableHeaders(
-			this.table,
-			['Name', 'Content', 'Category', 'Created At', 'Updated At', 'Published'],
-			{ hasSelectColumn: true, hasActionsColumn: true },
-		)
-	}
+// 	async verifyHeaders() {
+// 		await verifyTableHeaders(
+// 			this.table,
+// 			['Name', 'Content', 'Category', 'Created At', 'Updated At', 'Published'],
+// 			{ hasSelectColumn: true, hasActionsColumn: true },
+// 		)
+// 	}
 
-	async verifyData(data: string[][]) {
-		await verifyMultipleTableRowsData(this.table, data, {
-			hasSelectColumn: true,
-		})
-	}
-}
+// 	async verifyData(data: string[][]) {
+// 		await verifyMultipleTableRowsData(this.table, data, {
+// 			hasSelectColumn: true,
+// 		})
+// 	}
+// }
 
-class AboutMeCategoriesTable {
-	readonly page: Page
-	readonly container: Locator
-	readonly table: Locator
-	readonly nameFilter: Locator
-	readonly descriptionFilter: Locator
-	readonly categoryEditorDialog: DashboardAboutCategoryEditorDialog
+// class AboutMeCategoriesTable {
+// 	readonly page: Page
+// 	readonly container: Locator
+// 	readonly table: Locator
+// 	readonly nameFilter: Locator
+// 	readonly descriptionFilter: Locator
+// 	readonly categoryEditorDialog: DashboardAboutCategoryEditorDialog
 
-	constructor(page: Page, container: Locator) {
-		this.page = page
-		this.container = container
-		this.table = this.container.locator('table')
-		this.nameFilter = this.container.getByPlaceholder('Filter name...')
-		this.descriptionFilter = this.container.getByPlaceholder(
-			'Filter description...',
-		)
-		this.categoryEditorDialog = new DashboardAboutCategoryEditorDialog(page)
-	}
+// 	constructor(page: Page, container: Locator) {
+// 		this.page = page
+// 		this.container = container
+// 		this.table = this.container.locator('table')
+// 		this.nameFilter = this.container.getByPlaceholder('Filter name...')
+// 		this.descriptionFilter = this.container.getByPlaceholder(
+// 			'Filter description...',
+// 		)
+// 		this.categoryEditorDialog = new DashboardAboutCategoryEditorDialog(page)
+// 	}
 
-	async filterByName(name: string) {
-		await this.nameFilter.fill(name)
-	}
+// 	async filterByName(name: string) {
+// 		await this.nameFilter.fill(name)
+// 	}
 
-	async filterByDescription(description: string) {
-		await this.descriptionFilter.fill(description)
-	}
+// 	async filterByDescription(description: string) {
+// 		await this.descriptionFilter.fill(description)
+// 	}
 
-	async clearNameFilter() {
-		await this.nameFilter.clear()
-	}
+// 	async clearNameFilter() {
+// 		await this.nameFilter.clear()
+// 	}
 
-	getRow(name: string) {
-		return this.table.getByRole('row').filter({ hasText: name })
-	}
+// 	getRow(name: string) {
+// 		return this.table.getByRole('row').filter({ hasText: name })
+// 	}
 
-	async edit(name: string) {
-		await this.getRow(name).getByText(name).click()
-		await expect(this.categoryEditorDialog.dialog).toBeVisible()
-	}
+// 	async edit(name: string) {
+// 		await this.getRow(name).getByText(name).click()
+// 		await expect(this.categoryEditorDialog.dialog).toBeVisible()
+// 	}
 
-	getPublishSwitch(name: string) {
-		const row = this.getRow(name)
-		return row.getByRole('switch', {
-			name: `Toggle publish status for ${name}`,
-		})
-	}
+// 	getPublishSwitch(name: string) {
+// 		const row = this.getRow(name)
+// 		return row.getByRole('switch', {
+// 			name: `Toggle publish status for ${name}`,
+// 		})
+// 	}
 
-	async isPublished(name: string) {
-		return this.getPublishSwitch(name).isChecked()
-	}
+// 	async isPublished(name: string) {
+// 		return this.getPublishSwitch(name).isChecked()
+// 	}
 
-	async togglePublishStatus(name: string) {
-		await this.getPublishSwitch(name).click()
-	}
+// 	async togglePublishStatus(name: string) {
+// 		await this.getPublishSwitch(name).click()
+// 	}
 
-	async delete(name: string) {
-		this.page.on('dialog', (dialog) => dialog.accept())
-		const row = this.getRow(name)
-		await row.getByRole('button', { name: 'Open about category menu' }).click()
-		await this.container.page().getByRole('button', { name: 'Delete' }).click()
-	}
+// 	async delete(name: string) {
+// 		this.page.on('dialog', (dialog) => dialog.accept())
+// 		const row = this.getRow(name)
+// 		await row.getByRole('button', { name: 'Open about category menu' }).click()
+// 		await this.container.page().getByRole('button', { name: 'Delete' }).click()
+// 	}
 
-	async verifyHeaders() {
-		await verifyTableHeaders(
-			this.table,
-			['Name', 'Description', 'Created At', 'Updated At', 'Published'],
-			{ hasSelectColumn: true, hasActionsColumn: true },
-		)
-	}
+// 	async verifyHeaders() {
+// 		await verifyTableHeaders(
+// 			this.table,
+// 			['Name', 'Description', 'Created At', 'Updated At', 'Published'],
+// 			{ hasSelectColumn: true, hasActionsColumn: true },
+// 		)
+// 	}
 
-	async verifyData(data: string[][]) {
-		await verifyMultipleTableRowsData(this.table, data, {
-			hasSelectColumn: true,
-		})
-	}
-}
+// 	async verifyData(data: string[][]) {
+// 		await verifyMultipleTableRowsData(this.table, data, {
+// 			hasSelectColumn: true,
+// 		})
+// 	}
+// }

@@ -1,7 +1,5 @@
 import { type Locator, type Page } from '@playwright/test'
 import {
-	BaseDataTablePOM,
-	BaseDialogDataTablePOM,
 	DialogDrivenDataTablePOM,
 	MenuDrivenDataTablePOM,
 } from '../base/data-table.pom'
@@ -34,6 +32,23 @@ export class AboutMeSectionsTable extends MenuDrivenDataTablePOM {
 			hasSelectColumn: true,
 			hasActionsColumn: true,
 		})
+	}
+
+	// This is the public API for the page to use.
+	async filterByContent(content: string): Promise<void> {
+		await this.contentFilter.fill(content)
+	}
+
+	async clearContentFilter(): Promise<void> {
+		await this.contentFilter.clear()
+	}
+
+	async filterByCategory(category: string): Promise<void> {
+		await this.categoryFilter.fill(category)
+	}
+
+	async clearCategoryFilter(): Promise<void> {
+		await this.categoryFilter.clear()
 	}
 
 	async edit(name: string): Promise<void> {
@@ -81,6 +96,22 @@ export class AboutMeCategoriesTable extends DialogDrivenDataTablePOM {
 			hasSelectColumn: true,
 			hasActionsColumn: true,
 		})
+	}
+
+	async filterByName(name: string): Promise<void> {
+		await this.nameFilter.fill(name)
+	}
+
+	async clearNameFilter(): Promise<void> {
+		await this.nameFilter.clear()
+	}
+
+	async filterByDescription(description: string): Promise<void> {
+		await this.descriptionFilter.fill(description)
+	}
+
+	async clearDescriptionFilter(): Promise<void> {
+		await this.descriptionFilter.clear()
 	}
 
 	async edit(name: string): Promise<void> {

@@ -118,7 +118,10 @@ export abstract class MenuDrivenDataTablePOM extends BaseDataTablePOM {
 		this.page.on('dialog', (dialog) => dialog.accept())
 		const row = this.getRow(name)
 		await row.getByRole('button', { name: this.menuName }).click()
-		await this.page.getByRole('button', { name: 'Delete' }).click()
+
+		// const menu = row.getByRole('menu')
+		// await menu.getByRole('button', { name: 'Delete' }).click()
+		await this.page.getByRole('menuitem', { name: 'Delete' }).click()
 	}
 }
 
@@ -138,7 +141,10 @@ export abstract class DialogDrivenDataTablePOM extends BaseDataTablePOM {
 		this.page.on('dialog', (dialog) => dialog.accept())
 		const row = this.getRow(name)
 		await row.getByRole('button', { name: this.menuName }).click()
-		await this.page.getByRole('button', { name: 'Delete' }).click()
+
+		// const menu = row.getByRole('menu')
+		// await menu.getByRole('button', { name: 'Delete' }).click()
+		await this.page.getByRole('menuitem', { name: 'Delete' }).click()
 	}
 }
 
