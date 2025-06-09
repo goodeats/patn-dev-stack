@@ -60,8 +60,6 @@ export class AboutMeSectionsTable extends MenuDrivenDataTablePOM<DashboardAboutM
 
 		// Construct and return the editor page object
 		return new DashboardAboutMeEditorPage(this.page)
-		// await super.edit(name)
-		// return new DashboardAboutMeEditorPage(this.page)
 	}
 
 	// Example of implementing the fluent editor pattern from our follow-up questions

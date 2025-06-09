@@ -78,31 +78,31 @@ export abstract class BaseDataTablePOM {
 		await this.getPublishSwitch(name).click()
 	}
 
-	/**
-	 * Edits an item in the table using the actions menu.
-	 * @param name The name of the item to edit.
-	 * @param menuName The accessible name of the 'more options' menu button.
-	 */
-	async edit(name: string, menuName: string): Promise<void> {
-		const row = this.getRow(name)
-		await row.getByRole('button', { name: menuName }).click()
-		// The edit button is in a dropdown, but scoping to the page should be safe after the menu is opened.
-		await this.page.getByRole('menuitem', { name: 'Edit' }).click()
-	}
+	// /**
+	//  * Edits an item in the table using the actions menu.
+	//  * @param name The name of the item to edit.
+	//  * @param menuName The accessible name of the 'more options' menu button.
+	//  */
+	// async edit(name: string, menuName: string): Promise<void> {
+	// 	const row = this.getRow(name)
+	// 	await row.getByRole('button', { name: menuName }).click()
+	// 	// The edit button is in a dropdown, but scoping to the page should be safe after the menu is opened.
+	// 	await this.page.getByRole('menuitem', { name: 'Edit' }).click()
+	// }
 
-	/**
-	 * Deletes an item from the table using the actions menu.
-	 * Handles the confirmation dialog.
-	 * @param name The name of the item to delete.
-	 * @param menuName The accessible name of the 'more options' menu button.
-	 */
-	async delete(name: string, menuName: string): Promise<void> {
-		this.page.on('dialog', (dialog) => dialog.accept())
-		const row = this.getRow(name)
-		await row.getByRole('button', { name: menuName }).click()
-		// The delete button is in a dropdown, but scoping to the page should be safe after the menu is opened.
-		await this.page.getByRole('button', { name: 'Delete' }).click()
-	}
+	// /**
+	//  * Deletes an item from the table using the actions menu.
+	//  * Handles the confirmation dialog.
+	//  * @param name The name of the item to delete.
+	//  * @param menuName The accessible name of the 'more options' menu button.
+	//  */
+	// async delete(name: string, menuName: string): Promise<void> {
+	// 	this.page.on('dialog', (dialog) => dialog.accept())
+	// 	const row = this.getRow(name)
+	// 	await row.getByRole('button', { name: menuName }).click()
+	// 	// The delete button is in a dropdown, but scoping to the page should be safe after the menu is opened.
+	// 	await this.page.getByRole('button', { name: 'Delete' }).click()
+	// }
 }
 
 // For tables where actions are in a '...' dropdown menu.

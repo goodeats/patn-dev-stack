@@ -1,20 +1,10 @@
-import { type Locator, type Page, expect } from '@playwright/test'
+import { type Page, expect } from '@playwright/test'
+import { BaseDetailsPagePOM, type DetailTuple } from './base/route-details.pom'
+import { DashboardAboutMeEditorPage } from './dashboard-about-me-editor-page'
 
-export class DashboardAboutDetailsPage {
-	readonly page: Page
-	readonly container: Locator
-	readonly backLink: Locator
-	readonly editLink: Locator
-	readonly heading: Locator
-	readonly detailsCard: Locator
-
+export class DashboardAboutDetailsPage extends BaseDetailsPagePOM {
 	constructor(page: Page) {
-		this.page = page
-		this.container = page.locator('#about-details-content')
-		this.backLink = this.container.getByRole('link', { name: 'Back to Abouts' })
-		this.editLink = this.container.getByRole('link', { name: 'Edit' })
-		this.heading = this.container.getByRole('heading', { level: 1 })
-		this.detailsCard = this.container.locator('#about-details-card')
+		super(page, 'about-details-content', 'about-details-card')
 	}
 
 	async goto(aboutId: string) {
@@ -26,33 +16,27 @@ export class DashboardAboutDetailsPage {
 		await expect(this.page).toHaveURL(/\/dashboard\/about/)
 	}
 
-	async clickEdit() {
-		await this.editLink.click()
-		await expect(this.page).toHaveURL(/\/dashboard\/about\/[a-zA-Z0-9]+\/edit/)
+	async edit(): Promise<DashboardAboutMeEditorPage> {
+		await super.clickEdit()
+		const editor = new DashboardAboutMeEditorPage(this.page)
+		await editor.waitUntilVisible()
+		return editor
 	}
 
-	private getDetailItem(label: string) {
-		return this.detailsCard.locator('dt', { hasText: label }).locator('..')
-	}
-
-	getDetailValue(label: 'Content' | 'Description' | 'Category' | 'Status') {
-		const item = this.getDetailItem(label)
-		return item.locator('dd')
-	}
-
-	async verifyDetails(details: {
+	// Optional: Add a typed helper method for this specific page's details
+	async verifyAboutDetails(details: {
 		name: string
 		content: string
 		description: string
 		category: string
 		status: 'Published' | 'Draft'
-	}) {
-		await expect(this.heading).toHaveText(details.name)
-		await expect(this.getDetailValue('Content')).toHaveText(details.content)
-		await expect(this.getDetailValue('Description')).toHaveText(
-			details.description,
-		)
-		await expect(this.getDetailValue('Category')).toHaveText(details.category)
-		await expect(this.getDetailValue('Status')).toHaveText(details.status)
+	}): Promise<void> {
+		const detailTuples: DetailTuple[] = [
+			['Content', details.content],
+			['Description', details.description],
+			['Category', details.category],
+			['Status', details.status],
+		]
+		await super.verifyDetails(details.name, detailTuples)
 	}
 }
