@@ -1,6 +1,5 @@
 import { faker } from '@faker-js/faker'
 import { expect, test, testDateToday } from '#tests/playwright-utils.ts'
-import { DashboardAboutCategoryEditorDialog } from '#tests/pom/dashboard-about-category-editor-dialog.ts'
 import { DashboardAboutDetailsPage } from '../pom/dashboard-about-details-page'
 import { DashboardAboutMeEditorPage } from '../pom/dashboard-about-me-editor-page'
 import { DashboardAboutPage } from '../pom/dashboard-about-page'
@@ -43,47 +42,98 @@ test.describe('About Me Sections', () => {
 			})
 		})
 
-		test('can edit an existing section', async ({
-			page,
-			login,
-			insertNewAboutMeCategory,
-			insertNewAboutMe,
-		}) => {
-			const user = await login()
-			const category1 = await insertNewAboutMeCategory()
-			const category2 = await insertNewAboutMeCategory()
-			const initialSection = await insertNewAboutMe({
-				userId: user.id,
-				aboutMeCategoryId: category1.id,
+		test.describe('can edit an existing section', () => {
+			test('from the list page', async ({
+				page,
+				login,
+				insertNewAboutMeCategory,
+				insertNewAboutMe,
+			}) => {
+				const user = await login()
+				const category1 = await insertNewAboutMeCategory()
+				const category2 = await insertNewAboutMeCategory()
+				const initialSection = await insertNewAboutMe({
+					userId: user.id,
+					aboutMeCategoryId: category1.id,
+				})
+				const dashboardAboutPage = new DashboardAboutPage(page)
+				const detailsPage = new DashboardAboutDetailsPage(page)
+
+				await dashboardAboutPage.goto()
+				const editorPage = await dashboardAboutPage.aboutMeTable.edit(
+					initialSection.name,
+				)
+
+				await expect(editorPage.nameInput).toHaveValue(initialSection.name)
+				await expect(editorPage.contentInput).toHaveValue(
+					initialSection.content,
+				)
+
+				const updatedName = faker.lorem.words(3)
+				const updatedContent = faker.lorem.paragraph()
+				const updatedDescription = faker.lorem.sentence()
+
+				await editorPage.update({
+					name: updatedName,
+					content: updatedContent,
+					description: updatedDescription,
+					categoryName: category2.name,
+				})
+
+				await expect(page).toHaveURL(`/dashboard/about/${initialSection.id}`)
+
+				await detailsPage.verifyAboutDetails({
+					name: updatedName,
+					content: updatedContent,
+					description: updatedDescription,
+					category: category2.name,
+					status: 'Published',
+				})
 			})
-			const editorPage = new DashboardAboutMeEditorPage(page)
-			const detailsPage = new DashboardAboutDetailsPage(page)
 
-			await detailsPage.goto(initialSection.id)
-			await detailsPage.clickEdit()
+			test('from the details page', async ({
+				page,
+				login,
+				insertNewAboutMeCategory,
+				insertNewAboutMe,
+			}) => {
+				const user = await login()
+				const category1 = await insertNewAboutMeCategory()
+				const category2 = await insertNewAboutMeCategory()
+				const initialSection = await insertNewAboutMe({
+					userId: user.id,
+					aboutMeCategoryId: category1.id,
+				})
+				const detailsPage = new DashboardAboutDetailsPage(page)
 
-			await expect(editorPage.nameInput).toHaveValue(initialSection.name)
-			await expect(editorPage.contentInput).toHaveValue(initialSection.content)
+				await detailsPage.goto(initialSection.id)
+				const editorPage = await detailsPage.edit()
 
-			const updatedName = faker.lorem.words(3)
-			const updatedContent = faker.lorem.paragraph()
-			const updatedDescription = faker.lorem.sentence()
+				await expect(editorPage.nameInput).toHaveValue(initialSection.name)
+				await expect(editorPage.contentInput).toHaveValue(
+					initialSection.content,
+				)
 
-			await editorPage.update({
-				name: updatedName,
-				content: updatedContent,
-				description: updatedDescription,
-				categoryName: category2.name,
-			})
+				const updatedName = faker.lorem.words(3)
+				const updatedContent = faker.lorem.paragraph()
+				const updatedDescription = faker.lorem.sentence()
 
-			await expect(page).toHaveURL(`/dashboard/about/${initialSection.id}`)
+				await editorPage.update({
+					name: updatedName,
+					content: updatedContent,
+					description: updatedDescription,
+					categoryName: category2.name,
+				})
 
-			await detailsPage.verifyAboutDetails({
-				name: updatedName,
-				content: updatedContent,
-				description: updatedDescription,
-				category: category2.name,
-				status: 'Published',
+				await expect(page).toHaveURL(`/dashboard/about/${initialSection.id}`)
+
+				await detailsPage.verifyAboutDetails({
+					name: updatedName,
+					content: updatedContent,
+					description: updatedDescription,
+					category: category2.name,
+					status: 'Published',
+				})
 			})
 		})
 

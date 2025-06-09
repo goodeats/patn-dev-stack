@@ -34,24 +34,18 @@ export abstract class BaseDetailsPagePOM {
 		await this.backLink.click()
 	}
 
-	// This is now generic and can return any editor POM
-	// async clickEdit<TEditorPOM>(
-	// 	EditorPOM: new (page: Page) => TEditorPOM,
-	// ): Promise<TEditorPOM> {
-	// 	await this.editLink.click()
-	// 	return new EditorPOM(this.page)
-	// }
 	protected async clickEdit(): Promise<void> {
 		await this.editLink.click()
 	}
 
 	private getDetailItem(label: string): Locator {
-		// This locator is robust, finding the <dt> and then its parent `div`
-		return this.detailsCard.locator('dt', { hasText: label }).locator('..')
+		// Finding the <dt> with the specified label text
+		return this.detailsCard.locator('dt', { hasText: label })
 	}
 
 	getDetailValue(label: string): Locator {
-		return this.getDetailItem(label).locator('dd')
+		// Getting the sibling <dd> element next to the <dt> with the specified label
+		return this.getDetailItem(label).locator('xpath=following-sibling::dd')
 	}
 
 	// A more flexible verification method

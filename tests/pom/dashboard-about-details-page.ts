@@ -23,7 +23,6 @@ export class DashboardAboutDetailsPage extends BaseDetailsPagePOM {
 		return editor
 	}
 
-	// Optional: Add a typed helper method for this specific page's details
 	async verifyAboutDetails(details: {
 		name: string
 		content: string
