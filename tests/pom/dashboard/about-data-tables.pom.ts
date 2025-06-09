@@ -2,11 +2,12 @@ import { type Locator, type Page } from '@playwright/test'
 import {
 	BaseDataTablePOM,
 	BaseDialogDataTablePOM,
+	DialogDrivenDataTablePOM,
+	MenuDrivenDataTablePOM,
 } from '../base/data-table.pom'
 
-export class AboutMeSectionsTable extends BaseDataTablePOM {
-	readonly contentFilter: Locator
-	readonly categoryFilter: Locator
+export class AboutMeSectionsTable extends MenuDrivenDataTablePOM {
+	// --- Configuration for MenuDrivenDataTablePOM ---
 	readonly expectedHeaders: string[] = [
 		'Name',
 		'Content',
@@ -17,12 +18,17 @@ export class AboutMeSectionsTable extends BaseDataTablePOM {
 	]
 	readonly menuName = 'Open about section menu'
 
+	// --- Specific to this table ---
+	readonly contentFilter: Locator
+	readonly categoryFilter: Locator
+
 	constructor(page: Page, container: Locator) {
 		super(page, container)
 		this.contentFilter = this.getFilterByPlaceholder('Filter content...')
 		this.categoryFilter = this.getFilterByPlaceholder('Filter category...')
 	}
 
+	// --- Specific methods for this table ---
 	async verifyHeaders(): Promise<void> {
 		await super.verifyHeaders(this.expectedHeaders, {
 			hasSelectColumn: true,
@@ -31,16 +37,16 @@ export class AboutMeSectionsTable extends BaseDataTablePOM {
 	}
 
 	async edit(name: string): Promise<void> {
-		await super.edit(name, this.menuName)
+		await super.edit(name)
+		// return new DashboardAboutMeEditorPage(this.page)
 	}
 
-	// The delete method uses a specific menu name
 	async delete(name: string): Promise<void> {
-		await super.delete(name, this.menuName)
+		await super.delete(name)
 	}
 }
 
-export class AboutMeCategoriesTable extends BaseDialogDataTablePOM {
+export class AboutMeCategoriesTable extends DialogDrivenDataTablePOM {
 	readonly nameFilter: Locator
 	readonly descriptionFilter: Locator
 	readonly expectedHeaders: string[] = [

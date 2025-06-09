@@ -35,6 +35,30 @@ export abstract class BaseDataTablePOM {
 	}
 
 	/**
+	 * Verifies the table headers are correct.
+	 * @param expectedHeaders Array of expected header strings.
+	 * @param options Options for header verification (e.g., has select/actions columns).
+	 */
+	async verifyHeaders(
+		expectedHeaders: string[],
+		options?: { hasSelectColumn?: boolean; hasActionsColumn?: boolean },
+	): Promise<void> {
+		await verifyTableHeaders(this.table, expectedHeaders, options)
+	}
+
+	/**
+	 * Verifies the data in the table body matches the expected data.
+	 * @param data A 2D array of strings representing the expected row data.
+	 * @param options Options for data verification (e.g., has a select column).
+	 */
+	async verifyData(
+		data: string[][],
+		options?: { hasSelectColumn?: boolean },
+	): Promise<void> {
+		await verifyMultipleTableRowsData(this.table, data, options)
+	}
+
+	/**
 	 * Gets the publish status switch for a given row.
 	 * @param name The name of the item in the row.
 	 */
@@ -78,29 +102,43 @@ export abstract class BaseDataTablePOM {
 		// The delete button is in a dropdown, but scoping to the page should be safe after the menu is opened.
 		await this.page.getByRole('button', { name: 'Delete' }).click()
 	}
+}
 
-	/**
-	 * Verifies the table headers are correct.
-	 * @param expectedHeaders Array of expected header strings.
-	 * @param options Options for header verification (e.g., has select/actions columns).
-	 */
-	async verifyHeaders(
-		expectedHeaders: string[],
-		options?: { hasSelectColumn?: boolean; hasActionsColumn?: boolean },
-	): Promise<void> {
-		await verifyTableHeaders(this.table, expectedHeaders, options)
+// For tables where actions are in a '...' dropdown menu.
+export abstract class MenuDrivenDataTablePOM extends BaseDataTablePOM {
+	abstract readonly menuName: string
+
+	async edit(name: string): Promise<void> {
+		const row = this.getRow(name)
+		await row.getByRole('button', { name: this.menuName }).click()
+		await this.page.getByRole('menuitem', { name: 'Edit' }).click()
 	}
 
-	/**
-	 * Verifies the data in the table body matches the expected data.
-	 * @param data A 2D array of strings representing the expected row data.
-	 * @param options Options for data verification (e.g., has a select column).
-	 */
-	async verifyData(
-		data: string[][],
-		options?: { hasSelectColumn?: boolean },
-	): Promise<void> {
-		await verifyMultipleTableRowsData(this.table, data, options)
+	async delete(name: string): Promise<void> {
+		this.page.on('dialog', (dialog) => dialog.accept())
+		const row = this.getRow(name)
+		await row.getByRole('button', { name: this.menuName }).click()
+		await this.page.getByRole('button', { name: 'Delete' }).click()
+	}
+}
+
+// For tables where clicking the name opens an edit dialog.
+export abstract class DialogDrivenDataTablePOM extends BaseDataTablePOM {
+	// Delete is often still in a menu, so we need the menu name here too.
+	abstract readonly menuName: string
+
+	// The 'edit' action is fundamentally different for this pattern.
+	// Clicking on the name should open the dialog.
+	// it may be in the menu too
+	async edit(name: string): Promise<void> {
+		await this.getRow(name).getByRole('button', { name }).click()
+	}
+
+	async delete(name: string): Promise<void> {
+		this.page.on('dialog', (dialog) => dialog.accept())
+		const row = this.getRow(name)
+		await row.getByRole('button', { name: this.menuName }).click()
+		await this.page.getByRole('button', { name: 'Delete' }).click()
 	}
 }
 

@@ -6,6 +6,7 @@ export interface SectionData extends BaseEditorData {
 	content: string
 	categoryName?: string
 }
+export interface CategoryData extends BaseEditorData {}
 
 export class DashboardAboutMeEditorPage extends BaseEditorPOM<SectionData> {
 	readonly contentInput: Locator
