@@ -25,7 +25,9 @@ export class DashboardAboutCategoryEditorDialog {
 		})
 		this.saveButton = this.dialog.getByRole('button', { name: 'Save Changes' })
 		this.cancelButton = this.dialog.getByRole('button', { name: 'Cancel' })
-		this.nameError = this.dialog.locator('#about-category-editor-name-error')
+		this.nameError = this.dialog
+			.locator('#about-category-editor-name-error')
+			.getByText('Required')
 	}
 
 	async fillName(name: string) {
@@ -63,7 +65,15 @@ export class DashboardAboutCategoryEditorDialog {
 		await this.saveButton.click()
 	}
 
-	async verifyRequiredNameError() {
-		await expect(this.nameError.getByText('Required')).toBeVisible()
+	async clearName() {
+		await this.nameInput.clear()
+	}
+
+	async verifyRequiredNameError(isVisible: boolean = true) {
+		if (isVisible) {
+			await expect(this.nameError.getByText('Required')).toBeVisible()
+		} else {
+			await expect(this.nameError.getByText('Required')).not.toBeVisible()
+		}
 	}
 }

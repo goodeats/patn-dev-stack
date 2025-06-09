@@ -197,22 +197,18 @@ test.describe('About Me Sections', () => {
 
 			await editorPage.gotoNew()
 			await editorPage.clickCreateButton()
-			await expect(editorPage.nameError.getByText('Required')).toBeVisible()
-			await expect(editorPage.contentError.getByText('Required')).toBeVisible()
-			await expect(editorPage.categoryError).toHaveText('Category is required')
+			await editorPage.verifyRequiredErrors()
 
 			await editorPage.nameInput.fill(faker.lorem.words(2))
 			await editorPage.clickCreateButton()
-			await expect(editorPage.nameError.getByText('Required')).not.toBeVisible()
-			await expect(editorPage.contentError.getByText('Required')).toBeVisible()
-			await expect(editorPage.categoryError).toHaveText('Category is required')
+			await editorPage.verifyRequiredNameError(false)
+			await editorPage.verifyRequiredContentError()
+			await editorPage.verifyRequiredCategoryError()
 
 			await editorPage.contentInput.fill(faker.lorem.paragraph())
 			await editorPage.clickCreateButton()
-			await expect(
-				editorPage.contentError.getByText('Required'),
-			).not.toBeVisible()
-			await expect(editorPage.categoryError).toHaveText('Category is required')
+			await editorPage.verifyRequiredContentError(false)
+			await editorPage.verifyRequiredCategoryError()
 
 			// Successfully create with valid data
 			await editorPage.selectCategory(category.name)
@@ -243,12 +239,12 @@ test.describe('About Me Sections', () => {
 			// Test editing validation
 			await editorPage.clearName()
 			await editorPage.clickSaveButton()
-			await expect(editorPage.nameError.getByText('Required')).toBeVisible()
+			await expect(editorPage.nameError).toBeVisible()
 
 			await editorPage.nameInput.fill(faker.lorem.words(2)) // Restore name
 			await editorPage.clearContent()
 			await editorPage.clickSaveButton()
-			await expect(editorPage.contentError.getByText('Required')).toBeVisible()
+			await expect(editorPage.contentError).toBeVisible()
 		})
 	})
 
@@ -409,6 +405,24 @@ test.describe('About Me Categories', () => {
 
 			await expect(categoryDialog.nameError).toBeVisible()
 			await expect(categoryDialog.dialog).toBeVisible()
+		})
+
+		test('validates the required name field on editing', async ({
+			page,
+			login,
+			insertNewAboutMeCategory,
+		}) => {
+			await login()
+			const category = await insertNewAboutMeCategory()
+			const dashboardAboutPage = new DashboardAboutPage(page)
+			const categoryDialog = new DashboardAboutCategoryEditorDialog(page)
+
+			await dashboardAboutPage.goto()
+			await dashboardAboutPage.clickCategory(category.name)
+
+			await categoryDialog.clearName()
+			await categoryDialog.clickSaveButton()
+			await categoryDialog.verifyRequiredNameError()
 		})
 	})
 

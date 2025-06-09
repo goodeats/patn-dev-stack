@@ -32,8 +32,12 @@ export class DashboardAboutMeEditorPage {
 		this.createButton = page.getByRole('button', { name: 'Create About Me' })
 		this.saveButton = page.getByRole('button', { name: 'Save Changes' })
 		this.deleteButton = page.getByRole('button', { name: 'Delete' })
-		this.nameError = page.locator('#about-editor-name-error')
-		this.contentError = page.locator('#about-editor-content-error')
+		this.nameError = page
+			.locator('#about-editor-name-error')
+			.getByText('Required')
+		this.contentError = page
+			.locator('#about-editor-content-error')
+			.getByText('Required')
 		this.categoryError = this.categorySelect.locator(
 			'xpath=./following-sibling::div',
 		)
@@ -117,15 +121,37 @@ export class DashboardAboutMeEditorPage {
 		await expect(this.page).toHaveURL('/dashboard/about')
 	}
 
+	async verifyRequiredNameError(isVisible: boolean = true) {
+		if (isVisible) {
+			await expect(this.nameError.getByText('Required')).toBeVisible()
+		} else {
+			await expect(this.nameError.getByText('Required')).not.toBeVisible()
+		}
+	}
+
+	async verifyRequiredContentError(isVisible: boolean = true) {
+		if (isVisible) {
+			await expect(this.contentError.getByText('Required')).toBeVisible()
+		} else {
+			await expect(this.contentError.getByText('Required')).not.toBeVisible()
+		}
+	}
+
+	async verifyRequiredCategoryError(isVisible: boolean = true) {
+		if (isVisible) {
+			await expect(
+				this.page.locator('form').getByText('Category is required'),
+			).toBeVisible()
+		} else {
+			await expect(
+				this.page.locator('form').getByText('Category is required'),
+			).not.toBeVisible()
+		}
+	}
+
 	async verifyRequiredErrors() {
-		await expect(
-			this.page.locator('#about-editor-name-error').getByText('Required'),
-		).toBeVisible()
-		await expect(
-			this.page.locator('#about-editor-content-error').getByText('Required'),
-		).toBeVisible()
-		await expect(
-			this.page.locator('form').getByText('Category is required'),
-		).toBeVisible()
+		await this.verifyRequiredNameError()
+		await this.verifyRequiredContentError()
+		await this.verifyRequiredCategoryError()
 	}
 }
