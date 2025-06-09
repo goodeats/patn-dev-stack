@@ -1,9 +1,5 @@
 import { faker } from '@faker-js/faker'
 import { DashboardAboutCategoryEditorDialog } from '#tests/e2e/pom/dashboard-about-category-editor-dialog'
-import {
-	verifyMultipleTableRowsData,
-	verifyTableHeaders,
-} from '#tests/helpers/table-locator.ts'
 import { expect, test, testDateToday } from '#tests/playwright-utils.ts'
 import { DashboardAboutDetailsPage } from './pom/dashboard-about-details-page'
 import { DashboardAboutMeEditorPage } from './pom/dashboard-about-me-editor-page'
@@ -331,15 +327,16 @@ test.describe('About Me Categories', () => {
 			const categoryDialog = new DashboardAboutCategoryEditorDialog(page)
 
 			await dashboardAboutPage.goto()
-			await dashboardAboutPage.clickNewCategoryButton()
+			await dashboardAboutPage.clickNewCategory()
 
-			await expect(categoryDialog.dialog).toBeVisible()
 			const categoryName = faker.lorem.words(2)
-			await categoryDialog.fillName(categoryName)
-			await categoryDialog.fillDescription(faker.lorem.sentence())
-			await categoryDialog.clickCreateButton()
+			const categoryDescription = faker.lorem.sentence()
 
-			await expect(categoryDialog.dialog).not.toBeVisible()
+			await categoryDialog.create({
+				name: categoryName,
+				description: categoryDescription,
+			})
+
 			await expect(
 				dashboardAboutPage.getCategoryElement(categoryName),
 			).toBeVisible()
