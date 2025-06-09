@@ -1,6 +1,5 @@
 import { faker } from '@faker-js/faker'
 import { DashboardAboutCategoryEditorDialog } from '#tests/e2e/pom/dashboard-about-category-editor-dialog'
-import { DashboardAboutPage } from '#tests/e2e/pom/dashboard-about-page'
 import {
 	verifyMultipleTableRowsData,
 	verifyTableHeaders,
@@ -8,6 +7,7 @@ import {
 import { expect, test, testDateToday } from '#tests/playwright-utils.ts'
 import { DashboardAboutDetailsPage } from './pom/dashboard-about-details-page'
 import { DashboardAboutMeEditorPage } from './pom/dashboard-about-me-editor-page'
+import { DashboardAboutPage } from './pom/dashboard-about-page'
 
 test.describe('About Me Sections', () => {
 	test.describe('CRUD', () => {
@@ -24,7 +24,6 @@ test.describe('About Me Sections', () => {
 
 			await dashboardAboutPage.goto()
 			await dashboardAboutPage.clickNewSection()
-			await expect(page).toHaveURL('/dashboard/about/new')
 
 			const sectionName = faker.lorem.words(3)
 			const sectionContent = faker.lorem.paragraph()
@@ -60,30 +59,34 @@ test.describe('About Me Sections', () => {
 				aboutMeCategoryId: category1.id,
 			})
 			const editorPage = new DashboardAboutMeEditorPage(page)
+			const detailsPage = new DashboardAboutDetailsPage(page)
 
-			await page.goto(`/dashboard/about/${initialSection.id}`)
-			await page.getByRole('link', { name: 'Edit' }).click()
-			await expect(page).toHaveURL(`/dashboard/about/${initialSection.id}/edit`)
+			await detailsPage.goto(initialSection.id)
+			await detailsPage.clickEdit()
 
 			await expect(editorPage.nameInput).toHaveValue(initialSection.name)
 			await expect(editorPage.contentInput).toHaveValue(initialSection.content)
 
 			const updatedName = faker.lorem.words(3)
 			const updatedContent = faker.lorem.paragraph()
+			const updatedDescription = faker.lorem.sentence()
 
 			await editorPage.update({
 				name: updatedName,
 				content: updatedContent,
+				description: updatedDescription,
 				categoryName: category2.name,
 			})
 
 			await expect(page).toHaveURL(`/dashboard/about/${initialSection.id}`)
-			await expect(
-				page.getByRole('heading', { name: updatedName }),
-			).toBeVisible()
-			await expect(page.getByText(updatedContent)).toBeVisible()
-			await expect(page.getByText(category2.name)).toBeVisible()
-			await expect(page.getByText('Draft')).toBeVisible()
+
+			await detailsPage.verifyDetails({
+				name: updatedName,
+				content: updatedContent,
+				description: updatedDescription,
+				category: category2.name,
+				status: 'Published',
+			})
 		})
 
 		test('can be deleted from the list page', async ({
@@ -113,6 +116,7 @@ test.describe('About Me Sections', () => {
 		}) => {
 			const user = await login()
 			const sectionToDelete = await insertNewAboutMe({ userId: user.id })
+			const dashboardAboutPage = new DashboardAboutPage(page)
 			const editorPage = new DashboardAboutMeEditorPage(page)
 
 			await editorPage.gotoEdit(sectionToDelete.id)
@@ -120,7 +124,7 @@ test.describe('About Me Sections', () => {
 			await editorPage.delete()
 
 			await expect(
-				page.locator('#about-me-sections').getByText(sectionToDelete.name),
+				dashboardAboutPage.aboutMeTable.getRow(sectionToDelete.name),
 			).not.toBeVisible()
 		})
 

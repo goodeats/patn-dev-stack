@@ -27,8 +27,11 @@ export class DashboardAboutPage {
 		this.newCategoryButton = this.categoriesSection.getByRole('button', {
 			name: 'New',
 		})
-		this.aboutMeTable = new AboutMeSectionsTable(this.aboutMeSection)
-		this.categoriesTable = new AboutMeCategoriesTable(this.categoriesSection)
+		this.aboutMeTable = new AboutMeSectionsTable(page, this.aboutMeSection)
+		this.categoriesTable = new AboutMeCategoriesTable(
+			page,
+			this.categoriesSection,
+		)
 		this.categoryEditorDialog = new DashboardAboutCategoryEditorDialog(page)
 	}
 
@@ -108,12 +111,14 @@ export class DashboardAboutPage {
 }
 
 class AboutMeSectionsTable {
+	readonly page: Page
 	readonly container: Locator
 	readonly table: Locator
 	readonly contentFilter: Locator
 	readonly categoryFilter: Locator
 
-	constructor(container: Locator) {
+	constructor(page: Page, container: Locator) {
+		this.page = page
 		this.container = container
 		this.table = this.container.locator('table')
 		this.contentFilter = this.container.getByPlaceholder('Filter content...')
@@ -152,8 +157,9 @@ class AboutMeSectionsTable {
 	}
 
 	async delete(name: string) {
+		this.page.on('dialog', (dialog) => dialog.accept())
 		const row = this.getRow(name)
-		await row.getByRole('button', { name: 'Open menu' }).click()
+		await row.getByRole('button', { name: 'Open about section menu' }).click()
 		await this.container.page().getByRole('button', { name: 'Delete' }).click()
 	}
 
@@ -173,12 +179,14 @@ class AboutMeSectionsTable {
 }
 
 class AboutMeCategoriesTable {
+	readonly page: Page
 	readonly container: Locator
 	readonly table: Locator
 	readonly nameFilter: Locator
 	readonly descriptionFilter: Locator
 
-	constructor(container: Locator) {
+	constructor(page: Page, container: Locator) {
+		this.page = page
 		this.container = container
 		this.table = this.container.locator('table')
 		this.nameFilter = this.container.getByPlaceholder('Filter name...')
@@ -223,6 +231,7 @@ class AboutMeCategoriesTable {
 	}
 
 	async delete(name: string) {
+		this.page.on('dialog', (dialog) => dialog.accept())
 		const row = this.getRow(name)
 		await row.getByRole('button', { name: 'Open about category menu' }).click()
 		await this.container.page().getByRole('button', { name: 'Delete' }).click()

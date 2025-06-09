@@ -4,6 +4,7 @@ export class DashboardAboutDetailsPage {
 	readonly page: Page
 	readonly container: Locator
 	readonly backLink: Locator
+	readonly editLink: Locator
 	readonly heading: Locator
 	readonly detailsCard: Locator
 
@@ -11,6 +12,7 @@ export class DashboardAboutDetailsPage {
 		this.page = page
 		this.container = page.locator('#about-details-content')
 		this.backLink = this.container.getByRole('link', { name: 'Back to Abouts' })
+		this.editLink = this.container.getByRole('link', { name: 'Edit' })
 		this.heading = this.container.getByRole('heading', { level: 1 })
 		this.detailsCard = this.container.locator('#about-details-card')
 	}
@@ -22,6 +24,11 @@ export class DashboardAboutDetailsPage {
 	async goBack() {
 		await this.backLink.click()
 		await expect(this.page).toHaveURL(/\/dashboard\/about/)
+	}
+
+	async clickEdit() {
+		await this.editLink.click()
+		await expect(this.page).toHaveURL(/\/dashboard\/about\/[a-zA-Z0-9]+\/edit/)
 	}
 
 	private getDetailItem(label: string) {
