@@ -1,16 +1,17 @@
 import { faker } from '@faker-js/faker'
-import { type Page } from '@playwright/test'
+import { DashboardAboutCategoryEditorDialog } from '#tests/e2e/pom/dashboard-about-category-editor-dialog'
+import { DashboardAboutPage } from '#tests/e2e/pom/dashboard-about-page'
+import {
+	verifyMultipleTableRowsData,
+	verifyTableHeaders,
+} from '#tests/helpers/table-locator.ts'
 import {
 	expect,
 	scrollDown,
 	test,
 	testDateToday,
-	verifyMultipleTableRowsData,
-	verifyTableHeaders,
 } from '#tests/playwright-utils.ts'
-
-const aboutMeSection = (page: Page) => page.locator('#about-me-sections')
-const categoriesSection = (page: Page) => page.locator('#about-me-categories')
+import { DashboardAboutMeEditorPage } from './pom/dashboard-about-me-editor-page'
 
 test.describe('About Me Sections', () => {
 	test.describe('CRUD', () => {
@@ -21,23 +22,24 @@ test.describe('About Me Sections', () => {
 		}) => {
 			await login({ name: faker.person.firstName() })
 			const category = await insertNewAboutMeCategory()
+			const dashboardAboutPage = new DashboardAboutPage(page)
+			const editorPage = new DashboardAboutMeEditorPage(page)
 
-			await page.goto('/dashboard/about')
-			await page.getByRole('link', { name: 'New' }).click()
+			await dashboardAboutPage.goto()
+			await dashboardAboutPage.clickNewSection()
 			await expect(page).toHaveURL('/dashboard/about/new')
 
 			const sectionName = faker.lorem.words(3)
 			const sectionContent = faker.lorem.paragraph()
 			const sectionDescription = faker.lorem.sentence()
 
-			await page.getByLabel('Name').fill(sectionName)
-			await page.getByLabel('Content').fill(sectionContent)
-			await page.getByLabel('Description (Optional)').fill(sectionDescription)
-			await page.getByRole('combobox', { name: 'Category' }).click()
-			await page.getByRole('option', { name: category.name }).click()
-			await page.getByRole('button', { name: 'Create About Me' }).click()
+			await editorPage.create({
+				name: sectionName,
+				content: sectionContent,
+				description: sectionDescription,
+				categoryName: category.name,
+			})
 
-			await expect(page).toHaveURL(/\/dashboard\/about\/[a-zA-Z0-9]+$/)
 			await expect(
 				page.getByRole('heading', { name: sectionName }),
 			).toBeVisible()
@@ -60,26 +62,23 @@ test.describe('About Me Sections', () => {
 				userId: user.id,
 				aboutMeCategoryId: category1.id,
 			})
+			const editorPage = new DashboardAboutMeEditorPage(page)
 
 			await page.goto(`/dashboard/about/${initialSection.id}`)
 			await page.getByRole('link', { name: 'Edit' }).click()
 			await expect(page).toHaveURL(`/dashboard/about/${initialSection.id}/edit`)
 
-			await expect(page.getByLabel('Name')).toHaveValue(initialSection.name)
-			await expect(page.getByLabel('Content')).toHaveValue(
-				initialSection.content,
-			)
+			await expect(editorPage.nameInput).toHaveValue(initialSection.name)
+			await expect(editorPage.contentInput).toHaveValue(initialSection.content)
 
 			const updatedName = faker.lorem.words(3)
 			const updatedContent = faker.lorem.paragraph()
 
-			await page.getByLabel('Name').fill(updatedName)
-			await page.getByLabel('Content').fill(updatedContent)
-			await page.getByRole('combobox', { name: 'Category' }).click()
-			await page.getByRole('option', { name: category2.name }).click()
-			await page.getByRole('switch', { name: 'Published' }).click() // unpublish
-			await scrollDown(page, { mode: 'bottom' })
-			await page.getByRole('button', { name: 'Save Changes' }).click()
+			await editorPage.update({
+				name: updatedName,
+				content: updatedContent,
+				categoryName: category2.name,
+			})
 
 			await expect(page).toHaveURL(`/dashboard/about/${initialSection.id}`)
 			await expect(
@@ -100,17 +99,12 @@ test.describe('About Me Sections', () => {
 				userId: user.id,
 				name: `SectionToDelete ${faker.lorem.word()}`,
 			})
+			const dashboardAboutPage = new DashboardAboutPage(page)
 
-			await page.goto('/dashboard/about')
+			await dashboardAboutPage.goto()
 			await expect(page.getByText(sectionToDelete.name)).toBeVisible()
 
-			const row = page
-				.getByRole('row')
-				.filter({ hasText: sectionToDelete.name })
-			await row.getByRole('button', { name: 'Open menu' }).click()
-
-			page.on('dialog', (dialog) => dialog.accept())
-			await page.getByRole('button', { name: 'Delete' }).click()
+			await dashboardAboutPage.aboutMeTable.delete(sectionToDelete.name)
 
 			await expect(page.getByText(sectionToDelete.name)).not.toBeVisible()
 		})
@@ -122,15 +116,14 @@ test.describe('About Me Sections', () => {
 		}) => {
 			const user = await login()
 			const sectionToDelete = await insertNewAboutMe({ userId: user.id })
+			const editorPage = new DashboardAboutMeEditorPage(page)
 
-			await page.goto(`/dashboard/about/${sectionToDelete.id}/edit`)
+			await editorPage.gotoEdit(sectionToDelete.id)
 
-			page.on('dialog', (dialog) => dialog.accept())
-			await page.getByRole('button', { name: 'Delete' }).click()
+			await editorPage.delete()
 
-			await expect(page).toHaveURL('/dashboard/about')
 			await expect(
-				aboutMeSection(page).getByText(sectionToDelete.name),
+				page.locator('#about-me-sections').getByText(sectionToDelete.name),
 			).not.toBeVisible()
 		})
 
@@ -151,11 +144,12 @@ test.describe('About Me Sections', () => {
 				userId: user.id,
 				aboutMeCategoryId: category2.id,
 			})
+			const dashboardAboutPage = new DashboardAboutPage(page)
 
-			await page.goto('/dashboard/about')
+			await dashboardAboutPage.goto()
 
 			// Verify Sections Table
-			const aboutMeTable = aboutMeSection(page).locator('table')
+			const aboutMeTable = dashboardAboutPage.aboutMeTable.table
 			await verifyTableHeaders(
 				aboutMeTable,
 				[
@@ -190,7 +184,7 @@ test.describe('About Me Sections', () => {
 			)
 
 			// Verify Categories Table
-			const categoriesTable = categoriesSection(page).locator('table')
+			const categoriesTable = dashboardAboutPage.categoriesTable.table
 			await verifyTableHeaders(
 				categoriesTable,
 				['Name', 'Description', 'Created At', 'Updated At', 'Published'],
@@ -218,14 +212,18 @@ test.describe('About Me Sections', () => {
 	})
 
 	test.describe('Validation', () => {
-		test('validates required fields on creation and editing', async ({
+		test('validates About Me Section creation and editing', async ({
 			page,
 			login,
 			insertNewAboutMeCategory,
-			insertNewAboutMe,
 		}) => {
-			const user = await login()
-			await insertNewAboutMeCategory()
+			const userName = faker.person.firstName()
+			await login({ name: userName })
+
+			const category = await insertNewAboutMeCategory({
+				name: 'Professional',
+			})
+
 			// Test creation validation
 			await page.goto('/dashboard/about/new')
 			await page.getByRole('button', { name: 'Create About Me' }).click()
@@ -235,19 +233,46 @@ test.describe('About Me Sections', () => {
 			await expect(
 				page.locator('#about-editor-content-error').getByText('Required'),
 			).toBeVisible()
+			const categoryError = page
+				.getByRole('combobox', { name: 'Category' })
+				.locator('xpath=./following-sibling::div')
+			await expect(categoryError).toHaveText('Category is required')
+
+			await page.getByLabel('Name').fill(faker.lorem.words(2))
+			await page.getByRole('button', { name: 'Create About Me' }).click()
 			await expect(
-				page.locator('form').getByText('Category is required'),
+				page.locator('#about-editor-name-error').getByText('Required'),
+			).not.toBeVisible()
+			await expect(
+				page.locator('#about-editor-content-error').getByText('Required'),
 			).toBeVisible()
+			await expect(categoryError).toHaveText('Category is required')
+
+			await page.getByLabel('Content').fill(faker.lorem.paragraph())
+			await page.getByRole('button', { name: 'Create About Me' }).click()
+			await expect(
+				page.locator('#about-editor-content-error').getByText('Required'),
+			).not.toBeVisible()
+			await expect(categoryError).toHaveText('Category is required')
+
+			// Create a section for edit validation
+			await page.getByRole('combobox', { name: 'Category' }).click()
+			await page.getByRole('option', { name: category.name }).click()
+			await page.getByRole('button', { name: 'Create About Me' }).click() // Redirects to view
+
+			await page.getByRole('link', { name: 'Edit' }).click()
+			await expect(page).toHaveURL(/\/dashboard\/about\/[a-zA-Z0-9]+\/edit/)
 
 			// Test editing validation
-			const section = await insertNewAboutMe({ userId: user.id })
-			await page.goto(`/dashboard/about/${section.id}/edit`)
 			await page.getByLabel('Name').clear()
-			await page.getByLabel('Content').clear()
 			await page.getByRole('button', { name: 'Save Changes' }).click()
 			await expect(
 				page.locator('#about-editor-name-error').getByText('Required'),
 			).toBeVisible()
+
+			await page.getByLabel('Name').fill(faker.lorem.words(2)) // Restore name
+			await page.getByLabel('Content').clear()
+			await page.getByRole('button', { name: 'Save Changes' }).click()
 			await expect(
 				page.locator('#about-editor-content-error').getByText('Required'),
 			).toBeVisible()
@@ -267,22 +292,20 @@ test.describe('About Me Sections', () => {
 				name: sectionName,
 				isPublished: true,
 			})
+			const dashboardAboutPage = new DashboardAboutPage(page)
 
-			await page.goto('/dashboard/about')
+			await dashboardAboutPage.goto()
 
-			const sectionRow = page.getByRole('row').filter({ hasText: sectionName })
-			const publishSwitch = sectionRow.getByRole('switch', {
-				name: `Toggle publish status for ${sectionName}`,
-			})
+			const publishSwitch =
+				dashboardAboutPage.getSectionPublishSwitch(sectionName)
 
 			await expect(publishSwitch).toBeChecked()
 			await publishSwitch.click()
 			await expect(publishSwitch).not.toBeChecked()
 
 			await page.reload()
-			const reloadedSwitch = page.getByRole('switch', {
-				name: `Toggle publish status for ${sectionName}`,
-			})
+			const reloadedSwitch =
+				dashboardAboutPage.getSectionPublishSwitch(sectionName)
 			await expect(reloadedSwitch).not.toBeChecked()
 		})
 
@@ -303,19 +326,20 @@ test.describe('About Me Sections', () => {
 				userId: user.id,
 				aboutMeCategoryId: category2.id,
 			})
+			const dashboardAboutPage = new DashboardAboutPage(page)
 
-			await page.goto('/dashboard/about')
+			await dashboardAboutPage.goto()
 
 			// Filter by content
-			await page
-				.getByPlaceholder('Filter content...')
-				.fill(section1.content.slice(0, 10))
+			await dashboardAboutPage.filterSectionsByContent(
+				section1.content.slice(0, 10),
+			)
 			await expect(page.getByText(section1.name)).toBeVisible()
 			await expect(page.getByText(section2.name)).not.toBeVisible()
 
 			// Filter by category
-			await page.getByPlaceholder('Filter content...').clear()
-			await page.getByPlaceholder('Filter category...').fill(category2.name)
+			await dashboardAboutPage.clearContentFilter()
+			await dashboardAboutPage.filterSectionsByCategory(category2.name)
 			await expect(page.getByText(section1.name)).not.toBeVisible()
 			await expect(page.getByText(section2.name)).toBeVisible()
 		})
@@ -326,21 +350,21 @@ test.describe('About Me Categories', () => {
 	test.describe('CRUD (via Dialog)', () => {
 		test('can create a new category', async ({ page, login }) => {
 			await login()
-			await page.goto('/dashboard/about')
+			const dashboardAboutPage = new DashboardAboutPage(page)
+			const categoryDialog = new DashboardAboutCategoryEditorDialog(page)
 
-			await categoriesSection(page).getByRole('button', { name: 'New' }).click()
+			await dashboardAboutPage.goto()
+			await dashboardAboutPage.clickNewCategoryButton()
 
-			await expect(page.getByRole('dialog')).toBeVisible()
+			await expect(categoryDialog.dialog).toBeVisible()
 			const categoryName = faker.lorem.words(2)
-			await page.getByLabel('Name').fill(categoryName)
-			await page
-				.getByLabel('Description (Optional)')
-				.fill(faker.lorem.sentence())
-			await page.getByRole('button', { name: 'Create Category' }).click()
+			await categoryDialog.fillName(categoryName)
+			await categoryDialog.fillDescription(faker.lorem.sentence())
+			await categoryDialog.clickCreateButton()
 
-			await expect(page.getByRole('dialog')).not.toBeVisible()
+			await expect(categoryDialog.dialog).not.toBeVisible()
 			await expect(
-				categoriesSection(page).getByText(categoryName),
+				dashboardAboutPage.getCategoryElement(categoryName),
 			).toBeVisible()
 		})
 
@@ -351,18 +375,20 @@ test.describe('About Me Categories', () => {
 		}) => {
 			await login()
 			const category = await insertNewAboutMeCategory()
+			const dashboardAboutPage = new DashboardAboutPage(page)
+			const categoryDialog = new DashboardAboutCategoryEditorDialog(page)
 
-			await page.goto('/dashboard/about')
-			await categoriesSection(page).getByText(category.name).click()
-			await expect(page.getByRole('dialog')).toBeVisible()
+			await dashboardAboutPage.goto()
+			await dashboardAboutPage.clickCategory(category.name)
+			await expect(categoryDialog.dialog).toBeVisible()
 
 			const updatedCategoryName = faker.lorem.words(2)
-			await page.getByLabel('Name').fill(updatedCategoryName)
-			await page.getByRole('button', { name: 'Save Changes' }).click()
+			await categoryDialog.fillName(updatedCategoryName)
+			await categoryDialog.clickSaveButton()
 
-			await expect(page.getByRole('dialog')).not.toBeVisible()
+			await expect(categoryDialog.dialog).not.toBeVisible()
 			await expect(
-				categoriesSection(page).getByText(updatedCategoryName),
+				dashboardAboutPage.getCategoryElement(updatedCategoryName),
 			).toBeVisible()
 		})
 
@@ -373,18 +399,13 @@ test.describe('About Me Categories', () => {
 		}) => {
 			await login()
 			const category = await insertNewAboutMeCategory()
+			const dashboardAboutPage = new DashboardAboutPage(page)
 
-			await page.goto('/dashboard/about')
-			const categoryRow = categoriesSection(page)
-				.getByRole('row')
-				.filter({ hasText: category.name })
-			await categoryRow.getByRole('button', { name: 'Open menu' }).click()
-
-			page.on('dialog', (dialog) => dialog.accept())
-			await page.getByRole('button', { name: 'Delete' }).click()
+			await dashboardAboutPage.goto()
+			await dashboardAboutPage.deleteCategory(category.name)
 
 			await expect(
-				categoriesSection(page).getByText(category.name),
+				dashboardAboutPage.getCategoryElement(category.name),
 			).not.toBeVisible()
 		})
 	})
@@ -395,19 +416,17 @@ test.describe('About Me Categories', () => {
 			login,
 		}) => {
 			await login()
-			await page.goto('/dashboard/about')
-			await categoriesSection(page).getByRole('button', { name: 'New' }).click()
+			const dashboardAboutPage = new DashboardAboutPage(page)
+			const categoryDialog = new DashboardAboutCategoryEditorDialog(page)
 
-			await expect(page.getByRole('dialog')).toBeVisible()
-			await page.getByRole('button', { name: 'Create Category' }).click()
+			await dashboardAboutPage.goto()
+			await dashboardAboutPage.clickNewCategoryButton()
 
-			await expect(
-				page
-					.getByRole('dialog')
-					.locator('#about-category-editor-name-error')
-					.getByText('Required'),
-			).toBeVisible()
-			await expect(page.getByRole('dialog')).toBeVisible()
+			await expect(categoryDialog.dialog).toBeVisible()
+			await categoryDialog.clickCreateButton()
+
+			await expect(categoryDialog.nameError).toBeVisible()
+			await expect(categoryDialog.dialog).toBeVisible()
 		})
 	})
 
@@ -420,25 +439,20 @@ test.describe('About Me Categories', () => {
 			await login()
 			const categoryName = `PublishToggle Cat ${faker.lorem.word()}`
 			await insertNewAboutMeCategory({ name: categoryName, isPublished: true })
+			const dashboardAboutPage = new DashboardAboutPage(page)
 
-			await page.goto('/dashboard/about')
+			await dashboardAboutPage.goto()
 
-			const categoryRow = page
-				.getByRole('row')
-				.filter({ hasText: categoryName })
-			const publishSwitch = categoryRow.getByRole('switch', {
-				name: `Toggle publish status for ${categoryName}`,
-			})
+			const publishSwitch =
+				dashboardAboutPage.getCategoryPublishSwitch(categoryName)
 
 			await expect(publishSwitch).toBeChecked()
 			await publishSwitch.click()
 			await expect(publishSwitch).not.toBeChecked()
 
 			await page.reload()
-			const reloadedSwitch = page
-				.getByRole('row')
-				.filter({ hasText: categoryName })
-				.getByRole('switch')
+			const reloadedSwitch =
+				dashboardAboutPage.getCategoryPublishSwitch(categoryName)
 			await expect(reloadedSwitch).not.toBeChecked()
 		})
 
@@ -456,17 +470,18 @@ test.describe('About Me Categories', () => {
 				name: `FilterCat2 ${faker.lorem.word()}`,
 				description: `UniqueDesc2 ${faker.string.uuid()}`,
 			})
+			const dashboardAboutPage = new DashboardAboutPage(page)
 
-			await page.goto('/dashboard/about')
+			await dashboardAboutPage.goto()
 
-			await page.getByPlaceholder('Filter name...').fill(cat1.name)
+			await dashboardAboutPage.filterCategoriesByName(cat1.name)
 			await expect(page.getByText(cat1.name)).toBeVisible()
 			await expect(page.getByText(cat2.name)).not.toBeVisible()
 
-			await page.getByPlaceholder('Filter name...').clear()
-			await page
-				.getByPlaceholder('Filter description...')
-				.fill(cat2.description ?? '')
+			await dashboardAboutPage.clearNameFilter()
+			await dashboardAboutPage.filterCategoriesByDescription(
+				cat2.description ?? '',
+			)
 			await expect(page.getByText(cat1.name)).not.toBeVisible()
 			await expect(page.getByText(cat2.name)).toBeVisible()
 		})
@@ -486,30 +501,23 @@ test.describe('Interactions between Sections and Categories', () => {
 			userId: user.id,
 			aboutMeCategoryId: categoryToDelete.id,
 		})
+		const dashboardAboutPage = new DashboardAboutPage(page)
 
-		await page.goto('/dashboard/about')
+		await dashboardAboutPage.goto()
 		await expect(
-			aboutMeSection(page).getByText(sectionToDelete.name),
+			dashboardAboutPage.getSectionElement(sectionToDelete.name),
 		).toBeVisible()
 		await expect(
-			categoriesSection(page).getByText(categoryToDelete.name),
+			dashboardAboutPage.getCategoryElement(categoryToDelete.name),
 		).toBeVisible()
 
-		const categoryRow = page
-			.getByRole('row')
-			.filter({ hasText: categoryToDelete.name })
-		await categoryRow
-			.getByRole('button', { name: 'Open about category menu' })
-			.click()
-
-		page.on('dialog', (dialog) => dialog.accept())
-		await page.getByRole('button', { name: 'Delete' }).click()
+		await dashboardAboutPage.deleteCategory(categoryToDelete.name)
 
 		await expect(
-			categoriesSection(page).getByText(categoryToDelete.name),
+			dashboardAboutPage.getCategoryElement(categoryToDelete.name),
 		).not.toBeVisible()
 		await expect(
-			aboutMeSection(page).getByText(sectionToDelete.name),
+			dashboardAboutPage.getSectionElement(sectionToDelete.name),
 		).not.toBeVisible()
 	})
 
@@ -528,26 +536,24 @@ test.describe('Interactions between Sections and Categories', () => {
 			userId: user.id,
 			aboutMeCategoryId: publishedCat.id,
 		})
+		const dashboardAboutPage = new DashboardAboutPage(page)
+		const editorPage = new DashboardAboutMeEditorPage(page)
 
 		// Test on 'new section' page
-		await page.goto('/dashboard/about/new')
-		await page.getByRole('combobox', { name: 'Category' }).click()
+		await dashboardAboutPage.gotoNewSection()
+		await editorPage.openCategoryDropdown()
+		await expect(editorPage.getCategoryOption(publishedCat.name)).toBeVisible()
 		await expect(
-			page.getByRole('option', { name: publishedCat.name }),
-		).toBeVisible()
-		await expect(
-			page.getByRole('option', { name: unpublishedCat.name }),
+			editorPage.getCategoryOption(unpublishedCat.name),
 		).not.toBeVisible()
 		await page.keyboard.press('Escape')
 
 		// Test on 'edit section' page
-		await page.goto(`/dashboard/about/${sectionWithPublishedCat.id}/edit`)
-		await page.getByRole('combobox', { name: 'Category' }).click()
+		await editorPage.gotoEdit(sectionWithPublishedCat.id)
+		await editorPage.openCategoryDropdown()
+		await expect(editorPage.getCategoryOption(publishedCat.name)).toBeVisible()
 		await expect(
-			page.getByRole('option', { name: publishedCat.name }),
-		).toBeVisible()
-		await expect(
-			page.getByRole('option', { name: unpublishedCat.name }),
+			editorPage.getCategoryOption(unpublishedCat.name),
 		).not.toBeVisible()
 	})
 
@@ -568,37 +574,36 @@ test.describe('Interactions between Sections and Categories', () => {
 			userId: user.id,
 			aboutMeCategoryId: categoryToUnpublish.id,
 		})
+		const dashboardAboutPage = new DashboardAboutPage(page)
+		const editorPage = new DashboardAboutMeEditorPage(page)
 
-		await page.goto('/dashboard/about')
+		await dashboardAboutPage.goto()
 
 		// Unpublish the category
-		const catRow = categoriesSection(page)
-			.getByRole('row')
-			.filter({ hasText: categoryToUnpublish.name })
-		await catRow.getByRole('switch').click()
+		await dashboardAboutPage.toggleCategoryPublishStatus(
+			categoryToUnpublish.name,
+		)
 		await page.waitForTimeout(100) // allow for server action to complete
 
-		await page.goto(`/dashboard/about/${section.id}/edit`)
+		await editorPage.gotoEdit(section.id)
 
 		// The unpublished category should not be selected anymore
-		const categoryValue = await page
-			.getByRole('combobox', { name: 'Category' })
-			.textContent()
+		const categoryValue = await editorPage.getSelectedCategoryText()
 		await expect(categoryValue).not.toBe(categoryToUnpublish.name)
 
 		// It should not be in the dropdown options
-		await page.getByRole('combobox', { name: 'Category' }).click()
+		await editorPage.openCategoryDropdown()
 		await expect(
-			page.getByRole('option', { name: categoryToUnpublish.name }),
+			editorPage.getCategoryOption(categoryToUnpublish.name),
 		).not.toBeVisible()
 		// But other published categories should be
 		await expect(
-			page.getByRole('option', { name: fallbackCategory.name }),
+			editorPage.getCategoryOption(fallbackCategory.name),
 		).toBeVisible()
-		await page.getByRole('option', { name: fallbackCategory.name }).click()
+		await editorPage.selectCategory(fallbackCategory.name)
 
 		// Attempt to save
-		await page.getByRole('button', { name: 'Save Changes' }).click()
+		await editorPage.clickSaveButton()
 
 		// Assert save is successful and category is updated
 		await expect(page).toHaveURL(`/dashboard/about/${section.id}`)
