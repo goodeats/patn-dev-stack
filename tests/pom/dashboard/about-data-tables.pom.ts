@@ -41,14 +41,19 @@ export class AboutMeSectionsTable extends MenuDrivenDataTablePOM {
 		// return new DashboardAboutMeEditorPage(this.page)
 	}
 
+	// Example of implementing the fluent editor pattern from our follow-up questions
+	// async edit(name: string): Promise<DashboardAboutMeEditorPage> {
+	//     await super.edit(name);
+	//     return new DashboardAboutMeEditorPage(this.page);
+	// }
+
 	async delete(name: string): Promise<void> {
 		await super.delete(name)
 	}
 }
 
 export class AboutMeCategoriesTable extends DialogDrivenDataTablePOM {
-	readonly nameFilter: Locator
-	readonly descriptionFilter: Locator
+	// --- Configuration for DialogDrivenDataTablePOM ---
 	readonly expectedHeaders: string[] = [
 		'Name',
 		'Description',
@@ -58,6 +63,10 @@ export class AboutMeCategoriesTable extends DialogDrivenDataTablePOM {
 	]
 	readonly menuName = 'Open about category menu'
 
+	// --- Specific to this table ---
+	readonly nameFilter: Locator
+	readonly descriptionFilter: Locator
+
 	constructor(page: Page, container: Locator) {
 		super(page, container)
 		this.nameFilter = this.getFilterByPlaceholder('Filter name...')
@@ -66,6 +75,7 @@ export class AboutMeCategoriesTable extends DialogDrivenDataTablePOM {
 		)
 	}
 
+	// --- Specific methods for this table ---
 	async verifyHeaders(): Promise<void> {
 		await super.verifyHeaders(this.expectedHeaders, {
 			hasSelectColumn: true,
@@ -75,9 +85,16 @@ export class AboutMeCategoriesTable extends DialogDrivenDataTablePOM {
 
 	async edit(name: string): Promise<void> {
 		await super.edit(name)
+		//
 	}
 
+	// Example of implementing the fluent editor pattern
+	// async edit(name: string): Promise<DashboardAboutCategoryEditorDialog> {
+	//     await super.edit(name);
+	//     return new DashboardAboutCategoryEditorDialog(this.page);
+	// }
+
 	async delete(name: string): Promise<void> {
-		await super.delete(name, this.menuName)
+		await super.delete(name)
 	}
 }
