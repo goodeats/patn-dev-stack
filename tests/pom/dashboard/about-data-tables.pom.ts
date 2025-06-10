@@ -24,7 +24,7 @@ const AboutMeCategoriesComposableTable =
 		),
 	)
 
-export class AboutMeSectionsTable extends AboutMeSectionsComposableTable {
+export class AboutMeSectionsTablePOM extends AboutMeSectionsComposableTable {
 	// --- Required abstract members ---
 	readonly menuName = 'Open about section menu'
 	readonly expectedHeaders: string[] = [
@@ -117,7 +117,7 @@ export class AboutMeSectionsTable extends AboutMeSectionsComposableTable {
 	}
 }
 
-export class AboutMeCategoriesTable extends AboutMeCategoriesComposableTable {
+export class AboutMeCategoriesTablePOM extends AboutMeCategoriesComposableTable {
 	// --- Required abstract members ---
 	readonly expectedHeaders: string[] = [
 		'Name',

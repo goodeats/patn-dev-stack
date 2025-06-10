@@ -1,8 +1,8 @@
 import { type Locator, type Page, expect } from '@playwright/test'
 import { BasePagePOM } from '../base/page.pom'
 import {
-	AboutMeCategoriesTable,
-	AboutMeSectionsTable,
+	AboutMeCategoriesTablePOM,
+	AboutMeSectionsTablePOM,
 } from './about-data-tables.pom'
 import {
 	DashboardAboutCategoryEditorDialogPOM,
@@ -12,22 +12,21 @@ import {
 // https://playwright.dev/docs/pom
 
 export class DashboardAboutListPOM extends BasePagePOM {
-	readonly aboutMeTable: AboutMeSectionsTable
-	readonly categoriesTable: AboutMeCategoriesTable
+	readonly aboutMeTable: AboutMeSectionsTablePOM
+	readonly categoriesTable: AboutMeCategoriesTablePOM
 	private readonly newSectionButton: Locator
 	private readonly newCategoryButton: Locator
-	private readonly sectionContentFilter: Locator
-	private readonly sectionCategoryFilter: Locator
-	private readonly categoryNameFilter: Locator
-	private readonly categoryDescriptionFilter: Locator
 
 	constructor(page: Page) {
 		super(page)
 		const aboutMeSectionContainer = page.locator('#about-me-sections')
 		const categoriesSectionContainer = page.locator('#about-me-categories')
 
-		this.aboutMeTable = new AboutMeSectionsTable(page, aboutMeSectionContainer)
-		this.categoriesTable = new AboutMeCategoriesTable(
+		this.aboutMeTable = new AboutMeSectionsTablePOM(
+			page,
+			aboutMeSectionContainer,
+		)
+		this.categoriesTable = new AboutMeCategoriesTablePOM(
 			page,
 			categoriesSectionContainer,
 		)
@@ -38,15 +37,6 @@ export class DashboardAboutListPOM extends BasePagePOM {
 		this.newCategoryButton = categoriesSectionContainer.getByRole('button', {
 			name: 'New',
 		})
-		this.sectionContentFilter =
-			aboutMeSectionContainer.getByLabel('Filter by content')
-		this.sectionCategoryFilter =
-			aboutMeSectionContainer.getByLabel('Filter by category')
-		this.categoryNameFilter =
-			categoriesSectionContainer.getByLabel('Filter by name')
-		this.categoryDescriptionFilter = categoriesSectionContainer.getByLabel(
-			'Filter by description',
-		)
 	}
 
 	async goto() {
