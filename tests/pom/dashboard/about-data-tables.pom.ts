@@ -25,7 +25,7 @@ const AboutMeCategoriesComposableTable =
 	)
 
 export class AboutMeSectionsTable extends AboutMeSectionsComposableTable {
-	// --- Implementation of ABSTRACT members required by the mixins ---
+	// --- Required abstract members ---
 	readonly menuName = 'Open about section menu'
 	readonly expectedHeaders: string[] = [
 		'Name',
@@ -36,11 +36,6 @@ export class AboutMeSectionsTable extends AboutMeSectionsComposableTable {
 		'Published',
 	]
 
-	async edit(name: string): Promise<DashboardAboutMeEditorPOM> {
-		await this.clickEditButton(name)
-		return new DashboardAboutMeEditorPOM(this.page)
-	}
-
 	constructor(page: Page, container: Locator) {
 		super(page, container)
 		this.switchName = /toggle publish/i
@@ -48,26 +43,63 @@ export class AboutMeSectionsTable extends AboutMeSectionsComposableTable {
 		this.addFilter('category', 'Filter category...')
 	}
 
-	async filterByContent(content: string) {
-		await this.filterBy('content', content)
+	// --- MenuDriven mixin implementation ---
+	/**
+	 * Edit a section by name (from MenuDriven mixin)
+	 */
+	async edit(name: string): Promise<DashboardAboutMeEditorPOM> {
+		await this.clickEditButton(name)
+		return new DashboardAboutMeEditorPOM(this.page)
 	}
-	async clearContentFilter() {
-		await this.clearFilter('content')
-	}
-	async filterByCategory(category: string) {
-		await this.filterBy('category', category)
-	}
-	async clearCategoryFilter() {
-		await this.clearFilter('category')
-	}
-	async publish(name: string) {
+
+	// --- Switchable mixin extensions ---
+	/**
+	 * Publish a section by setting its switch to true
+	 */
+	async publish(name: string): Promise<void> {
 		await this.setSwitchState(name, true)
 	}
-	async unpublish(name: string) {
+
+	/**
+	 * Unpublish a section by setting its switch to false
+	 */
+	async unpublish(name: string): Promise<void> {
 		await this.setSwitchState(name, false)
 	}
 
-	// --- Specific methods for this table ---
+	// --- Filterable mixin extensions ---
+	/**
+	 * Filter sections by content
+	 */
+	async filterByContent(content: string): Promise<void> {
+		await this.filterBy('content', content)
+	}
+
+	/**
+	 * Clear the content filter
+	 */
+	async clearContentFilter(): Promise<void> {
+		await this.clearFilter('content')
+	}
+
+	/**
+	 * Filter sections by category
+	 */
+	async filterByCategory(category: string): Promise<void> {
+		await this.filterBy('category', category)
+	}
+
+	/**
+	 * Clear the category filter
+	 */
+	async clearCategoryFilter(): Promise<void> {
+		await this.clearFilter('category')
+	}
+
+	// --- Custom methods ---
+	/**
+	 * Verify table headers with appropriate options
+	 */
 	override async verifyHeaders(): Promise<void> {
 		await super.verifyHeaders(this.expectedHeaders, {
 			hasSelectColumn: true,
@@ -75,23 +107,31 @@ export class AboutMeSectionsTable extends AboutMeSectionsComposableTable {
 		})
 	}
 
+	/**
+	 * Verify table data with appropriate options
+	 */
 	override async verifyData(data: string[][]): Promise<void> {
 		await super.verifyData(data, { hasSelectColumn: true })
 	}
 
+	// --- Deprecated methods (maintained for test compatibility) ---
+	/**
+	 * @deprecated Use getSwitch from Switchable mixin instead
+	 */
 	async getPublishSwitch(name: string): Promise<Locator> {
-		const row = await this.getRow(name)
-		return row.getByRole('switch', { name: /toggle publish/i })
+		return this.getSwitch(name)
 	}
 
+	/**
+	 * @deprecated Use toggleSwitch from Switchable mixin instead
+	 */
 	async togglePublish(name: string): Promise<void> {
-		const switchLocator = await this.getPublishSwitch(name)
-		await switchLocator.click()
+		await this.toggleSwitch(name)
 	}
 }
 
 export class AboutMeCategoriesTable extends AboutMeCategoriesComposableTable {
-	// --- Configuration for MenuDriven mixin ---
+	// --- Required abstract members ---
 	readonly expectedHeaders: string[] = [
 		'Name',
 		'Description',
@@ -108,68 +148,10 @@ export class AboutMeCategoriesTable extends AboutMeCategoriesComposableTable {
 		this.addFilter('description', 'Filter description...')
 	}
 
-	// --- Specific methods for this table ---
-	async verifyHeaders(): Promise<void> {
-		await super.verifyHeaders(this.expectedHeaders, {
-			hasSelectColumn: true,
-			hasActionsColumn: true,
-		})
-	}
-
-	async verifyData(data: string[][]): Promise<void> {
-		await super.verifyData(data, { hasSelectColumn: true })
-	}
-
-	async filterByName(name: string): Promise<void> {
-		await this.filterBy('name', name)
-	}
-
-	async clearNameFilter(): Promise<void> {
-		await this.clearFilter('name')
-	}
-
-	async filterByDescription(description: string): Promise<void> {
-		await this.filterBy('description', description)
-	}
-
-	async clearDescriptionFilter(): Promise<void> {
-		await this.clearFilter('description')
-	}
-
-	async getPublishSwitch(name: string): Promise<Locator> {
-		const row = await this.getRow(name)
-		return row.getByRole('switch', { name: /toggle publish/i })
-	}
-
-	async togglePublish(name: string): Promise<void> {
-		const switchLocator = await this.getPublishSwitch(name)
-		await switchLocator.click()
-	}
-
-	async publish(name: string): Promise<boolean> {
-		const switchLocator = await this.getPublishSwitch(name)
-		const isPublished = await switchLocator.isChecked()
-		if (!isPublished) {
-			await this.togglePublish(name)
-		}
-		return isPublished
-	}
-
-	async unpublish(name: string): Promise<boolean> {
-		const switchLocator = await this.getPublishSwitch(name)
-		const isPublished = await switchLocator.isChecked()
-		if (isPublished) {
-			await this.togglePublish(name)
-		}
-		return isPublished
-	}
-
-	async delete(name: string): Promise<void> {
-		this.page.on('dialog', (dialog) => dialog.accept())
-		await this.clickDeleteButton(name)
-	}
-
-	// Required by DialogDriven mixin
+	// --- DialogDriven mixin implementation ---
+	/**
+	 * Open a dialog by clicking the row name (from DialogDriven mixin)
+	 */
 	async openDialog(
 		name: string,
 	): Promise<DashboardAboutCategoryEditorDialogPOM> {
@@ -180,6 +162,10 @@ export class AboutMeCategoriesTable extends AboutMeCategoriesComposableTable {
 		return dialog
 	}
 
+	// --- MenuDriven mixin implementation ---
+	/**
+	 * Edit a category by name (from MenuDriven mixin)
+	 */
 	override async edit(
 		name: string,
 	): Promise<DashboardAboutCategoryEditorDialogPOM> {
@@ -188,5 +174,100 @@ export class AboutMeCategoriesTable extends AboutMeCategoriesComposableTable {
 		const dialog = new DashboardAboutCategoryEditorDialogPOM(this.page)
 		await dialog.waitUntilVisible() // Good practice to wait for dialog to be ready
 		return dialog
+	}
+
+	// --- Filterable mixin extensions ---
+	/**
+	 * Filter categories by name
+	 */
+	async filterByName(name: string): Promise<void> {
+		await this.filterBy('name', name)
+	}
+
+	/**
+	 * Clear the name filter
+	 */
+	async clearNameFilter(): Promise<void> {
+		await this.clearFilter('name')
+	}
+
+	/**
+	 * Filter categories by description
+	 */
+	async filterByDescription(description: string): Promise<void> {
+		await this.filterBy('description', description)
+	}
+
+	/**
+	 * Clear the description filter
+	 */
+	async clearDescriptionFilter(): Promise<void> {
+		await this.clearFilter('description')
+	}
+
+	// --- Switchable mixin extensions ---
+	/**
+	 * Publish a category, returns whether it was already published
+	 */
+	async publish(name: string): Promise<boolean> {
+		const switchLocator = await this.getSwitch(name)
+		const isPublished = await switchLocator.isChecked()
+		if (!isPublished) {
+			await this.toggleSwitch(name)
+		}
+		return isPublished
+	}
+
+	/**
+	 * Unpublish a category, returns whether it was published
+	 */
+	async unpublish(name: string): Promise<boolean> {
+		const switchLocator = await this.getSwitch(name)
+		const isPublished = await switchLocator.isChecked()
+		if (isPublished) {
+			await this.toggleSwitch(name)
+		}
+		return isPublished
+	}
+
+	// --- Custom methods ---
+	/**
+	 * Verify table headers with appropriate options
+	 */
+	override async verifyHeaders(): Promise<void> {
+		await super.verifyHeaders(this.expectedHeaders, {
+			hasSelectColumn: true,
+			hasActionsColumn: true,
+		})
+	}
+
+	/**
+	 * Verify table data with appropriate options
+	 */
+	override async verifyData(data: string[][]): Promise<void> {
+		await super.verifyData(data, { hasSelectColumn: true })
+	}
+
+	// --- Deprecated methods (maintained for test compatibility) ---
+	/**
+	 * @deprecated Use getSwitch from Switchable mixin instead
+	 */
+	async getPublishSwitch(name: string): Promise<Locator> {
+		return this.getSwitch(name)
+	}
+
+	/**
+	 * @deprecated Use toggleSwitch from Switchable mixin instead
+	 */
+	async togglePublish(name: string): Promise<void> {
+		await this.toggleSwitch(name)
+	}
+
+	/**
+	 * @deprecated This is provided by the MenuDriven mixin
+	 */
+	async delete(name: string): Promise<void> {
+		this.page.on('dialog', (dialog) => dialog.accept())
+		await this.clickDeleteButton(name)
 	}
 }

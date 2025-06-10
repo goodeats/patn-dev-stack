@@ -188,7 +188,7 @@ test.describe('About Me Sections', () => {
 
 			test('from the list page', async ({ page }) => {
 				await listPage.goto()
-				const publishSwitch = await listPage.aboutMeTable.getPublishSwitch(
+				const publishSwitch = await listPage.aboutMeTable.getSwitch(
 					initialSection.name,
 				)
 
@@ -202,20 +202,18 @@ test.describe('About Me Sections', () => {
 				// Verify persisted after reload
 				await page.reload()
 				await expect(
-					await listPage.aboutMeTable.getPublishSwitch(initialSection.name),
+					await listPage.aboutMeTable.getSwitch(initialSection.name),
 				).not.toBeChecked()
 
 				// Toggle back to published
-				await (
-					await listPage.aboutMeTable.getPublishSwitch(initialSection.name)
-				).click()
+				await listPage.aboutMeTable.toggleSwitch(initialSection.name)
 				await expect(
-					await listPage.aboutMeTable.getPublishSwitch(initialSection.name),
+					await listPage.aboutMeTable.getSwitch(initialSection.name),
 				).toBeChecked()
 
 				await page.reload()
 				await expect(
-					await listPage.aboutMeTable.getPublishSwitch(initialSection.name),
+					await listPage.aboutMeTable.getSwitch(initialSection.name),
 				).toBeChecked()
 			})
 
@@ -529,16 +527,14 @@ test.describe('About Me Categories', () => {
 				).not.toBeChecked()
 
 				// Toggle back to published
-				await (
-					await listPage.categoriesTable.getPublishSwitch(category.name)
-				).click()
+				await (await listPage.categoriesTable.getSwitch(category.name)).click()
 				await expect(
-					await listPage.categoriesTable.getPublishSwitch(category.name),
+					await listPage.categoriesTable.getSwitch(category.name),
 				).toBeChecked()
 
 				await page.reload()
 				await expect(
-					await listPage.categoriesTable.getPublishSwitch(category.name),
+					await listPage.categoriesTable.getSwitch(category.name),
 				).toBeChecked()
 			})
 
@@ -747,10 +743,10 @@ test.describe('Interactions between Sections and Categories', () => {
 		await listPage.goto()
 
 		// Unpublish the category
-		const publishSwitch = await listPage.categoriesTable.getPublishSwitch(
+		await listPage.categoriesTable.unpublish(categoryToUnpublish.name)
+		const publishSwitch = await listPage.categoriesTable.getSwitch(
 			categoryToUnpublish.name,
 		)
-		await publishSwitch.click()
 		await expect(publishSwitch).not.toBeChecked()
 
 		await editorPage.gotoEdit(section.id)
