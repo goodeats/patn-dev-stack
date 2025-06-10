@@ -163,6 +163,86 @@ test.describe('About Me Sections', () => {
 			})
 		})
 
+		test.describe('can toggle publish status', () => {
+			test.beforeEach(async ({ login, insertNewAboutMe }) => {
+				user = await login()
+				initialSection = await insertNewAboutMe({
+					userId: user.id,
+					isPublished: true,
+				})
+			})
+
+			test('from the list page', async ({ page }) => {
+				await listPage.goto()
+				const publishSwitch = await listPage.aboutMeTable.getPublishSwitch(
+					initialSection.name,
+				)
+
+				// Initially published
+				await expect(publishSwitch).toBeChecked()
+
+				// Toggle to unpublished
+				await publishSwitch.click()
+				await expect(publishSwitch).not.toBeChecked()
+
+				// Verify persisted after reload
+				await page.reload()
+				await expect(
+					await listPage.aboutMeTable.getPublishSwitch(initialSection.name),
+				).not.toBeChecked()
+
+				// Toggle back to published
+				await (
+					await listPage.aboutMeTable.getPublishSwitch(initialSection.name)
+				).click()
+				await expect(
+					await listPage.aboutMeTable.getPublishSwitch(initialSection.name),
+				).toBeChecked()
+
+				await page.reload()
+				await expect(
+					await listPage.aboutMeTable.getPublishSwitch(initialSection.name),
+				).toBeChecked()
+			})
+
+			test('from the edit page', async ({ page }) => {
+				await detailsPage.goto(initialSection.id)
+				const editorPage = await detailsPage.edit()
+
+				// Initially published
+				await expect(editorPage.publishSwitch).toBeChecked()
+
+				// Toggle to unpublished
+				await editorPage.publishSwitch.click()
+				await editorPage.saveButton.click()
+
+				await detailsPage.verifyAboutDetails({
+					name: initialSection.name,
+					content: initialSection.content,
+					description: initialSection.description ?? '',
+					category: initialSection.aboutMeCategoryId
+						? 'Category Name Placeholder'
+						: '',
+					status: 'Draft',
+				})
+
+				// Toggle back to published
+				await detailsPage.edit()
+				await editorPage.publishSwitch.click()
+				await editorPage.saveButton.click()
+
+				await detailsPage.verifyAboutDetails({
+					name: initialSection.name,
+					content: initialSection.content,
+					description: initialSection.description ?? '',
+					category: initialSection.aboutMeCategoryId
+						? 'Category Name Placeholder'
+						: '',
+					status: 'Published',
+				})
+			})
+		})
+
 		test.describe('can delete an existing section', () => {
 			test.beforeEach(async ({ login, insertNewAboutMe }) => {
 				user = await login()
@@ -318,14 +398,16 @@ test.describe('About Me Sections', () => {
 
 			await listPage.goto()
 
-			const publishSwitch = listPage.getSectionPublishSwitch(sectionName)
+			const publishSwitch =
+				await listPage.aboutMeTable.getPublishSwitch(sectionName)
 
 			await expect(publishSwitch).toBeChecked()
 			await publishSwitch.click()
 			await expect(publishSwitch).not.toBeChecked()
 
 			await page.reload()
-			const reloadedSwitch = listPage.getSectionPublishSwitch(sectionName)
+			const reloadedSwitch =
+				await listPage.aboutMeTable.getPublishSwitch(sectionName)
 			await expect(reloadedSwitch).not.toBeChecked()
 		})
 
@@ -350,13 +432,13 @@ test.describe('About Me Sections', () => {
 			await listPage.goto()
 
 			// Filter by content
-			await listPage.filterSectionsByContent(section1.content.slice(0, 10))
+			await listPage.aboutMeTable.filterByContent(section1.content.slice(0, 10))
 			await expect(page.getByText(section1.name)).toBeVisible()
 			await expect(page.getByText(section2.name)).not.toBeVisible()
 
 			// Filter by category
-			await listPage.clearContentFilter()
-			await listPage.filterSectionsByCategory(category2.name)
+			await listPage.aboutMeTable.clearContentFilter()
+			await listPage.aboutMeTable.filterByCategory(category2.name)
 			await expect(page.getByText(section1.name)).not.toBeVisible()
 			await expect(page.getByText(section2.name)).toBeVisible()
 		})
@@ -383,7 +465,7 @@ test.describe('About Me Categories', () => {
 				description: categoryDescription,
 			})
 
-			await expect(listPage.getCategoryElement(categoryName)).toBeVisible()
+			await expect(listPage.categoriesTable.getRow(categoryName)).toBeVisible()
 		})
 
 		test('can edit an existing category', async ({

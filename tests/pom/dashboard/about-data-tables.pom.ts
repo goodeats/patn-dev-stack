@@ -1,8 +1,5 @@
 import { type Locator, type Page } from '@playwright/test'
-import {
-	DialogDrivenDataTablePOM,
-	MenuDrivenDataTablePOM,
-} from '../base/data-table.pom'
+import { MenuDrivenDataTablePOM } from '../base/data-table.pom'
 import {
 	DashboardAboutCategoryEditorDialogPOM,
 	DashboardAboutMeEditorPOM,
@@ -52,11 +49,40 @@ export class AboutMeSectionsTable extends MenuDrivenDataTablePOM<DashboardAboutM
 	}
 
 	async filterByCategory(category: string): Promise<void> {
-		await this.categoryFilter.fill(category)
+		await this.categoryFilter.click()
+		await this.page.getByRole('option', { name: category }).click()
 	}
 
 	async clearCategoryFilter(): Promise<void> {
 		await this.categoryFilter.clear()
+	}
+
+	async getPublishSwitch(name: string): Promise<Locator> {
+		const row = await this.getRow(name)
+		return row.getByRole('switch', { name: 'Published' })
+	}
+
+	async togglePublish(name: string): Promise<void> {
+		const switchLocator = await this.getPublishSwitch(name)
+		await switchLocator.click()
+	}
+
+	async publish(name: string): Promise<boolean> {
+		const switchLocator = await this.getPublishSwitch(name)
+		const isPublished = await switchLocator.isChecked()
+		if (!isPublished) {
+			await this.togglePublish(name)
+		}
+		return isPublished
+	}
+
+	async unpublish(name: string): Promise<boolean> {
+		const switchLocator = await this.getPublishSwitch(name)
+		const isPublished = await switchLocator.isChecked()
+		if (isPublished) {
+			await this.togglePublish(name)
+		}
+		return isPublished
 	}
 
 	async edit(name: string): Promise<DashboardAboutMeEditorPOM> {
@@ -65,7 +91,7 @@ export class AboutMeSectionsTable extends MenuDrivenDataTablePOM<DashboardAboutM
 	}
 }
 
-export class AboutMeCategoriesTable extends DialogDrivenDataTablePOM<DashboardAboutCategoryEditorDialogPOM> {
+export class AboutMeCategoriesTable extends MenuDrivenDataTablePOM<DashboardAboutCategoryEditorDialogPOM> {
 	// --- Configuration for DialogDrivenDataTablePOM ---
 	readonly expectedHeaders: string[] = [
 		'Name',
@@ -116,9 +142,46 @@ export class AboutMeCategoriesTable extends DialogDrivenDataTablePOM<DashboardAb
 		await this.descriptionFilter.clear()
 	}
 
-	async edit(name: string): Promise<DashboardAboutCategoryEditorDialogPOM> {
+	async getPublishSwitch(name: string): Promise<Locator> {
 		const row = await this.getRow(name)
-		await row.getByRole('button', { name: this.menuName }).click()
+		return row.getByRole('switch', { name: 'Published' })
+	}
+
+	async togglePublish(name: string): Promise<void> {
+		const switchLocator = await this.getPublishSwitch(name)
+		await switchLocator.click()
+	}
+
+	async publish(name: string): Promise<boolean> {
+		const switchLocator = await this.getPublishSwitch(name)
+		const isPublished = await switchLocator.isChecked()
+		if (!isPublished) {
+			await this.togglePublish(name)
+		}
+		return isPublished
+	}
+
+	async unpublish(name: string): Promise<boolean> {
+		const switchLocator = await this.getPublishSwitch(name)
+		const isPublished = await switchLocator.isChecked()
+		if (isPublished) {
+			await this.togglePublish(name)
+		}
+		return isPublished
+	}
+
+	// async editFromNameClick(
+	// 	name: string,
+	// ): Promise<DashboardAboutCategoryEditorDialogPOM> {
+	// 	await this.clickName(name)
+
+	// 	const dialog = new DashboardAboutCategoryEditorDialogPOM(this.page)
+	// 	await dialog.waitUntilVisible() // Good practice to wait for dialog to be ready
+	// 	return dialog
+	// }
+
+	async edit(name: string): Promise<DashboardAboutCategoryEditorDialogPOM> {
+		await this.clickEditButton(name)
 
 		const dialog = new DashboardAboutCategoryEditorDialogPOM(this.page)
 		await dialog.waitUntilVisible() // Good practice to wait for dialog to be ready

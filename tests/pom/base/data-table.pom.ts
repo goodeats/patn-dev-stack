@@ -124,24 +124,10 @@ export abstract class MenuDrivenDataTablePOM<
 export abstract class DialogDrivenDataTablePOM<
 	TEditPOM extends IEditorPOM,
 > extends BaseDataTablePOM {
-	abstract readonly menuName: string
+	async clickName(name: string): Promise<void> {
+		const row = await this.getRow(name)
+		await row.getByRole('link', { name }).click()
+	}
 
 	abstract edit(name: string): Promise<TEditPOM>
-
-	async delete(name: string): Promise<void> {
-		this.page.on('dialog', (dialog) => dialog.accept())
-		const row = await this.getRow(name)
-		await this.openRowMenu(row)
-
-		const menu = await row.getByRole('menu')
-		await menu.getByRole('menuitem', { name: 'Delete' }).click()
-	}
-
-	/**
-	 * Opens the menu for a given row.
-	 * @param row The row locator to open the menu for.
-	 */
-	async openRowMenu(row: Locator): Promise<void> {
-		await row.getByRole('button', { name: this.menuName }).click()
-	}
 }
