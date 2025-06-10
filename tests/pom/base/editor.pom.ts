@@ -60,9 +60,10 @@ export abstract class BaseEditorPOM<T extends BaseEditorData>
 		await this.saveButton.click()
 	}
 
-	async delete(): Promise<void> {
+	async delete(redirectTo: string): Promise<void> {
 		this.page.on('dialog', (dialog) => dialog.accept())
 		await this.deleteButton.click()
+		await expect(this.page).toHaveURL(redirectTo)
 	}
 
 	async clearName(): Promise<void> {
@@ -70,11 +71,9 @@ export abstract class BaseEditorPOM<T extends BaseEditorData>
 	}
 
 	async verifyRequiredNameError(isVisible: boolean = true): Promise<void> {
-		if (isVisible) {
-			await expect(this.nameError).toBeVisible()
-		} else {
-			await expect(this.nameError).not.toBeVisible()
-		}
+		await expect(this.nameError.getByText('Required')).toBeVisible({
+			visible: isVisible,
+		})
 	}
 }
 
@@ -100,6 +99,16 @@ export abstract class BasePageEditorPOM<
 
 	async gotoEdit(id: string): Promise<void> {
 		await this.page.goto(`${this.url}/${id}/edit`)
+	}
+
+	override async create(data: T): Promise<void> {
+		await super.create(data)
+		await expect(this.page).toHaveURL(`${this.url}/[a-zA-Z0-9]+$`)
+	}
+
+	override async update(data: Partial<T>): Promise<void> {
+		await super.update(data)
+		await expect(this.page).toHaveURL(`${this.url}/[a-zA-Z0-9]+$`)
 	}
 }
 
