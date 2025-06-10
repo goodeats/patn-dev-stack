@@ -156,14 +156,16 @@ export function DialogDriven<TEditPOM extends IEditorPOM>() {
 		abstract class DialogDrivenPOM extends Base {
 			abstract edit(name: string): Promise<TEditPOM>
 
-			abstract openDialog(name: string): Promise<TEditPOM>
+			// openDialog is now optional, with a default implementation
+			openDialog(name: string): Promise<TEditPOM> {
+				throw new Error(`openDialog not implemented for ${name}`)
+			}
 
 			async clickName(name: string): Promise<TEditPOM> {
-				const row = await this.getRow(name)
-				await row.getByRole('link', { name }).click()
 				return this.openDialog(name)
 			}
 		}
+
 		return DialogDrivenPOM
 	}
 }

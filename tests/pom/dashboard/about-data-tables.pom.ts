@@ -135,16 +135,14 @@ export class AboutMeCategoriesTable extends AboutMeCategoriesComposableTable {
 
 	// --- DialogDriven mixin implementation ---
 	/**
-	 * Open a dialog by clicking the row name (from DialogDriven mixin)
+	 * Open a dialog by clicking the row name.
+	 * Overrides the default clickName from DialogDriven to behave like edit().
+	 * This makes clicking the category name open the editor dialog directly.
 	 */
-	async openDialog(
+	override async clickName(
 		name: string,
 	): Promise<DashboardAboutCategoryEditorDialogPOM> {
-		await this.clickName(name)
-
-		const dialog = new DashboardAboutCategoryEditorDialogPOM(this.page)
-		await dialog.waitUntilVisible()
-		return dialog
+		return this.edit(name) // Delegate to the existing edit method
 	}
 
 	// --- MenuDriven mixin implementation ---
