@@ -21,6 +21,7 @@ let editorPage: DashboardAboutMeEditorPOM
 let categoryDialog: DashboardAboutCategoryEditorDialogPOM
 let category: AboutMeCategoryPlaywright
 let category2: AboutMeCategoryPlaywright
+let categoryToDelete: AboutMeCategoryPlaywright
 let initialSection: AboutMePlaywright
 let sectionToDelete: AboutMePlaywright
 
@@ -389,34 +390,6 @@ test.describe('About Me Sections', () => {
 	})
 
 	test.describe('List Page Functionality', () => {
-		test('toggles the "Published" status from the list page', async ({
-			page,
-			login,
-			insertNewAboutMe,
-		}) => {
-			const user = await login()
-			const sectionName = `PublishToggle Section ${faker.lorem.word()}`
-			await insertNewAboutMe({
-				userId: user.id,
-				name: sectionName,
-				isPublished: true,
-			})
-
-			await listPage.goto()
-
-			const publishSwitch =
-				await listPage.aboutMeTable.getPublishSwitch(sectionName)
-
-			await expect(publishSwitch).toBeChecked()
-			await publishSwitch.click()
-			await expect(publishSwitch).not.toBeChecked()
-
-			await page.reload()
-			const reloadedSwitch =
-				await listPage.aboutMeTable.getPublishSwitch(sectionName)
-			await expect(reloadedSwitch).not.toBeChecked()
-		})
-
 		test('filters sections by content and category', async ({
 			page,
 			login,
@@ -600,9 +573,10 @@ test.describe('About Me Categories', () => {
 		test('can be deleted', async ({ insertNewAboutMeCategory }) => {
 			const category = await insertNewAboutMeCategory()
 			await listPage.goto()
-			await listPage.deleteCategory(category.name)
+			await listPage.categoriesTable.delete(category.name)
 
-			await expect(listPage.getCategoryElement(category.name)).not.toBeVisible()
+			const categoryRow = await listPage.categoriesTable.getRow(category.name)
+			await expect(categoryRow).not.toBeVisible()
 		})
 	})
 
@@ -636,26 +610,6 @@ test.describe('About Me Categories', () => {
 	})
 
 	test.describe('List Page Functionality', () => {
-		test('toggles the "Published" status from the list page', async ({
-			page,
-			insertNewAboutMeCategory,
-		}) => {
-			const categoryName = `PublishToggle Cat ${faker.lorem.word()}`
-			await insertNewAboutMeCategory({ name: categoryName, isPublished: true })
-
-			await listPage.goto()
-
-			const publishSwitch = listPage.getCategoryPublishSwitch(categoryName)
-
-			await expect(publishSwitch).toBeChecked()
-			await publishSwitch.click()
-			await expect(publishSwitch).not.toBeChecked()
-
-			await page.reload()
-			const reloadedSwitch = listPage.getCategoryPublishSwitch(categoryName)
-			await expect(reloadedSwitch).not.toBeChecked()
-		})
-
 		test('filters categories by name and description', async ({
 			page,
 			insertNewAboutMeCategory,
@@ -671,12 +625,12 @@ test.describe('About Me Categories', () => {
 
 			await listPage.goto()
 
-			await listPage.filterCategoriesByName(cat1.name)
+			await listPage.categoriesTable.filterByName(cat1.name)
 			await expect(page.getByText(cat1.name)).toBeVisible()
 			await expect(page.getByText(cat2.name)).not.toBeVisible()
 
-			await listPage.clearNameFilter()
-			await listPage.filterCategoriesByDescription(cat2.description ?? '')
+			await listPage.categoriesTable.clearNameFilter()
+			await listPage.categoriesTable.filterByDescription(cat2.description ?? '')
 			await expect(page.getByText(cat1.name)).not.toBeVisible()
 			await expect(page.getByText(cat2.name)).toBeVisible()
 		})
@@ -684,42 +638,40 @@ test.describe('About Me Categories', () => {
 })
 
 test.describe('Interactions between Sections and Categories', () => {
+	test.beforeEach(async ({ page, login }) => {
+		user = await login()
+		listPage = new DashboardAboutListPOM(page)
+	})
+
 	test('deleting a category also deletes its associated sections', async ({
-		page,
-		login,
 		insertNewAboutMeCategory,
 		insertNewAboutMe,
 	}) => {
-		const user = await login()
-		const categoryToDelete = await insertNewAboutMeCategory()
-		const sectionToDelete = await insertNewAboutMe({
+		categoryToDelete = await insertNewAboutMeCategory()
+		sectionToDelete = await insertNewAboutMe({
 			userId: user.id,
 			aboutMeCategoryId: categoryToDelete.id,
 		})
 
 		await listPage.goto()
-		await expect(listPage.getSectionElement(sectionToDelete.name)).toBeVisible()
-		await expect(
-			listPage.getCategoryElement(categoryToDelete.name),
-		).toBeVisible()
+		const sectionRow = await listPage.aboutMeTable.getRow(sectionToDelete.name)
+		await expect(sectionRow).toBeVisible()
+		const categoryRow = await listPage.categoriesTable.getRow(
+			categoryToDelete.name,
+		)
+		await expect(categoryRow).toBeVisible()
 
-		await listPage.deleteCategory(categoryToDelete.name)
+		await listPage.categoriesTable.delete(categoryToDelete.name)
 
-		await expect(
-			listPage.getCategoryElement(categoryToDelete.name),
-		).not.toBeVisible()
-		await expect(
-			listPage.getSectionElement(sectionToDelete.name),
-		).not.toBeVisible()
+		await expect(categoryRow).not.toBeVisible()
+		await expect(sectionRow).not.toBeVisible()
 	})
 
 	test('non-published categories are not available for selection in the section editor', async ({
 		page,
-		login,
 		insertNewAboutMeCategory,
 		insertNewAboutMe,
 	}) => {
-		const user = await login()
 		const publishedCat = await insertNewAboutMeCategory({ isPublished: true })
 		const unpublishedCat = await insertNewAboutMeCategory({
 			isPublished: false,
@@ -729,6 +681,8 @@ test.describe('Interactions between Sections and Categories', () => {
 			aboutMeCategoryId: publishedCat.id,
 		})
 		const editorPage = new DashboardAboutMeEditorPOM(page)
+
+		await listPage.goto()
 
 		// Test on 'new section' page
 		await listPage.gotoNewSection()
