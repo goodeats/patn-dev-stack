@@ -1,12 +1,27 @@
 import { type Locator, type Page } from '@playwright/test'
-import { MenuDrivenDataTablePOM } from '../base/data-table.pom'
+import {
+	MenuDriven,
+	Filterable,
+	Switchable,
+	BaseDataTablePOM,
+} from '../base/data-table.pom'
 import {
 	DashboardAboutCategoryEditorDialogPOM,
 	DashboardAboutMeEditorPOM,
 } from './about-editors.pom'
 
-export class AboutMeSectionsTable extends MenuDrivenDataTablePOM<DashboardAboutMeEditorPOM> {
-	// --- Configuration for MenuDrivenDataTablePOM ---
+// --- Assemble our desired table "recipe" ---
+// We want a table that is MenuDriven, Switchable, AND Filterable.
+// We apply the mixins to the BaseDataTablePOM to create a new, powerful base class.
+// const ComposableBaseTable = Filterable(
+// 	Switchable(MenuDriven<DashboardAboutMeEditorPOM>(BaseDataTablePOM)),
+// )
+
+export class AboutMeSectionsTable extends Filterable(
+	Switchable(MenuDriven<DashboardAboutMeEditorPOM>(BaseDataTablePOM)),
+) {
+	// --- Implementation of ABSTRACT members required by the mixins ---
+	readonly menuName = 'Open about section menu'
 	readonly expectedHeaders: string[] = [
 		'Name',
 		'Content',
@@ -15,16 +30,36 @@ export class AboutMeSectionsTable extends MenuDrivenDataTablePOM<DashboardAboutM
 		'Updated At',
 		'Published',
 	]
-	readonly menuName = 'Open about section menu'
 
-	// --- Specific to this table ---
-	readonly contentFilter: Locator
-	readonly categoryFilter: Locator
+	async edit(name: string): Promise<DashboardAboutMeEditorPOM> {
+		await this.clickEditButton(name)
+		return new DashboardAboutMeEditorPOM(this.page)
+	}
 
 	constructor(page: Page, container: Locator) {
 		super(page, container)
-		this.contentFilter = this.getFilterByPlaceholder('Filter content...')
-		this.categoryFilter = this.getFilterByPlaceholder('Filter category...')
+		this.switchName = /toggle publish/i
+		this.addFilter('content', 'Filter content...')
+		this.addFilter('category', 'Filter category...')
+	}
+
+	async filterByContent(content: string) {
+		await this.filterBy('content', content)
+	}
+	async clearContentFilter() {
+		await this.clearFilter('content')
+	}
+	async filterByCategory(category: string) {
+		await this.filterBy('category', category)
+	}
+	async clearCategoryFilter() {
+		await this.clearFilter('category')
+	}
+	async publish(name: string) {
+		await this.setSwitchState(name, true)
+	}
+	async unpublish(name: string) {
+		await this.setSwitchState(name, false)
 	}
 
 	// --- Specific methods for this table ---
@@ -39,23 +74,6 @@ export class AboutMeSectionsTable extends MenuDrivenDataTablePOM<DashboardAboutM
 		await super.verifyData(data, { hasSelectColumn: true })
 	}
 
-	// This is the public API for the page to use.
-	async filterByContent(content: string): Promise<void> {
-		await this.contentFilter.fill(content)
-	}
-
-	async clearContentFilter(): Promise<void> {
-		await this.contentFilter.clear()
-	}
-
-	async filterByCategory(category: string): Promise<void> {
-		await this.categoryFilter.fill(category)
-	}
-
-	async clearCategoryFilter(): Promise<void> {
-		await this.categoryFilter.clear()
-	}
-
 	async getPublishSwitch(name: string): Promise<Locator> {
 		const row = await this.getRow(name)
 		return row.getByRole('switch', { name: /toggle publish/i })
@@ -64,29 +82,6 @@ export class AboutMeSectionsTable extends MenuDrivenDataTablePOM<DashboardAboutM
 	async togglePublish(name: string): Promise<void> {
 		const switchLocator = await this.getPublishSwitch(name)
 		await switchLocator.click()
-	}
-
-	async publish(name: string): Promise<boolean> {
-		const switchLocator = await this.getPublishSwitch(name)
-		const isPublished = await switchLocator.isChecked()
-		if (!isPublished) {
-			await this.togglePublish(name)
-		}
-		return isPublished
-	}
-
-	async unpublish(name: string): Promise<boolean> {
-		const switchLocator = await this.getPublishSwitch(name)
-		const isPublished = await switchLocator.isChecked()
-		if (isPublished) {
-			await this.togglePublish(name)
-		}
-		return isPublished
-	}
-
-	async edit(name: string): Promise<DashboardAboutMeEditorPOM> {
-		await this.clickEditButton(name)
-		return new DashboardAboutMeEditorPOM(this.page)
 	}
 }
 
