@@ -63,10 +63,6 @@ export class AboutMeSectionsTable extends MenuDrivenDataTablePOM<DashboardAboutM
 		// Construct and return the editor page object
 		return new DashboardAboutMeEditorPage(this.page)
 	}
-
-	async delete(name: string): Promise<void> {
-		await super.delete(name)
-	}
 }
 
 export class AboutMeCategoriesTable extends DialogDrivenDataTablePOM<DashboardAboutCategoryEditorDialog> {
@@ -123,9 +119,5 @@ export class AboutMeCategoriesTable extends DialogDrivenDataTablePOM<DashboardAb
 		const dialog = new DashboardAboutCategoryEditorDialog(this.page)
 		await dialog.waitUntilVisible() // Good practice to wait for dialog to be ready
 		return dialog
-	}
-
-	async delete(name: string): Promise<void> {
-		await super.delete(name)
 	}
 }

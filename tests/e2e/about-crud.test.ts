@@ -1,44 +1,79 @@
 import { faker } from '@faker-js/faker'
-import { expect, test, testDateToday } from '#tests/playwright-utils.ts'
+import {
+	type AboutMeCategoryPlaywright,
+	expect,
+	test,
+	testDateToday,
+} from '#tests/playwright-utils.ts'
 import { DashboardAboutDetailsPage } from '../pom/dashboard/about-details-page'
-import { DashboardAboutMeEditorPage } from '../pom/dashboard/about-editors.pom'
+import {
+	DashboardAboutCategoryEditorDialog,
+	DashboardAboutMeEditorPage,
+} from '../pom/dashboard/about-editors.pom'
 import { DashboardAboutPage } from '../pom/dashboard/about-list-page'
 
 test.describe('About Me Sections', () => {
 	test.describe('CRUD', () => {
-		test('can create a new section', async ({
-			page,
-			login,
-			insertNewAboutMeCategory,
-		}) => {
-			await login({ name: faker.person.firstName() })
-			const category = await insertNewAboutMeCategory()
-			const dashboardAboutPage = new DashboardAboutPage(page)
-			const detailsPage = new DashboardAboutDetailsPage(page)
-
-			await dashboardAboutPage.goto()
-			// 1. Get the editor from the page action
-			const editorPage = await dashboardAboutPage.createNewSection()
-
-			const sectionName = faker.lorem.words(3)
-			const sectionContent = faker.lorem.paragraph()
-			const sectionDescription = faker.lorem.sentence()
-
-			// 2. Use the editor to create the section
-			await editorPage.create({
-				name: sectionName,
-				content: sectionContent,
-				description: sectionDescription,
-				categoryName: category.name,
+		test.describe('can create a new section', () => {
+			let category: AboutMeCategoryPlaywright
+			test.beforeEach(async ({ page, login, insertNewAboutMeCategory }) => {
+				await login()
+				category = await insertNewAboutMeCategory()
+				await page.goto('/dashboard/about')
 			})
 
-			// 3. Verify the section was created
-			await detailsPage.verifyAboutDetails({
-				name: sectionName,
-				content: sectionContent,
-				description: sectionDescription,
-				category: category.name,
-				status: 'Published',
+			test('that is published', async ({ page }) => {
+				const dashboardAboutPage = new DashboardAboutPage(page)
+				const detailsPage = new DashboardAboutDetailsPage(page)
+
+				const editorPage = await dashboardAboutPage.createNewSection()
+
+				const sectionName = faker.lorem.words(3)
+				const sectionContent = faker.lorem.paragraph()
+				const sectionDescription = faker.lorem.sentence()
+
+				await editorPage.create({
+					name: sectionName,
+					content: sectionContent,
+					description: sectionDescription,
+					categoryName: category.name,
+					isPublished: true,
+				})
+
+				await detailsPage.verifyAboutDetails({
+					name: sectionName,
+					content: sectionContent,
+					description: sectionDescription,
+					category: category.name,
+					status: 'Published',
+				})
+			})
+
+			test('that is unpublished', async ({ page }) => {
+				const dashboardAboutPage = new DashboardAboutPage(page)
+				const detailsPage = new DashboardAboutDetailsPage(page)
+
+				const editorPage = await dashboardAboutPage.createNewSection()
+
+				const sectionName = faker.lorem.words(3)
+				const sectionContent = faker.lorem.paragraph()
+				const sectionDescription = faker.lorem.sentence()
+
+				await editorPage.create({
+					name: sectionName,
+					content: sectionContent,
+					description: sectionDescription,
+					categoryName: category.name,
+					isPublished: false,
+				})
+
+				await detailsPage.verifyAboutDetails({
+					name: sectionName,
+					content: sectionContent,
+					description: sectionDescription,
+					category: category.name,
+					status: 'Draft',
+				})
 			})
 		})
 
@@ -248,23 +283,23 @@ test.describe('About Me Sections', () => {
 			const editorPage = new DashboardAboutMeEditorPage(page)
 
 			await editorPage.gotoNew()
-			await editorPage.clickCreateButton()
+			await editorPage.createButton.click()
 			await editorPage.verifyRequiredErrors()
 
 			await editorPage.nameInput.fill(faker.lorem.words(2))
-			await editorPage.clickCreateButton()
+			await editorPage.createButton.click()
 			await editorPage.verifyRequiredNameError(false)
 			await editorPage.verifyRequiredContentError()
 			await editorPage.verifyRequiredCategoryError()
 
 			await editorPage.contentInput.fill(faker.lorem.paragraph())
-			await editorPage.clickCreateButton()
+			await editorPage.createButton.click()
 			await editorPage.verifyRequiredContentError(false)
 			await editorPage.verifyRequiredCategoryError()
 
 			// Successfully create with valid data
 			await editorPage.selectCategory(category.name)
-			await editorPage.clickCreateButton()
+			await editorPage.createButton.click()
 			await expect(page).toHaveURL(/\/dashboard\/about\/[a-zA-Z0-9]+$/)
 		})
 
@@ -286,16 +321,16 @@ test.describe('About Me Sections', () => {
 			const detailsPage = new DashboardAboutDetailsPage(page)
 
 			await detailsPage.goto(section.id)
-			await detailsPage.clickEdit()
+			await detailsPage.edit()
 
 			// Test editing validation
 			await editorPage.clearName()
-			await editorPage.clickSaveButton()
+			await editorPage.saveButton.click()
 			await expect(editorPage.nameError).toBeVisible()
 
 			await editorPage.nameInput.fill(faker.lorem.words(2)) // Restore name
 			await editorPage.clearContent()
-			await editorPage.clickSaveButton()
+			await editorPage.saveButton.click()
 			await expect(editorPage.contentError).toBeVisible()
 		})
 	})
@@ -375,7 +410,7 @@ test.describe('About Me Categories', () => {
 			const categoryDialog = new DashboardAboutCategoryEditorDialog(page)
 
 			await dashboardAboutPage.goto()
-			await dashboardAboutPage.clickNewCategory()
+			await dashboardAboutPage.createNewCategory()
 
 			const categoryName = faker.lorem.words(2)
 			const categoryDescription = faker.lorem.sentence()
@@ -447,13 +482,10 @@ test.describe('About Me Categories', () => {
 		}) => {
 			await login()
 			const dashboardAboutPage = new DashboardAboutPage(page)
-			const categoryDialog = new DashboardAboutCategoryEditorDialog(page)
-
-			await dashboardAboutPage.goto()
-			await dashboardAboutPage.clickNewCategoryButton()
+			const categoryDialog = await dashboardAboutPage.createNewCategory()
 
 			await expect(categoryDialog.dialog).toBeVisible()
-			await categoryDialog.clickCreateButton()
+			await categoryDialog.createButton.click()
 
 			await expect(categoryDialog.nameError).toBeVisible()
 			await expect(categoryDialog.dialog).toBeVisible()
@@ -470,15 +502,15 @@ test.describe('About Me Categories', () => {
 			const categoryDialog = new DashboardAboutCategoryEditorDialog(page)
 
 			await dashboardAboutPage.goto()
-			await dashboardAboutPage.clickCategory(category.name)
+			await dashboardAboutPage.categoriesTable.edit(category.name)
 
 			await categoryDialog.clearName()
-			await categoryDialog.clickSaveButton()
+			await categoryDialog.saveButton.click()
 			await categoryDialog.verifyRequiredNameError()
 
 			const updatedCategoryName = faker.lorem.words(2)
 			await categoryDialog.nameInput.fill(updatedCategoryName)
-			await categoryDialog.clickSaveButton()
+			await categoryDialog.saveButton.click()
 			await categoryDialog.verifyRequiredNameError(false)
 		})
 	})
@@ -657,7 +689,7 @@ test.describe('Interactions between Sections and Categories', () => {
 		await editorPage.selectCategory(fallbackCategory.name)
 
 		// Attempt to save
-		await editorPage.clickSaveButton()
+		await editorPage.saveButton.click()
 
 		// Assert save is successful and category is updated
 		await expect(page).toHaveURL(`/dashboard/about/${section.id}`)

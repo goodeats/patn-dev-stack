@@ -6,17 +6,18 @@ import {
 import { type IEditorPOM } from './editor.pom'
 
 export abstract class BaseDataTablePOM {
+	protected readonly page: Page
+	public readonly tableContainer: Locator
 	readonly table: Locator
 
 	/**
 	 * @param page The Playwright Page object.
 	 * @param container The Locator for the container element of the table (e.g., '#about-me-sections'). This scopes all actions.
 	 */
-	constructor(
-		protected page: Page,
-		protected container: Locator,
-	) {
-		this.table = this.container.locator('table')
+	constructor(page: Page, container: Locator) {
+		this.page = page
+		this.tableContainer = container
+		this.table = this.tableContainer.locator('table')
 	}
 
 	/**
@@ -24,7 +25,7 @@ export abstract class BaseDataTablePOM {
 	 * @param placeholder The placeholder text of the input.
 	 */
 	getFilterByPlaceholder(placeholder: string): Locator {
-		return this.container.getByPlaceholder(placeholder)
+		return this.tableContainer.getByPlaceholder(placeholder)
 	}
 
 	/**
@@ -76,6 +77,11 @@ export abstract class BaseDataTablePOM {
 	 */
 	async togglePublishStatus(name: string): Promise<void> {
 		await this.getPublishSwitch(name).click()
+	}
+
+	async getHeaders(): Promise<string[]> {
+		const headers = await this.table.locator('th').allTextContents()
+		return headers.map((h) => h.trim()).filter((h) => h.length > 0)
 	}
 }
 
