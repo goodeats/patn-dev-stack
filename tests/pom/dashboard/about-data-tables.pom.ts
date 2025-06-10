@@ -113,21 +113,6 @@ export class AboutMeSectionsTable extends AboutMeSectionsComposableTable {
 	override async verifyData(data: string[][]): Promise<void> {
 		await super.verifyData(data, { hasSelectColumn: true })
 	}
-
-	// --- Deprecated methods (maintained for test compatibility) ---
-	/**
-	 * @deprecated Use getSwitch from Switchable mixin instead
-	 */
-	async getPublishSwitch(name: string): Promise<Locator> {
-		return this.getSwitch(name)
-	}
-
-	/**
-	 * @deprecated Use toggleSwitch from Switchable mixin instead
-	 */
-	async togglePublish(name: string): Promise<void> {
-		await this.toggleSwitch(name)
-	}
 }
 
 export class AboutMeCategoriesTable extends AboutMeCategoriesComposableTable {
@@ -246,28 +231,5 @@ export class AboutMeCategoriesTable extends AboutMeCategoriesComposableTable {
 	 */
 	override async verifyData(data: string[][]): Promise<void> {
 		await super.verifyData(data, { hasSelectColumn: true })
-	}
-
-	// --- Deprecated methods (maintained for test compatibility) ---
-	/**
-	 * @deprecated Use getSwitch from Switchable mixin instead
-	 */
-	async getPublishSwitch(name: string): Promise<Locator> {
-		return this.getSwitch(name)
-	}
-
-	/**
-	 * @deprecated Use toggleSwitch from Switchable mixin instead
-	 */
-	async togglePublish(name: string): Promise<void> {
-		await this.toggleSwitch(name)
-	}
-
-	/**
-	 * @deprecated This is provided by the MenuDriven mixin
-	 */
-	async delete(name: string): Promise<void> {
-		this.page.on('dialog', (dialog) => dialog.accept())
-		await this.clickDeleteButton(name)
 	}
 }
