@@ -504,6 +504,7 @@ test.describe('About Me Categories', () => {
 			insertNewAboutMeCategory,
 		}) => {
 			const category = await insertNewAboutMeCategory()
+			const initialCategoryName = category.name
 			await listPage.goto() // needed to see the new category
 			await listPage.categoriesTable.edit(category.name)
 
@@ -515,10 +516,14 @@ test.describe('About Me Categories', () => {
 				description: updatedCategoryDescription,
 			})
 
-			await expect(
-				listPage.getCategoryElement(updatedCategoryName),
-			).toBeVisible()
-			await expect(listPage.getCategoryElement(category.name)).not.toBeVisible()
+			const categoryRow =
+				await listPage.categoriesTable.getRow(updatedCategoryName)
+			await expect(categoryRow).toBeVisible()
+			await expect(categoryRow.getByRole('switch')).toBeChecked()
+
+			const previousCategoryRow =
+				await listPage.categoriesTable.getRow(initialCategoryName)
+			await expect(previousCategoryRow).not.toBeVisible()
 		})
 
 		test('can be deleted', async ({ insertNewAboutMeCategory }) => {
