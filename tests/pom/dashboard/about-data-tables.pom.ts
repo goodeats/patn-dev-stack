@@ -3,8 +3,10 @@ import {
 	DialogDrivenDataTablePOM,
 	MenuDrivenDataTablePOM,
 } from '../base/data-table.pom'
-import { DashboardAboutCategoryEditorDialog } from '../dashboard-about-category-editor-dialog'
-import { DashboardAboutMeEditorPage } from '../dashboard-about-me-editor-page'
+import {
+	DashboardAboutCategoryEditorDialog,
+	DashboardAboutMeEditorPage,
+} from './about-editors.pom'
 
 export class AboutMeSectionsTable extends MenuDrivenDataTablePOM<DashboardAboutMeEditorPage> {
 	// --- Configuration for MenuDrivenDataTablePOM ---
@@ -62,12 +64,6 @@ export class AboutMeSectionsTable extends MenuDrivenDataTablePOM<DashboardAboutM
 		return new DashboardAboutMeEditorPage(this.page)
 	}
 
-	// Example of implementing the fluent editor pattern from our follow-up questions
-	// async edit(name: string): Promise<DashboardAboutMeEditorPage> {
-	//     await super.edit(name);
-	//     return new DashboardAboutMeEditorPage(this.page);
-	// }
-
 	async delete(name: string): Promise<void> {
 		await super.delete(name)
 	}
@@ -120,10 +116,6 @@ export class AboutMeCategoriesTable extends DialogDrivenDataTablePOM<DashboardAb
 		await this.descriptionFilter.clear()
 	}
 
-	// async edit(name: string): Promise<void> {
-	// 	await super.edit(name)
-	// 	//
-	// }
 	async edit(name: string): Promise<DashboardAboutCategoryEditorDialog> {
 		await this.getRow(name).getByRole('button', { name }).click()
 
@@ -132,12 +124,6 @@ export class AboutMeCategoriesTable extends DialogDrivenDataTablePOM<DashboardAb
 		await dialog.waitUntilVisible() // Good practice to wait for dialog to be ready
 		return dialog
 	}
-
-	// Example of implementing the fluent editor pattern
-	// async edit(name: string): Promise<DashboardAboutCategoryEditorDialog> {
-	//     await super.edit(name);
-	//     return new DashboardAboutCategoryEditorDialog(this.page);
-	// }
 
 	async delete(name: string): Promise<void> {
 		await super.delete(name)

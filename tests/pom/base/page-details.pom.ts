@@ -1,4 +1,5 @@
 import { type Locator, type Page, expect } from '@playwright/test'
+import { BasePage } from './page.pom'
 
 // A flexible type for detail verification
 export type DetailTuple = [
@@ -7,7 +8,7 @@ export type DetailTuple = [
 ]
 
 // The base class for any 'details' view
-export abstract class BaseDetailsPagePOM {
+export abstract class BaseDetailsPagePOM extends BasePage {
 	readonly container: Locator
 	readonly backLink: Locator
 	readonly editLink: Locator
@@ -15,11 +16,8 @@ export abstract class BaseDetailsPagePOM {
 	readonly detailsCard: Locator
 
 	// The subclass must provide the container ID and the URL slug
-	constructor(
-		protected page: Page,
-		containerId: string,
-		cardId: string,
-	) {
+	constructor(page: Page, containerId: string, cardId: string) {
+		super(page)
 		this.container = page.locator(`#${containerId}`)
 		this.backLink = this.container.getByRole('link', { name: 'Back' })
 		this.editLink = this.container.getByRole('link', { name: 'Edit' })
@@ -27,8 +25,7 @@ export abstract class BaseDetailsPagePOM {
 		this.detailsCard = this.container.locator(`#${cardId}`)
 	}
 
-	// Abstract goto method, to be implemented by subclass
-	abstract goto(itemId: string): Promise<void>
+	abstract override goto(itemId: string): Promise<void>
 
 	async goBack(): Promise<void> {
 		await this.backLink.click()

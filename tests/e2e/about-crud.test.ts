@@ -1,8 +1,8 @@
 import { faker } from '@faker-js/faker'
 import { expect, test, testDateToday } from '#tests/playwright-utils.ts'
-import { DashboardAboutDetailsPage } from '../pom/dashboard-about-details-page'
-import { DashboardAboutMeEditorPage } from '../pom/dashboard-about-me-editor-page'
-import { DashboardAboutPage } from '../pom/dashboard-about-page'
+import { DashboardAboutDetailsPage } from '../pom/dashboard/about-details-page'
+import { DashboardAboutMeEditorPage } from '../pom/dashboard/about-editors.pom'
+import { DashboardAboutPage } from '../pom/dashboard/about-list-page'
 
 test.describe('About Me Sections', () => {
 	test.describe('CRUD', () => {

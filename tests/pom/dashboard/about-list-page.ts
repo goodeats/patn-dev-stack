@@ -1,15 +1,17 @@
 import { type Locator, type Page, expect } from '@playwright/test'
+import { BaseListPagePOM } from '../base/page-list.pom'
 import {
 	AboutMeCategoriesTable,
 	AboutMeSectionsTable,
-} from './dashboard/about-data-tables.pom'
-import { DashboardAboutCategoryEditorDialog } from './dashboard-about-category-editor-dialog'
-import { DashboardAboutMeEditorPage } from './dashboard-about-me-editor-page'
+} from './about-data-tables.pom'
+import {
+	DashboardAboutCategoryEditorDialog,
+	DashboardAboutMeEditorPage,
+} from './about-editors.pom'
 
 // https://playwright.dev/docs/pom
 
-export class DashboardAboutPage {
-	readonly page: Page
+export class DashboardAboutPage extends BaseListPagePOM<DashboardAboutMeEditorPage> {
 	readonly aboutMeSectionContainer: Locator
 	readonly categoriesSectionContainer: Locator
 	private readonly newSectionButton: Locator
@@ -20,7 +22,8 @@ export class DashboardAboutPage {
 	readonly categoriesTable: AboutMeCategoriesTable
 
 	constructor(page: Page) {
-		this.page = page
+		const newSectionButton = page.locator('#about-me-sections-new')
+		super(page, newSectionButton)
 		this.aboutMeSectionContainer = page.locator('#about-me-sections')
 		this.categoriesSectionContainer = page.locator('#about-me-categories')
 		this.newSectionButton = this.aboutMeSectionContainer.getByRole('link', {
