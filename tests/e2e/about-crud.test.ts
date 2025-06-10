@@ -1,4 +1,5 @@
 import { faker } from '@faker-js/faker'
+import { prisma } from '#app/utils/db.server.ts'
 import {
 	type AboutMeCategoryPlaywright,
 	type AboutMePlaywright,
@@ -34,14 +35,19 @@ let updatedDescription: string
 let categoryName: string
 let categoryDescription: string
 
-test.describe('About Me Sections', () => {
-	test.describe('CRUD', () => {
-		test.beforeEach(async ({ page, login }) => {
-			await login()
-			listPage = new DashboardAboutListPOM(page)
-			detailsPage = new DashboardAboutDetailsPOM(page)
-		})
+test.beforeEach(async () => {
+	await prisma.aboutMe.deleteMany()
+	await prisma.aboutMeCategory.deleteMany()
+})
 
+test.describe('About Me Sections', () => {
+	test.beforeEach(async ({ page, login }) => {
+		await login()
+		listPage = new DashboardAboutListPOM(page)
+		detailsPage = new DashboardAboutDetailsPOM(page)
+	})
+
+	test.describe('CRUD', () => {
 		test.describe('can create a new section', () => {
 			test.beforeEach(async ({ insertNewAboutMeCategory }) => {
 				category = await insertNewAboutMeCategory()
