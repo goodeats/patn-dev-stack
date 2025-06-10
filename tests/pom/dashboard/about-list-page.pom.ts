@@ -11,7 +11,7 @@ import {
 
 // https://playwright.dev/docs/pom
 
-export class DashboardAboutPage extends BasePagePOM {
+export class DashboardAboutListPOM extends BasePagePOM {
 	readonly aboutMeTable: AboutMeSectionsTable
 	readonly categoriesTable: AboutMeCategoriesTable
 	private readonly newSectionButton: Locator

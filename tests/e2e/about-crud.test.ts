@@ -1,34 +1,44 @@
 import { faker } from '@faker-js/faker'
 import {
 	type AboutMeCategoryPlaywright,
+	type AboutMePlaywright,
+	type UserPlaywright,
 	expect,
 	test,
 	testDateToday,
 } from '#tests/playwright-utils.ts'
-import { DashboardAboutDetailsPage } from '../pom/dashboard/about-details-page'
+import { DashboardAboutDetailsPOM } from '../pom/dashboard/about-details-page.pom'
 import {
-	DashboardAboutCategoryEditorDialog,
-	DashboardAboutMeEditorPage,
+	DashboardAboutCategoryEditorDialogPOM,
+	DashboardAboutMeEditorPOM,
 } from '../pom/dashboard/about-editors.pom'
-import { DashboardAboutPage } from '../pom/dashboard/about-list-page'
+import { DashboardAboutListPOM } from '../pom/dashboard/about-list-page.pom'
+
+let user: UserPlaywright
+let listPage: DashboardAboutListPOM
+let detailsPage: DashboardAboutDetailsPOM
+let editorPage: DashboardAboutMeEditorPOM
+let categoryDialog: DashboardAboutCategoryEditorDialogPOM
+let category: AboutMeCategoryPlaywright
+let category2: AboutMeCategoryPlaywright
+let initialSection: AboutMePlaywright
 
 test.describe('About Me Sections', () => {
 	test.describe('CRUD', () => {
-		test.describe('can create a new section', () => {
-			let category: AboutMeCategoryPlaywright
-			let dashboardAboutPage: DashboardAboutPage
-			let detailsPage: DashboardAboutDetailsPage
+		test.beforeEach(async ({ page, login }) => {
+			await login()
+			listPage = new DashboardAboutListPOM(page)
+			detailsPage = new DashboardAboutDetailsPOM(page)
+		})
 
-			test.beforeEach(async ({ page, login, insertNewAboutMeCategory }) => {
-				await login()
+		test.describe('can create a new section', () => {
+			test.beforeEach(async ({ insertNewAboutMeCategory }) => {
 				category = await insertNewAboutMeCategory()
-				dashboardAboutPage = new DashboardAboutPage(page)
-				detailsPage = new DashboardAboutDetailsPage(page)
-				await page.goto('/dashboard/about')
+				await listPage.goto()
 			})
 
 			test('that is published', async () => {
-				const editorPage = await dashboardAboutPage.createNewSection()
+				const editorPage = await listPage.createNewSection()
 
 				const sectionName = faker.lorem.words(3)
 				const sectionContent = faker.lorem.paragraph()
@@ -51,11 +61,8 @@ test.describe('About Me Sections', () => {
 				})
 			})
 
-			test('that is unpublished', async ({ page }) => {
-				const dashboardAboutPage = new DashboardAboutPage(page)
-				const detailsPage = new DashboardAboutDetailsPage(page)
-
-				const editorPage = await dashboardAboutPage.createNewSection()
+			test('that is unpublished', async () => {
+				const editorPage = await listPage.createNewSection()
 
 				const sectionName = faker.lorem.words(3)
 				const sectionContent = faker.lorem.paragraph()
@@ -80,26 +87,21 @@ test.describe('About Me Sections', () => {
 		})
 
 		test.describe('can edit an existing section', () => {
-			test('from the list page', async ({
-				page,
-				login,
-				insertNewAboutMeCategory,
-				insertNewAboutMe,
-			}) => {
-				const user = await login()
-				const category1 = await insertNewAboutMeCategory()
-				const category2 = await insertNewAboutMeCategory()
-				const initialSection = await insertNewAboutMe({
-					userId: user.id,
-					aboutMeCategoryId: category1.id,
-				})
-				const dashboardAboutPage = new DashboardAboutPage(page)
-				const detailsPage = new DashboardAboutDetailsPage(page)
+			test.beforeEach(
+				async ({ login, insertNewAboutMeCategory, insertNewAboutMe }) => {
+					user = await login()
+					category = await insertNewAboutMeCategory()
+					category2 = await insertNewAboutMeCategory()
+					initialSection = await insertNewAboutMe({
+						userId: user.id,
+						aboutMeCategoryId: category.id,
+					})
+				},
+			)
 
-				await dashboardAboutPage.goto()
-				const editorPage = await dashboardAboutPage.aboutMeTable.edit(
-					initialSection.name,
-				)
+			test('from the list page', async ({ page }) => {
+				await listPage.goto()
+				const editorPage = await listPage.aboutMeTable.edit(initialSection.name)
 
 				await expect(editorPage.nameInput).toHaveValue(initialSection.name)
 				await expect(editorPage.contentInput).toHaveValue(
@@ -128,21 +130,7 @@ test.describe('About Me Sections', () => {
 				})
 			})
 
-			test('from the details page', async ({
-				page,
-				login,
-				insertNewAboutMeCategory,
-				insertNewAboutMe,
-			}) => {
-				const user = await login()
-				const category1 = await insertNewAboutMeCategory()
-				const category2 = await insertNewAboutMeCategory()
-				const initialSection = await insertNewAboutMe({
-					userId: user.id,
-					aboutMeCategoryId: category1.id,
-				})
-				const detailsPage = new DashboardAboutDetailsPage(page)
-
+			test('from the details page', async ({ page }) => {
 				await detailsPage.goto(initialSection.id)
 				const editorPage = await detailsPage.edit()
 
@@ -184,12 +172,11 @@ test.describe('About Me Sections', () => {
 				userId: user.id,
 				name: `SectionToDelete ${faker.lorem.word()}`,
 			})
-			const dashboardAboutPage = new DashboardAboutPage(page)
 
-			await dashboardAboutPage.goto()
+			await listPage.goto()
 			await expect(page.getByText(sectionToDelete.name)).toBeVisible()
 
-			await dashboardAboutPage.aboutMeTable.delete(sectionToDelete.name)
+			await listPage.aboutMeTable.delete(sectionToDelete.name)
 
 			await expect(page.getByText(sectionToDelete.name)).not.toBeVisible()
 		})
@@ -201,20 +188,18 @@ test.describe('About Me Sections', () => {
 		}) => {
 			const user = await login()
 			const sectionToDelete = await insertNewAboutMe({ userId: user.id })
-			const dashboardAboutPage = new DashboardAboutPage(page)
-			const editorPage = new DashboardAboutMeEditorPage(page)
+			const editorPage = new DashboardAboutMeEditorPOM(page)
 
 			await editorPage.gotoEdit(sectionToDelete.id)
 
 			await editorPage.delete()
 
 			await expect(
-				dashboardAboutPage.aboutMeTable.getRow(sectionToDelete.name),
+				listPage.aboutMeTable.getRow(sectionToDelete.name),
 			).not.toBeVisible()
 		})
 
 		test('displays existing sections and categories on the main page', async ({
-			page,
 			login,
 			insertNewAboutMe,
 			insertNewAboutMeCategory,
@@ -230,11 +215,10 @@ test.describe('About Me Sections', () => {
 				userId: user.id,
 				aboutMeCategoryId: category2.id,
 			})
-			const dashboardAboutPage = new DashboardAboutPage(page)
 
-			await dashboardAboutPage.goto()
+			await listPage.goto()
 
-			const aboutMeTable = dashboardAboutPage.aboutMeTable
+			const aboutMeTable = listPage.aboutMeTable
 			await aboutMeTable.verifyHeaders()
 			await aboutMeTable.verifyData([
 				[
@@ -253,7 +237,7 @@ test.describe('About Me Sections', () => {
 				],
 			])
 
-			const categoriesTable = dashboardAboutPage.categoriesTable
+			const categoriesTable = listPage.categoriesTable
 			await categoriesTable.verifyHeaders()
 			await categoriesTable.verifyData([
 				[
@@ -273,17 +257,15 @@ test.describe('About Me Sections', () => {
 	})
 
 	test.describe('Validation', () => {
-		test('validates About Me Section creation', async ({
-			page,
-			login,
-			insertNewAboutMeCategory,
-		}) => {
+		test.beforeEach(async ({ page, login, insertNewAboutMeCategory }) => {
 			await login({ name: faker.person.firstName() })
-			const category = await insertNewAboutMeCategory({
+			category = await insertNewAboutMeCategory({
 				name: 'Professional',
 			})
-			const editorPage = new DashboardAboutMeEditorPage(page)
+			editorPage = new DashboardAboutMeEditorPOM(page)
+		})
 
+		test('validates About Me Section creation', async ({ page }) => {
 			await editorPage.gotoNew()
 			await editorPage.createButton.click()
 			await editorPage.verifyRequiredErrors()
@@ -307,20 +289,13 @@ test.describe('About Me Sections', () => {
 
 		test('validates About Me Section editing', async ({
 			page,
-			login,
-			insertNewAboutMeCategory,
 			insertNewAboutMe,
 		}) => {
-			const user = await login()
-			const category = await insertNewAboutMeCategory({
-				name: 'Professional',
-			})
 			const section = await insertNewAboutMe({
 				userId: user.id,
 				aboutMeCategoryId: category.id,
 			})
-			const editorPage = new DashboardAboutMeEditorPage(page)
-			const detailsPage = new DashboardAboutDetailsPage(page)
+			const detailsPage = new DashboardAboutDetailsPOM(page)
 
 			await detailsPage.goto(section.id)
 			await detailsPage.edit()
@@ -350,20 +325,17 @@ test.describe('About Me Sections', () => {
 				name: sectionName,
 				isPublished: true,
 			})
-			const dashboardAboutPage = new DashboardAboutPage(page)
 
-			await dashboardAboutPage.goto()
+			await listPage.goto()
 
-			const publishSwitch =
-				dashboardAboutPage.getSectionPublishSwitch(sectionName)
+			const publishSwitch = listPage.getSectionPublishSwitch(sectionName)
 
 			await expect(publishSwitch).toBeChecked()
 			await publishSwitch.click()
 			await expect(publishSwitch).not.toBeChecked()
 
 			await page.reload()
-			const reloadedSwitch =
-				dashboardAboutPage.getSectionPublishSwitch(sectionName)
+			const reloadedSwitch = listPage.getSectionPublishSwitch(sectionName)
 			await expect(reloadedSwitch).not.toBeChecked()
 		})
 
@@ -384,20 +356,17 @@ test.describe('About Me Sections', () => {
 				userId: user.id,
 				aboutMeCategoryId: category2.id,
 			})
-			const dashboardAboutPage = new DashboardAboutPage(page)
 
-			await dashboardAboutPage.goto()
+			await listPage.goto()
 
 			// Filter by content
-			await dashboardAboutPage.filterSectionsByContent(
-				section1.content.slice(0, 10),
-			)
+			await listPage.filterSectionsByContent(section1.content.slice(0, 10))
 			await expect(page.getByText(section1.name)).toBeVisible()
 			await expect(page.getByText(section2.name)).not.toBeVisible()
 
 			// Filter by category
-			await dashboardAboutPage.clearContentFilter()
-			await dashboardAboutPage.filterSectionsByCategory(category2.name)
+			await listPage.clearContentFilter()
+			await listPage.filterSectionsByCategory(category2.name)
 			await expect(page.getByText(section1.name)).not.toBeVisible()
 			await expect(page.getByText(section2.name)).toBeVisible()
 		})
@@ -405,14 +374,16 @@ test.describe('About Me Sections', () => {
 })
 
 test.describe('About Me Categories', () => {
-	test.describe('CRUD (via Dialog)', () => {
-		test('can create a new category', async ({ page, login }) => {
-			await login()
-			const dashboardAboutPage = new DashboardAboutPage(page)
-			const categoryDialog = new DashboardAboutCategoryEditorDialog(page)
+	test.beforeEach(async ({ page, login }) => {
+		await login()
+		listPage = new DashboardAboutListPOM(page)
+		categoryDialog = new DashboardAboutCategoryEditorDialogPOM(page)
+		await listPage.goto()
+	})
 
-			await dashboardAboutPage.goto()
-			await dashboardAboutPage.createNewCategory()
+	test.describe('CRUD (via Dialog)', () => {
+		test('can create a new category', async () => {
+			await listPage.createNewCategory()
 
 			const categoryName = faker.lorem.words(2)
 			const categoryDescription = faker.lorem.sentence()
@@ -422,23 +393,15 @@ test.describe('About Me Categories', () => {
 				description: categoryDescription,
 			})
 
-			await expect(
-				dashboardAboutPage.getCategoryElement(categoryName),
-			).toBeVisible()
+			await expect(listPage.getCategoryElement(categoryName)).toBeVisible()
 		})
 
 		test('can edit an existing category', async ({
-			page,
-			login,
 			insertNewAboutMeCategory,
 		}) => {
-			await login()
 			const category = await insertNewAboutMeCategory()
-			const dashboardAboutPage = new DashboardAboutPage(page)
-			const categoryDialog = new DashboardAboutCategoryEditorDialog(page)
-
-			await dashboardAboutPage.goto()
-			await dashboardAboutPage.clickCategory(category.name)
+			await listPage.goto() // needed to see the new category
+			await listPage.categoriesTable.edit(category.name)
 
 			const updatedCategoryName = faker.lorem.words(2)
 			const updatedCategoryDescription = faker.lorem.sentence()
@@ -449,42 +412,23 @@ test.describe('About Me Categories', () => {
 			})
 
 			await expect(
-				dashboardAboutPage.getCategoryElement(updatedCategoryName),
+				listPage.getCategoryElement(updatedCategoryName),
 			).toBeVisible()
-			await expect(
-				dashboardAboutPage.getCategoryElement(updatedCategoryDescription),
-			).toBeVisible()
-			await expect(
-				dashboardAboutPage.getCategoryElement(category.name),
-			).not.toBeVisible()
+			await expect(listPage.getCategoryElement(category.name)).not.toBeVisible()
 		})
 
-		test('can be deleted', async ({
-			page,
-			login,
-			insertNewAboutMeCategory,
-		}) => {
-			await login()
+		test('can be deleted', async ({ insertNewAboutMeCategory }) => {
 			const category = await insertNewAboutMeCategory()
-			const dashboardAboutPage = new DashboardAboutPage(page)
+			await listPage.goto()
+			await listPage.deleteCategory(category.name)
 
-			await dashboardAboutPage.goto()
-			await dashboardAboutPage.deleteCategory(category.name)
-
-			await expect(
-				dashboardAboutPage.getCategoryElement(category.name),
-			).not.toBeVisible()
+			await expect(listPage.getCategoryElement(category.name)).not.toBeVisible()
 		})
 	})
 
 	test.describe('Validation', () => {
-		test('validates the required name field on creation', async ({
-			page,
-			login,
-		}) => {
-			await login()
-			const dashboardAboutPage = new DashboardAboutPage(page)
-			const categoryDialog = await dashboardAboutPage.createNewCategory()
+		test('validates the required name field on creation', async () => {
+			const categoryDialog = await listPage.createNewCategory()
 
 			await expect(categoryDialog.dialog).toBeVisible()
 			await categoryDialog.createButton.click()
@@ -494,21 +438,15 @@ test.describe('About Me Categories', () => {
 		})
 
 		test('validates the required name field on editing', async ({
-			page,
-			login,
 			insertNewAboutMeCategory,
 		}) => {
-			await login()
 			const category = await insertNewAboutMeCategory()
-			const dashboardAboutPage = new DashboardAboutPage(page)
-			const categoryDialog = new DashboardAboutCategoryEditorDialog(page)
-
-			await dashboardAboutPage.goto()
-			await dashboardAboutPage.categoriesTable.edit(category.name)
+			await listPage.goto()
+			await listPage.categoriesTable.edit(category.name)
 
 			await categoryDialog.clearName()
 			await categoryDialog.saveButton.click()
-			await categoryDialog.verifyRequiredNameError()
+			await expect(categoryDialog.nameError).toBeVisible()
 
 			const updatedCategoryName = faker.lorem.words(2)
 			await categoryDialog.nameInput.fill(updatedCategoryName)
@@ -520,36 +458,28 @@ test.describe('About Me Categories', () => {
 	test.describe('List Page Functionality', () => {
 		test('toggles the "Published" status from the list page', async ({
 			page,
-			login,
 			insertNewAboutMeCategory,
 		}) => {
-			await login()
 			const categoryName = `PublishToggle Cat ${faker.lorem.word()}`
 			await insertNewAboutMeCategory({ name: categoryName, isPublished: true })
-			const dashboardAboutPage = new DashboardAboutPage(page)
-			const categoriesTable = dashboardAboutPage.categoriesTable
 
-			await dashboardAboutPage.goto()
+			await listPage.goto()
 
-			const publishSwitch =
-				dashboardAboutPage.getCategoryPublishSwitch(categoryName)
+			const publishSwitch = listPage.getCategoryPublishSwitch(categoryName)
 
 			await expect(publishSwitch).toBeChecked()
 			await publishSwitch.click()
 			await expect(publishSwitch).not.toBeChecked()
 
 			await page.reload()
-			const reloadedSwitch =
-				dashboardAboutPage.getCategoryPublishSwitch(categoryName)
+			const reloadedSwitch = listPage.getCategoryPublishSwitch(categoryName)
 			await expect(reloadedSwitch).not.toBeChecked()
 		})
 
 		test('filters categories by name and description', async ({
 			page,
-			login,
 			insertNewAboutMeCategory,
 		}) => {
-			await login()
 			const cat1 = await insertNewAboutMeCategory({
 				name: `FilterCat1 ${faker.lorem.word()}`,
 				description: `UniqueDesc1 ${faker.string.uuid()}`,
@@ -558,18 +488,15 @@ test.describe('About Me Categories', () => {
 				name: `FilterCat2 ${faker.lorem.word()}`,
 				description: `UniqueDesc2 ${faker.string.uuid()}`,
 			})
-			const dashboardAboutPage = new DashboardAboutPage(page)
 
-			await dashboardAboutPage.goto()
+			await listPage.goto()
 
-			await dashboardAboutPage.filterCategoriesByName(cat1.name)
+			await listPage.filterCategoriesByName(cat1.name)
 			await expect(page.getByText(cat1.name)).toBeVisible()
 			await expect(page.getByText(cat2.name)).not.toBeVisible()
 
-			await dashboardAboutPage.clearNameFilter()
-			await dashboardAboutPage.filterCategoriesByDescription(
-				cat2.description ?? '',
-			)
+			await listPage.clearNameFilter()
+			await listPage.filterCategoriesByDescription(cat2.description ?? '')
 			await expect(page.getByText(cat1.name)).not.toBeVisible()
 			await expect(page.getByText(cat2.name)).toBeVisible()
 		})
@@ -589,23 +516,20 @@ test.describe('Interactions between Sections and Categories', () => {
 			userId: user.id,
 			aboutMeCategoryId: categoryToDelete.id,
 		})
-		const dashboardAboutPage = new DashboardAboutPage(page)
 
-		await dashboardAboutPage.goto()
+		await listPage.goto()
+		await expect(listPage.getSectionElement(sectionToDelete.name)).toBeVisible()
 		await expect(
-			dashboardAboutPage.getSectionElement(sectionToDelete.name),
-		).toBeVisible()
-		await expect(
-			dashboardAboutPage.getCategoryElement(categoryToDelete.name),
+			listPage.getCategoryElement(categoryToDelete.name),
 		).toBeVisible()
 
-		await dashboardAboutPage.deleteCategory(categoryToDelete.name)
+		await listPage.deleteCategory(categoryToDelete.name)
 
 		await expect(
-			dashboardAboutPage.getCategoryElement(categoryToDelete.name),
+			listPage.getCategoryElement(categoryToDelete.name),
 		).not.toBeVisible()
 		await expect(
-			dashboardAboutPage.getSectionElement(sectionToDelete.name),
+			listPage.getSectionElement(sectionToDelete.name),
 		).not.toBeVisible()
 	})
 
@@ -624,11 +548,10 @@ test.describe('Interactions between Sections and Categories', () => {
 			userId: user.id,
 			aboutMeCategoryId: publishedCat.id,
 		})
-		const dashboardAboutPage = new DashboardAboutPage(page)
-		const editorPage = new DashboardAboutMeEditorPage(page)
+		const editorPage = new DashboardAboutMeEditorPOM(page)
 
 		// Test on 'new section' page
-		await dashboardAboutPage.gotoNewSection()
+		await listPage.gotoNewSection()
 		await editorPage.openCategoryDropdown()
 		await expect(editorPage.getCategoryOption(publishedCat.name)).toBeVisible()
 		await expect(
@@ -662,15 +585,12 @@ test.describe('Interactions between Sections and Categories', () => {
 			userId: user.id,
 			aboutMeCategoryId: categoryToUnpublish.id,
 		})
-		const dashboardAboutPage = new DashboardAboutPage(page)
-		const editorPage = new DashboardAboutMeEditorPage(page)
+		const editorPage = new DashboardAboutMeEditorPOM(page)
 
-		await dashboardAboutPage.goto()
+		await listPage.goto()
 
 		// Unpublish the category
-		await dashboardAboutPage.toggleCategoryPublishStatus(
-			categoryToUnpublish.name,
-		)
+		await listPage.toggleCategoryPublishStatus(categoryToUnpublish.name)
 		await page.waitForTimeout(100) // allow for server action to complete
 
 		await editorPage.gotoEdit(section.id)

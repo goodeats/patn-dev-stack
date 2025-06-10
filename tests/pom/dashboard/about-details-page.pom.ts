@@ -2,7 +2,7 @@ import { type Page, expect } from '@playwright/test'
 import { BaseDetailsPagePOM, type DetailTuple } from '../base/page-details.pom'
 import { DashboardAboutMeEditorPage } from './about-editors.pom'
 
-export class DashboardAboutDetailsPage extends BaseDetailsPagePOM {
+export class DashboardAboutDetailsPOM extends BaseDetailsPagePOM {
 	constructor(page: Page) {
 		super(page, 'about-details-content', 'about-details-card')
 	}

@@ -11,7 +11,7 @@ export interface SectionData extends BaseEditorData {
 	isPublished?: boolean
 }
 
-export class DashboardAboutMeEditorPage extends BasePageEditorPOM<SectionData> {
+export class DashboardAboutMeEditorPOM extends BasePageEditorPOM<SectionData> {
 	readonly contentInput: Locator
 	readonly categorySelect: Locator
 	readonly publishSwitch: Locator
@@ -135,7 +135,7 @@ interface CategoryData {
 	description?: string
 }
 
-export class DashboardAboutCategoryEditorDialog extends BaseDialogEditorPOM<CategoryData> {
+export class DashboardAboutCategoryEditorDialogPOM extends BaseDialogEditorPOM<CategoryData> {
 	constructor(page: Page) {
 		super(page, 'about-category-editor')
 	}
