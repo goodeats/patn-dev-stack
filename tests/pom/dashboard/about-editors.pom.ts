@@ -8,6 +8,7 @@ import {
 export interface SectionData extends BaseEditorData {
 	content: string
 	categoryName?: string
+	isPublished?: boolean
 }
 
 export class DashboardAboutMeEditorPage extends BasePageEditorPOM<SectionData> {
@@ -57,6 +58,13 @@ export class DashboardAboutMeEditorPage extends BasePageEditorPOM<SectionData> {
 		await super.fillForm(data)
 		if (data.content) await this.contentInput.fill(data.content)
 		if (data.categoryName) await this.selectCategory(data.categoryName)
+		if (data.isPublished !== undefined) {
+			if (data.isPublished) {
+				await this.publish()
+			} else {
+				await this.unpublish()
+			}
+		}
 	}
 
 	async clearContent() {
@@ -67,8 +75,20 @@ export class DashboardAboutMeEditorPage extends BasePageEditorPOM<SectionData> {
 		await this.publishSwitch.click()
 	}
 
+	async publish() {
+		const isPublished = await this.publishSwitch.isChecked()
+		if (!isPublished) {
+			await this.togglePublish()
+		}
+		return isPublished
+	}
+
 	async unpublish() {
-		await this.publishSwitch.click()
+		const isPublished = await this.publishSwitch.isChecked()
+		if (isPublished) {
+			await this.togglePublish()
+		}
+		return isPublished
 	}
 
 	async verifyRequiredNameError(isVisible: boolean = true) {
