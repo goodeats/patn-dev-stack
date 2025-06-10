@@ -22,6 +22,12 @@ let categoryDialog: DashboardAboutCategoryEditorDialogPOM
 let category: AboutMeCategoryPlaywright
 let category2: AboutMeCategoryPlaywright
 let initialSection: AboutMePlaywright
+let sectionName: string
+let sectionContent: string
+let sectionDescription: string | null
+let updatedName: string
+let updatedContent: string
+let updatedDescription: string
 
 test.describe('About Me Sections', () => {
 	test.describe('CRUD', () => {
@@ -34,15 +40,14 @@ test.describe('About Me Sections', () => {
 		test.describe('can create a new section', () => {
 			test.beforeEach(async ({ insertNewAboutMeCategory }) => {
 				category = await insertNewAboutMeCategory()
+				sectionName = faker.lorem.words(3)
+				sectionContent = faker.lorem.paragraph()
+				sectionDescription = faker.lorem.sentence()
 				await listPage.goto()
 			})
 
 			test('that is published', async () => {
 				const editorPage = await listPage.createNewSection()
-
-				const sectionName = faker.lorem.words(3)
-				const sectionContent = faker.lorem.paragraph()
-				const sectionDescription = faker.lorem.sentence()
 
 				await editorPage.create({
 					name: sectionName,
@@ -63,10 +68,6 @@ test.describe('About Me Sections', () => {
 
 			test('that is unpublished', async () => {
 				const editorPage = await listPage.createNewSection()
-
-				const sectionName = faker.lorem.words(3)
-				const sectionContent = faker.lorem.paragraph()
-				const sectionDescription = faker.lorem.sentence()
 
 				await editorPage.create({
 					name: sectionName,
@@ -96,6 +97,9 @@ test.describe('About Me Sections', () => {
 						userId: user.id,
 						aboutMeCategoryId: category.id,
 					})
+					updatedName = faker.lorem.words(3)
+					updatedContent = faker.lorem.paragraph()
+					updatedDescription = faker.lorem.sentence()
 				},
 			)
 
@@ -107,10 +111,6 @@ test.describe('About Me Sections', () => {
 				await expect(editorPage.contentInput).toHaveValue(
 					initialSection.content,
 				)
-
-				const updatedName = faker.lorem.words(3)
-				const updatedContent = faker.lorem.paragraph()
-				const updatedDescription = faker.lorem.sentence()
 
 				await editorPage.update({
 					name: updatedName,

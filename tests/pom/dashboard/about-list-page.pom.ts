@@ -5,8 +5,8 @@ import {
 	AboutMeSectionsTable,
 } from './about-data-tables.pom'
 import {
-	DashboardAboutCategoryEditorDialog,
-	DashboardAboutMeEditorPage,
+	DashboardAboutCategoryEditorDialogPOM,
+	DashboardAboutMeEditorPOM,
 } from './about-editors.pom'
 
 // https://playwright.dev/docs/pom
@@ -58,14 +58,14 @@ export class DashboardAboutListPOM extends BasePagePOM {
 		await expect(this.page).toHaveURL('/dashboard/about/new')
 	}
 
-	async createNewSection(): Promise<DashboardAboutMeEditorPage> {
+	async createNewSection(): Promise<DashboardAboutMeEditorPOM> {
 		await this.gotoNewSection()
-		return new DashboardAboutMeEditorPage(this.page)
+		return new DashboardAboutMeEditorPOM(this.page)
 	}
 
-	async createNewCategory(): Promise<DashboardAboutCategoryEditorDialog> {
+	async createNewCategory(): Promise<DashboardAboutCategoryEditorDialogPOM> {
 		await this.newCategoryButton.click()
-		const dialog = new DashboardAboutCategoryEditorDialog(this.page)
+		const dialog = new DashboardAboutCategoryEditorDialogPOM(this.page)
 		await dialog.waitUntilVisible()
 		return dialog
 	}

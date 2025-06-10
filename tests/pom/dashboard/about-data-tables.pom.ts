@@ -4,11 +4,11 @@ import {
 	MenuDrivenDataTablePOM,
 } from '../base/data-table.pom'
 import {
-	DashboardAboutCategoryEditorDialog,
-	DashboardAboutMeEditorPage,
+	DashboardAboutCategoryEditorDialogPOM,
+	DashboardAboutMeEditorPOM,
 } from './about-editors.pom'
 
-export class AboutMeSectionsTable extends MenuDrivenDataTablePOM<DashboardAboutMeEditorPage> {
+export class AboutMeSectionsTable extends MenuDrivenDataTablePOM<DashboardAboutMeEditorPOM> {
 	// --- Configuration for MenuDrivenDataTablePOM ---
 	readonly expectedHeaders: string[] = [
 		'Name',
@@ -55,17 +55,17 @@ export class AboutMeSectionsTable extends MenuDrivenDataTablePOM<DashboardAboutM
 		await this.categoryFilter.clear()
 	}
 
-	async edit(name: string): Promise<DashboardAboutMeEditorPage> {
+	async edit(name: string): Promise<DashboardAboutMeEditorPOM> {
 		const row = this.getRow(name)
 		await row.getByRole('button', { name: this.menuName }).click()
 		await this.page.getByRole('menuitem', { name: 'Edit' }).click()
 
 		// Construct and return the editor page object
-		return new DashboardAboutMeEditorPage(this.page)
+		return new DashboardAboutMeEditorPOM(this.page)
 	}
 }
 
-export class AboutMeCategoriesTable extends DialogDrivenDataTablePOM<DashboardAboutCategoryEditorDialog> {
+export class AboutMeCategoriesTable extends DialogDrivenDataTablePOM<DashboardAboutCategoryEditorDialogPOM> {
 	// --- Configuration for DialogDrivenDataTablePOM ---
 	readonly expectedHeaders: string[] = [
 		'Name',
@@ -112,11 +112,11 @@ export class AboutMeCategoriesTable extends DialogDrivenDataTablePOM<DashboardAb
 		await this.descriptionFilter.clear()
 	}
 
-	async edit(name: string): Promise<DashboardAboutCategoryEditorDialog> {
+	async edit(name: string): Promise<DashboardAboutCategoryEditorDialogPOM> {
 		await this.getRow(name).getByRole('button', { name }).click()
 
 		// Construct and return the editor dialog object
-		const dialog = new DashboardAboutCategoryEditorDialog(this.page)
+		const dialog = new DashboardAboutCategoryEditorDialogPOM(this.page)
 		await dialog.waitUntilVisible() // Good practice to wait for dialog to be ready
 		return dialog
 	}

@@ -103,10 +103,12 @@ export abstract class BasePageEditorPOM<
 
 	override async create(data: T): Promise<void> {
 		await super.create(data)
+		await expect(this.page).toHaveURL(/\/[\w-]+$/)
 	}
 
 	override async update(data: Partial<T>): Promise<void> {
 		await super.update(data)
+		await expect(this.page).toHaveURL(/\/[\w-]+$/)
 	}
 }
 

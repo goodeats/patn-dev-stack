@@ -1,6 +1,6 @@
 import { type Page, expect } from '@playwright/test'
 import { BaseDetailsPagePOM, type DetailTuple } from '../base/page-details.pom'
-import { DashboardAboutMeEditorPage } from './about-editors.pom'
+import { DashboardAboutMeEditorPOM } from './about-editors.pom'
 
 export class DashboardAboutDetailsPOM extends BaseDetailsPagePOM {
 	constructor(page: Page) {
@@ -16,9 +16,9 @@ export class DashboardAboutDetailsPOM extends BaseDetailsPagePOM {
 		await expect(this.page).toHaveURL(/\/dashboard\/about/)
 	}
 
-	async edit(): Promise<DashboardAboutMeEditorPage> {
+	async edit(): Promise<DashboardAboutMeEditorPOM> {
 		await super.clickEdit()
-		const editor = new DashboardAboutMeEditorPage(this.page)
+		const editor = new DashboardAboutMeEditorPOM(this.page)
 		return editor
 	}
 
