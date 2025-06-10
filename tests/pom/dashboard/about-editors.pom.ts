@@ -1,10 +1,8 @@
 import { type Locator, type Page, expect } from '@playwright/test'
 import { scrollDown } from '#tests/playwright-utils'
-import {
-	BaseDialogEditorPOM,
-	BasePageEditorPOM,
-	type BaseEditorData,
-} from '../base/editor.pom'
+import { BaseDialogEditorPOM } from '../base/editor-dialog.pom'
+import { BasePageEditorPOM } from '../base/editor-page.pom'
+import { type BaseEditorData } from '../base/editor.pom'
 
 export interface SectionData extends BaseEditorData {
 	content: string
@@ -19,8 +17,7 @@ export class DashboardAboutMeEditorPage extends BasePageEditorPOM<SectionData> {
 	readonly categoryError: Locator
 
 	constructor(page: Page) {
-		super(page, 'about-editor')
-		this.url = '/dashboard/about'
+		super(page, 'about-editor', '/dashboard/about')
 		this.contentInput = page.getByLabel('Content')
 		this.categorySelect = page.getByRole('combobox', { name: 'Category' })
 		this.publishSwitch = page.getByRole('switch', { name: 'Published' })

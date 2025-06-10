@@ -1,5 +1,5 @@
 import { type Locator, type Page, expect } from '@playwright/test'
-import { BaseListPagePOM } from '../base/page-list.pom'
+import { BasePagePOM } from '../base/page.pom'
 import {
 	AboutMeCategoriesTable,
 	AboutMeSectionsTable,
@@ -11,54 +11,47 @@ import {
 
 // https://playwright.dev/docs/pom
 
-export class DashboardAboutPage extends BaseListPagePOM<DashboardAboutMeEditorPage> {
-	readonly aboutMeSectionContainer: Locator
-	readonly categoriesSectionContainer: Locator
+export class DashboardAboutPage extends BasePagePOM {
+	readonly aboutMeTable: AboutMeSectionsTable
+	readonly categoriesTable: AboutMeCategoriesTable
 	private readonly newSectionButton: Locator
 	private readonly newCategoryButton: Locator
 
-	// public interface
-	readonly aboutMeTable: AboutMeSectionsTable
-	readonly categoriesTable: AboutMeCategoriesTable
-
 	constructor(page: Page) {
-		const newSectionButton = page.locator('#about-me-sections-new')
-		super(page, newSectionButton)
-		this.aboutMeSectionContainer = page.locator('#about-me-sections')
-		this.categoriesSectionContainer = page.locator('#about-me-categories')
-		this.newSectionButton = this.aboutMeSectionContainer.getByRole('link', {
-			name: 'New',
-		})
-		this.newCategoryButton = this.categoriesSectionContainer.getByRole(
-			'button',
-			{
-				name: 'New',
-			},
-		)
-		this.aboutMeTable = new AboutMeSectionsTable(
-			page,
-			this.aboutMeSectionContainer,
-		)
+		super(page)
+		const aboutMeSectionContainer = page.locator('#about-me-sections')
+		const categoriesSectionContainer = page.locator('#about-me-categories')
+
+		this.aboutMeTable = new AboutMeSectionsTable(page, aboutMeSectionContainer)
 		this.categoriesTable = new AboutMeCategoriesTable(
 			page,
-			this.categoriesSectionContainer,
+			categoriesSectionContainer,
 		)
+
+		this.newSectionButton = aboutMeSectionContainer.getByRole('link', {
+			name: 'New',
+		})
+		this.newCategoryButton = categoriesSectionContainer.getByRole('button', {
+			name: 'New',
+		})
 	}
 
 	async goto() {
 		await this.page.goto('/dashboard/about')
 	}
 
-	// This method now returns the specific editor page POM
 	async createNewSection(): Promise<DashboardAboutMeEditorPage> {
 		await this.newSectionButton.click()
 		await expect(this.page).toHaveURL('/dashboard/about/new')
-		return new DashboardAboutMeEditorPage(this.page)
+		const editor = new DashboardAboutMeEditorPage(this.page)
+		await editor.waitUntilVisible()
+		return editor
 	}
 
 	// This method now returns the specific editor dialog POM
 	async createNewCategory(): Promise<DashboardAboutCategoryEditorDialog> {
 		await this.newCategoryButton.click()
+		await expect(this.page).toHaveURL('/dashboard/about')
 		const dialog = new DashboardAboutCategoryEditorDialog(this.page)
 		await dialog.waitUntilVisible()
 		return dialog

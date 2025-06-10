@@ -1,5 +1,5 @@
 import { type Locator, type Page, expect } from '@playwright/test'
-import { BasePage } from './page.pom'
+import { BasePagePOM } from './page.pom'
 
 // A flexible type for detail verification
 export type DetailTuple = [
@@ -8,28 +8,20 @@ export type DetailTuple = [
 ]
 
 // The base class for any 'details' view
-export abstract class BaseDetailsPagePOM extends BasePage {
+export abstract class BaseDetailsPagePOM extends BasePagePOM {
 	readonly container: Locator
-	readonly backLink: Locator
 	readonly editLink: Locator
-	readonly heading: Locator
 	readonly detailsCard: Locator
 
 	// The subclass must provide the container ID and the URL slug
 	constructor(page: Page, containerId: string, cardId: string) {
 		super(page)
 		this.container = page.locator(`#${containerId}`)
-		this.backLink = this.container.getByRole('link', { name: 'Back' })
 		this.editLink = this.container.getByRole('link', { name: 'Edit' })
-		this.heading = this.container.getByRole('heading', { level: 1 })
 		this.detailsCard = this.container.locator(`#${cardId}`)
 	}
 
 	abstract override goto(itemId: string): Promise<void>
-
-	async goBack(): Promise<void> {
-		await this.backLink.click()
-	}
 
 	protected async clickEdit(): Promise<void> {
 		await this.editLink.click()
@@ -41,13 +33,13 @@ export abstract class BaseDetailsPagePOM extends BasePage {
 	}
 
 	getDetailValue(label: string): Locator {
-		// Getting the sibling <dd> element next to the <dt> with the specified label
-		return this.getDetailItem(label).locator('xpath=following-sibling::dd')
+		// Getting the parent container in the <dl> element and then the <dd> element
+		return this.getDetailItem(label).locator('..').locator('dd')
 	}
 
 	// A more flexible verification method
 	async verifyDetails(heading: string, details: DetailTuple[]): Promise<void> {
-		await expect(this.heading).toHaveText(heading)
+		await this.verifyHeading(heading)
 		for (const [label, value] of details) {
 			await expect(this.getDetailValue(label)).toHaveText(value)
 		}
