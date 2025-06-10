@@ -39,8 +39,10 @@ export class AboutMeSectionsTable extends AboutMeSectionsComposableTable {
 	constructor(page: Page, container: Locator) {
 		super(page, container)
 		this.switchName = /toggle publish/i
-		this.addFilter('content', 'Filter content...')
-		this.addFilter('category', 'Filter category...')
+		this.addFilters([
+			{ name: 'content', placeholder: 'Filter content...' },
+			{ name: 'category', placeholder: 'Filter category...' },
+		])
 	}
 
 	// --- MenuDriven mixin implementation ---
@@ -129,8 +131,10 @@ export class AboutMeCategoriesTable extends AboutMeCategoriesComposableTable {
 	constructor(page: Page, container: Locator) {
 		super(page, container)
 		this.switchName = /toggle publish/i
-		this.addFilter('name', 'Filter name...')
-		this.addFilter('description', 'Filter description...')
+		this.addFilters([
+			{ name: 'name', placeholder: 'Filter name...' },
+			{ name: 'description', placeholder: 'Filter description...' },
+		])
 	}
 
 	// --- DialogDriven mixin implementation ---
