@@ -16,16 +16,18 @@ test.describe('About Me Sections', () => {
 	test.describe('CRUD', () => {
 		test.describe('can create a new section', () => {
 			let category: AboutMeCategoryPlaywright
+			let dashboardAboutPage: DashboardAboutPage
+			let detailsPage: DashboardAboutDetailsPage
+
 			test.beforeEach(async ({ page, login, insertNewAboutMeCategory }) => {
 				await login()
 				category = await insertNewAboutMeCategory()
+				dashboardAboutPage = new DashboardAboutPage(page)
+				detailsPage = new DashboardAboutDetailsPage(page)
 				await page.goto('/dashboard/about')
 			})
 
-			test('that is published', async ({ page }) => {
-				const dashboardAboutPage = new DashboardAboutPage(page)
-				const detailsPage = new DashboardAboutDetailsPage(page)
-
+			test('that is published', async () => {
 				const editorPage = await dashboardAboutPage.createNewSection()
 
 				const sectionName = faker.lorem.words(3)
