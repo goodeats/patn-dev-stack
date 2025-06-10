@@ -98,6 +98,16 @@ export class DashboardAboutMeEditorPage extends BasePageEditorPOM<SectionData> {
 	override async delete(): Promise<void> {
 		await super.delete('/dashboard/about')
 	}
+
+	override async create(data: SectionData): Promise<void> {
+		await super.create(data)
+		await expect(this.page).toHaveURL(/\/dashboard\/about\/[\w-]+$/)
+	}
+
+	override async update(data: Partial<SectionData>): Promise<void> {
+		await super.update(data)
+		await expect(this.page).toHaveURL(/\/dashboard\/about\/[\w-]+$/)
+	}
 }
 
 interface CategoryData {

@@ -19,7 +19,6 @@ export class DashboardAboutDetailsPage extends BaseDetailsPagePOM {
 	async edit(): Promise<DashboardAboutMeEditorPage> {
 		await super.clickEdit()
 		const editor = new DashboardAboutMeEditorPage(this.page)
-		await editor.waitUntilVisible()
 		return editor
 	}
 

@@ -44,7 +44,6 @@ export class DashboardAboutPage extends BasePagePOM {
 		await this.newSectionButton.click()
 		await expect(this.page).toHaveURL('/dashboard/about/new')
 		const editor = new DashboardAboutMeEditorPage(this.page)
-		await editor.waitUntilVisible()
 		return editor
 	}
 

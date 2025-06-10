@@ -75,7 +75,7 @@ export function DashboardHeader() {
 						orientation="vertical"
 						className="mx-2 data-[orientation=vertical]:h-4"
 					/>
-					<h1 className="text-base font-medium">Dashboard</h1>
+					<h3 className="text-base font-medium">Dashboard</h3>
 				</div>
 
 				<div className="flex items-center gap-2">
