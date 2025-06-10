@@ -49,8 +49,7 @@ export class AboutMeSectionsTable extends MenuDrivenDataTablePOM<DashboardAboutM
 	}
 
 	async filterByCategory(category: string): Promise<void> {
-		await this.categoryFilter.click()
-		await this.page.getByRole('option', { name: category }).click()
+		await this.categoryFilter.fill(category)
 	}
 
 	async clearCategoryFilter(): Promise<void> {
@@ -59,7 +58,7 @@ export class AboutMeSectionsTable extends MenuDrivenDataTablePOM<DashboardAboutM
 
 	async getPublishSwitch(name: string): Promise<Locator> {
 		const row = await this.getRow(name)
-		return row.getByRole('switch', { name: 'Published' })
+		return row.getByRole('switch', { name: /toggle publish/i })
 	}
 
 	async togglePublish(name: string): Promise<void> {

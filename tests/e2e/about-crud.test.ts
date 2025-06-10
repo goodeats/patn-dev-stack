@@ -35,10 +35,10 @@ let updatedDescription: string
 let categoryName: string
 let categoryDescription: string
 
-test.beforeEach(async () => {
-	await prisma.aboutMe.deleteMany()
-	await prisma.aboutMeCategory.deleteMany()
-})
+// test.beforeEach(async () => {
+// 	await prisma.aboutMe.deleteMany()
+// 	await prisma.aboutMeCategory.deleteMany()
+// })
 
 test.describe('About Me Sections', () => {
 	test.beforeEach(async ({ page, login }) => {
@@ -174,13 +174,17 @@ test.describe('About Me Sections', () => {
 		})
 
 		test.describe('can toggle publish status', () => {
-			test.beforeEach(async ({ login, insertNewAboutMe }) => {
-				user = await login()
-				initialSection = await insertNewAboutMe({
-					userId: user.id,
-					isPublished: true,
-				})
-			})
+			test.beforeEach(
+				async ({ login, insertNewAboutMeCategory, insertNewAboutMe }) => {
+					user = await login()
+					category = await insertNewAboutMeCategory()
+					initialSection = await insertNewAboutMe({
+						userId: user.id,
+						aboutMeCategoryId: category.id,
+						isPublished: true,
+					})
+				},
+			)
 
 			test('from the list page', async ({ page }) => {
 				await listPage.goto()
@@ -230,9 +234,7 @@ test.describe('About Me Sections', () => {
 					name: initialSection.name,
 					content: initialSection.content,
 					description: initialSection.description ?? '',
-					category: initialSection.aboutMeCategoryId
-						? 'Category Name Placeholder'
-						: '',
+					category: category.name,
 					status: 'Draft',
 				})
 
@@ -245,9 +247,7 @@ test.describe('About Me Sections', () => {
 					name: initialSection.name,
 					content: initialSection.content,
 					description: initialSection.description ?? '',
-					category: initialSection.aboutMeCategoryId
-						? 'Category Name Placeholder'
-						: '',
+					category: category.name,
 					status: 'Published',
 				})
 			})
