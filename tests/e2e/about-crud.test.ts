@@ -509,7 +509,7 @@ test.describe('About Me Categories', () => {
 			})
 
 			test('from the table', async ({ page }) => {
-				const publishSwitch = await listPage.categoriesTable.getPublishSwitch(
+				const publishSwitch = await listPage.categoriesTable.getSwitch(
 					category.name,
 				)
 
@@ -523,7 +523,7 @@ test.describe('About Me Categories', () => {
 				// Verify persisted after reload
 				await page.reload()
 				await expect(
-					await listPage.categoriesTable.getPublishSwitch(category.name),
+					await listPage.categoriesTable.getSwitch(category.name),
 				).not.toBeChecked()
 
 				// Toggle back to published
@@ -549,13 +549,13 @@ test.describe('About Me Categories', () => {
 				await categoryDialog.saveButton.click()
 
 				await expect(
-					await listPage.categoriesTable.getPublishSwitch(category.name),
+					await listPage.categoriesTable.getSwitch(category.name),
 				).not.toBeChecked()
 
 				// Verify persisted after reload
 				await page.reload()
 				await expect(
-					await listPage.categoriesTable.getPublishSwitch(category.name),
+					await listPage.categoriesTable.getSwitch(category.name),
 				).not.toBeChecked()
 
 				// Toggle back to published
@@ -564,7 +564,7 @@ test.describe('About Me Categories', () => {
 				await categoryDialog.saveButton.click()
 
 				await expect(
-					await listPage.categoriesTable.getPublishSwitch(category.name),
+					await listPage.categoriesTable.getSwitch(category.name),
 				).toBeChecked()
 			})
 		})
