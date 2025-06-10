@@ -205,7 +205,7 @@ test.describe('About Me Sections', () => {
 				).toBeChecked()
 			})
 
-			test('from the edit page', async ({ page }) => {
+			test('from the edit page', async ({}) => {
 				await detailsPage.goto(initialSection.id)
 				const editorPage = await detailsPage.edit()
 
@@ -465,7 +465,8 @@ test.describe('About Me Categories', () => {
 				description: categoryDescription,
 			})
 
-			await expect(listPage.categoriesTable.getRow(categoryName)).toBeVisible()
+			const categoryRow = await listPage.categoriesTable.getRow(categoryName)
+			await expect(categoryRow).toBeVisible()
 		})
 
 		test('can edit an existing category', async ({
