@@ -638,6 +638,28 @@ test.describe('About Me Categories', () => {
 			await expect(page.getByText(cat2.name)).toBeVisible()
 		})
 	})
+
+	test('can open category dialog by clicking name', async ({
+		page,
+		insertNewAboutMeCategory,
+	}) => {
+		const category = await insertNewAboutMeCategory()
+		await listPage.goto()
+
+		// Use the new clickName method from DialogDriven mixin
+		const dialog = await listPage.categoriesTable.clickName(category.name)
+
+		// Verify dialog opened with correct data
+		await expect(dialog.dialog).toBeVisible()
+		await expect(dialog.nameInput).toHaveValue(category.name)
+		if (category.description) {
+			await expect(dialog.descriptionInput).toHaveValue(category.description)
+		}
+
+		// Close dialog by clicking outside of it
+		await page.mouse.click(10, 10)
+		await expect(dialog.dialog).not.toBeVisible()
+	})
 })
 
 test.describe('Interactions between Sections and Categories', () => {

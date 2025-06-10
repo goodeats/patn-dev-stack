@@ -3,23 +3,28 @@ import {
 	MenuDriven,
 	Filterable,
 	Switchable,
-	BaseDataTablePOM,
+	DialogDriven,
+	MixinBase,
 } from '../base/data-table.pom'
 import {
 	DashboardAboutCategoryEditorDialogPOM,
 	DashboardAboutMeEditorPOM,
 } from './about-editors.pom'
 
-// --- Assemble our desired table "recipe" ---
-// We want a table that is MenuDriven, Switchable, AND Filterable.
-// We apply the mixins to the BaseDataTablePOM to create a new, powerful base class.
-// const ComposableBaseTable = Filterable(
-// 	Switchable(MenuDriven<DashboardAboutMeEditorPOM>(BaseDataTablePOM)),
-// )
+const AboutMeSectionsComposableTable = Filterable(
+	Switchable(MenuDriven<DashboardAboutMeEditorPOM>()(MixinBase)),
+)
 
-export class AboutMeSectionsTable extends Filterable(
-	Switchable(MenuDriven<DashboardAboutMeEditorPOM>(BaseDataTablePOM)),
-) {
+const AboutMeCategoriesComposableTable =
+	DialogDriven<DashboardAboutCategoryEditorDialogPOM>()(
+		Filterable(
+			Switchable(
+				MenuDriven<DashboardAboutCategoryEditorDialogPOM>()(MixinBase),
+			),
+		),
+	)
+
+export class AboutMeSectionsTable extends AboutMeSectionsComposableTable {
 	// --- Implementation of ABSTRACT members required by the mixins ---
 	readonly menuName = 'Open about section menu'
 	readonly expectedHeaders: string[] = [
@@ -85,8 +90,8 @@ export class AboutMeSectionsTable extends Filterable(
 	}
 }
 
-export class AboutMeCategoriesTable extends MenuDrivenDataTablePOM<DashboardAboutCategoryEditorDialogPOM> {
-	// --- Configuration for DialogDrivenDataTablePOM ---
+export class AboutMeCategoriesTable extends AboutMeCategoriesComposableTable {
+	// --- Configuration for MenuDriven mixin ---
 	readonly expectedHeaders: string[] = [
 		'Name',
 		'Description',
@@ -96,16 +101,11 @@ export class AboutMeCategoriesTable extends MenuDrivenDataTablePOM<DashboardAbou
 	]
 	readonly menuName = 'Open about category menu'
 
-	// --- Specific to this table ---
-	readonly nameFilter: Locator
-	readonly descriptionFilter: Locator
-
 	constructor(page: Page, container: Locator) {
 		super(page, container)
-		this.nameFilter = this.getFilterByPlaceholder('Filter name...')
-		this.descriptionFilter = this.getFilterByPlaceholder(
-			'Filter description...',
-		)
+		this.switchName = /toggle publish/i
+		this.addFilter('name', 'Filter name...')
+		this.addFilter('description', 'Filter description...')
 	}
 
 	// --- Specific methods for this table ---
@@ -116,24 +116,24 @@ export class AboutMeCategoriesTable extends MenuDrivenDataTablePOM<DashboardAbou
 		})
 	}
 
-	override async verifyData(data: string[][]): Promise<void> {
+	async verifyData(data: string[][]): Promise<void> {
 		await super.verifyData(data, { hasSelectColumn: true })
 	}
 
 	async filterByName(name: string): Promise<void> {
-		await this.nameFilter.fill(name)
+		await this.filterBy('name', name)
 	}
 
 	async clearNameFilter(): Promise<void> {
-		await this.nameFilter.clear()
+		await this.clearFilter('name')
 	}
 
 	async filterByDescription(description: string): Promise<void> {
-		await this.descriptionFilter.fill(description)
+		await this.filterBy('description', description)
 	}
 
 	async clearDescriptionFilter(): Promise<void> {
-		await this.descriptionFilter.clear()
+		await this.clearFilter('description')
 	}
 
 	async getPublishSwitch(name: string): Promise<Locator> {
@@ -164,17 +164,25 @@ export class AboutMeCategoriesTable extends MenuDrivenDataTablePOM<DashboardAbou
 		return isPublished
 	}
 
-	// async editFromNameClick(
-	// 	name: string,
-	// ): Promise<DashboardAboutCategoryEditorDialogPOM> {
-	// 	await this.clickName(name)
+	async delete(name: string): Promise<void> {
+		this.page.on('dialog', (dialog) => dialog.accept())
+		await this.clickDeleteButton(name)
+	}
 
-	// 	const dialog = new DashboardAboutCategoryEditorDialogPOM(this.page)
-	// 	await dialog.waitUntilVisible() // Good practice to wait for dialog to be ready
-	// 	return dialog
-	// }
+	// Required by DialogDriven mixin
+	async openDialog(
+		name: string,
+	): Promise<DashboardAboutCategoryEditorDialogPOM> {
+		await this.clickName(name)
 
-	async edit(name: string): Promise<DashboardAboutCategoryEditorDialogPOM> {
+		const dialog = new DashboardAboutCategoryEditorDialogPOM(this.page)
+		await dialog.waitUntilVisible()
+		return dialog
+	}
+
+	override async edit(
+		name: string,
+	): Promise<DashboardAboutCategoryEditorDialogPOM> {
 		await this.clickEditButton(name)
 
 		const dialog = new DashboardAboutCategoryEditorDialogPOM(this.page)

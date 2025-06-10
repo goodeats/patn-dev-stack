@@ -13,29 +13,16 @@ export abstract class BaseDataTablePOM {
 	public readonly tableContainer: Locator
 	readonly table: Locator
 
-	/**
-	 * @param page The Playwright Page object.
-	 * @param container The Locator for the container element of the table (e.g., '#about-me-sections'). This scopes all actions.
-	 */
 	constructor(page: Page, container: Locator) {
 		this.page = page
 		this.tableContainer = container
 		this.table = this.tableContainer.locator('table')
 	}
 
-	/**
-	 * Gets a specific row in the table by a unique text identifier within that row.
-	 * @param identifier The unique text to find the row, e.g., the item's name.
-	 */
 	async getRow(identifier: string): Promise<Locator> {
 		return await this.table.getByRole('row').filter({ hasText: identifier })
 	}
 
-	/**
-	 * Verifies the table headers are correct.
-	 * @param expectedHeaders Array of expected header strings.
-	 * @param options Options for header verification (e.g., has select/actions columns).
-	 */
 	async verifyHeaders(
 		expectedHeaders: string[],
 		options?: { hasSelectColumn?: boolean; hasActionsColumn?: boolean },
@@ -43,62 +30,57 @@ export abstract class BaseDataTablePOM {
 		await verifyTableHeaders(this.table, expectedHeaders, options)
 	}
 
-	/**
-	 * Verifies the data in the table body matches the expected data.
-	 * @param data A 2D array of strings representing the expected row data.
-	 * @param options Options for data verification (e.g., has a select column).
-	 */
 	async verifyData(
 		data: string[][],
 		options?: { hasSelectColumn?: boolean },
 	): Promise<void> {
 		await verifyMultipleTableRowsData(this.table, data, options)
 	}
+
+	async getHeaders(): Promise<string[]> {
+		const headers = await this.table.locator('th').allTextContents()
+		return headers.map((h) => h.trim()).filter((h) => h.length > 0)
+	}
 }
 
 // --- Composable Feature Mixins ---
-
-// --- Composable Feature Mixins ---
+export class MixinBase extends BaseDataTablePOM {}
 
 /**
- * MIXIN: Adds functionality for a row menu. It requires the final class
- * to implement 'menuName' and 'edit'.
+ * MIXIN FACTORY: Creates a MenuDriven mixin for a specific Editor POM type.
  */
-export function MenuDriven<
-	TEditPOM extends IEditorPOM,
-	TBase extends DataTableConstructor<BaseDataTablePOM>,
->(Base: TBase) {
-	// The returned class is ABSTRACT because it has abstract members.
-	abstract class MenuDrivenPOM extends Base {
-		// This MUST be implemented by the final concrete class.
-		abstract readonly menuName: string
+export function MenuDriven<TEditPOM extends IEditorPOM>() {
+	// The returned function is the actual mixin. It now accepts any constructor.
+	return function <TBase extends DataTableConstructor<BaseDataTablePOM>>(
+		Base: TBase,
+	) {
+		abstract class MenuDrivenPOM extends Base {
+			abstract readonly menuName: string
+			abstract edit(name: string): Promise<TEditPOM>
 
-		// This MUST also be implemented to define how an edit session is started.
-		abstract edit(name: string): Promise<TEditPOM>
+			protected async openRowMenu(row: Locator): Promise<void> {
+				await row.getByRole('button', { name: this.menuName }).click()
+			}
 
-		// The mixin provides the helper methods.
-		protected async openRowMenu(row: Locator): Promise<void> {
-			await row.getByRole('button', { name: this.menuName }).click()
+			protected async clickEditButton(name: string): Promise<void> {
+				const row = await this.getRow(name)
+				await this.openRowMenu(row)
+				await this.page.getByRole('menuitem', { name: 'Edit' }).click()
+			}
+
+			protected async clickDeleteButton(name: string): Promise<void> {
+				const row = await this.getRow(name)
+				await this.openRowMenu(row)
+				await this.page.getByRole('menuitem', { name: 'Delete' }).click()
+			}
+
+			async delete(name: string): Promise<void> {
+				this.page.on('dialog', (dialog) => dialog.accept())
+				await this.clickDeleteButton(name)
+			}
 		}
-
-		protected async clickEditButton(name: string): Promise<void> {
-			const row = await this.getRow(name)
-			await this.openRowMenu(row)
-			await this.page.getByRole('menuitem', { name: 'Edit' }).click()
-		}
-
-		protected async clickDeleteButton(name: string): Promise<void> {
-			const row = await this.getRow(name)
-			await this.openRowMenu(row)
-			await this.page.getByRole('menuitem', { name: 'Delete' }).click()
-		}
-
-		async delete(name: string): Promise<void> {
-			this.page.on('dialog', (dialog) => dialog.accept())
-			await this.clickDeleteButton(name)
-		}
+		return MenuDrivenPOM
 	}
-	return MenuDrivenPOM
 }
 
 /**
@@ -164,14 +146,24 @@ export function Filterable<
 	}
 }
 
-// DialogDriven variant for completeness.
-export abstract class DialogDrivenDataTablePOM<
-	TEditPOM extends IEditorPOM,
-> extends BaseDataTablePOM {
-	async clickName(name: string): Promise<void> {
-		await this.getRow(name).then((row) =>
-			row.getByRole('link', { name }).click(),
-		)
+/**
+ * MIXIN: Adds functionality for opening dialogs when clicking row names.
+ */
+export function DialogDriven<TEditPOM extends IEditorPOM>() {
+	return function <TBase extends DataTableConstructor<BaseDataTablePOM>>(
+		Base: TBase,
+	) {
+		abstract class DialogDrivenPOM extends Base {
+			abstract edit(name: string): Promise<TEditPOM>
+
+			abstract openDialog(name: string): Promise<TEditPOM>
+
+			async clickName(name: string): Promise<TEditPOM> {
+				const row = await this.getRow(name)
+				await row.getByRole('link', { name }).click()
+				return this.openDialog(name)
+			}
+		}
+		return DialogDrivenPOM
 	}
-	abstract edit(name: string): Promise<TEditPOM>
 }
