@@ -526,6 +526,77 @@ test.describe('About Me Categories', () => {
 			await expect(previousCategoryRow).not.toBeVisible()
 		})
 
+		test.describe('can toggle publish status', () => {
+			test.beforeEach(async ({ insertNewAboutMeCategory }) => {
+				category = await insertNewAboutMeCategory({
+					isPublished: true,
+				})
+				await listPage.goto()
+			})
+
+			test('from the table', async ({ page }) => {
+				const publishSwitch = await listPage.categoriesTable.getPublishSwitch(
+					category.name,
+				)
+
+				// Initially published
+				await expect(publishSwitch).toBeChecked()
+
+				// Toggle to unpublished
+				await publishSwitch.click()
+				await expect(publishSwitch).not.toBeChecked()
+
+				// Verify persisted after reload
+				await page.reload()
+				await expect(
+					await listPage.categoriesTable.getPublishSwitch(category.name),
+				).not.toBeChecked()
+
+				// Toggle back to published
+				await (
+					await listPage.categoriesTable.getPublishSwitch(category.name)
+				).click()
+				await expect(
+					await listPage.categoriesTable.getPublishSwitch(category.name),
+				).toBeChecked()
+
+				await page.reload()
+				await expect(
+					await listPage.categoriesTable.getPublishSwitch(category.name),
+				).toBeChecked()
+			})
+
+			test('from the dialog', async ({ page }) => {
+				categoryDialog = await listPage.categoriesTable.edit(category.name)
+
+				// Initially published
+				await expect(categoryDialog.publishSwitch).toBeChecked()
+
+				// Toggle to unpublished
+				await categoryDialog.unpublish()
+				await categoryDialog.saveButton.click()
+
+				await expect(
+					await listPage.categoriesTable.getPublishSwitch(category.name),
+				).not.toBeChecked()
+
+				// Verify persisted after reload
+				await page.reload()
+				await expect(
+					await listPage.categoriesTable.getPublishSwitch(category.name),
+				).not.toBeChecked()
+
+				// Toggle back to published
+				categoryDialog = await listPage.categoriesTable.edit(category.name)
+				await categoryDialog.publish()
+				await categoryDialog.saveButton.click()
+
+				await expect(
+					await listPage.categoriesTable.getPublishSwitch(category.name),
+				).toBeChecked()
+			})
+		})
+
 		test('can be deleted', async ({ insertNewAboutMeCategory }) => {
 			const category = await insertNewAboutMeCategory()
 			await listPage.goto()

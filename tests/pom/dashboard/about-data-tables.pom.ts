@@ -144,7 +144,7 @@ export class AboutMeCategoriesTable extends MenuDrivenDataTablePOM<DashboardAbou
 
 	async getPublishSwitch(name: string): Promise<Locator> {
 		const row = await this.getRow(name)
-		return row.getByRole('switch', { name: 'Published' })
+		return row.getByRole('switch', { name: /toggle publish/i })
 	}
 
 	async togglePublish(name: string): Promise<void> {
