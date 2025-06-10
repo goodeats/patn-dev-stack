@@ -248,7 +248,7 @@ test.describe('About Me Sections', () => {
 
 	test.describe('Validation', () => {
 		test.beforeEach(async ({ page, login, insertNewAboutMeCategory }) => {
-			await login({ name: faker.person.firstName() })
+			user = await login({ name: faker.person.firstName() })
 			category = await insertNewAboutMeCategory({
 				name: 'Professional',
 			})

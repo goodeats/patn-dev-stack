@@ -31,11 +31,15 @@ export class AboutMeSectionsTable extends MenuDrivenDataTablePOM<DashboardAboutM
 	}
 
 	// --- Specific methods for this table ---
-	async verifyHeaders(): Promise<void> {
+	override async verifyHeaders(): Promise<void> {
 		await super.verifyHeaders(this.expectedHeaders, {
 			hasSelectColumn: true,
 			hasActionsColumn: true,
 		})
+	}
+
+	override async verifyData(data: string[][]): Promise<void> {
+		await super.verifyData(data, { hasSelectColumn: true })
 	}
 
 	// This is the public API for the page to use.
@@ -57,9 +61,6 @@ export class AboutMeSectionsTable extends MenuDrivenDataTablePOM<DashboardAboutM
 
 	async edit(name: string): Promise<DashboardAboutMeEditorPOM> {
 		await this.clickEditButton(name)
-		console.log('yooo')
-
-		// Construct and return the editor page object
 		return new DashboardAboutMeEditorPOM(this.page)
 	}
 }
@@ -95,6 +96,10 @@ export class AboutMeCategoriesTable extends DialogDrivenDataTablePOM<DashboardAb
 		})
 	}
 
+	override async verifyData(data: string[][]): Promise<void> {
+		await super.verifyData(data, { hasSelectColumn: true })
+	}
+
 	async filterByName(name: string): Promise<void> {
 		await this.nameFilter.fill(name)
 	}
@@ -115,7 +120,6 @@ export class AboutMeCategoriesTable extends DialogDrivenDataTablePOM<DashboardAb
 		const row = await this.getRow(name)
 		await row.getByRole('button', { name: this.menuName }).click()
 
-		// Construct and return the editor dialog object
 		const dialog = new DashboardAboutCategoryEditorDialogPOM(this.page)
 		await dialog.waitUntilVisible() // Good practice to wait for dialog to be ready
 		return dialog
