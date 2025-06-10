@@ -12,10 +12,10 @@ export abstract class MenuDrivenDataTablePOM<
 
 	async delete(name: string): Promise<void> {
 		this.page.on('dialog', (dialog) => dialog.accept())
-		const row = this.getRow(name)
+		const row = await this.getRow(name)
 		await this.openRowMenu(row)
 
-		const menu = row.getByRole('menu')
+		const menu = await row.getByRole('menu')
 		await menu.getByRole('button', { name: 'Delete' }).click()
 	}
 
@@ -38,10 +38,10 @@ export abstract class DialogDrivenDataTablePOM<
 
 	async delete(name: string): Promise<void> {
 		this.page.on('dialog', (dialog) => dialog.accept())
-		const row = this.getRow(name)
+		const row = await this.getRow(name)
 		await this.openRowMenu(row)
 
-		const menu = row.getByRole('menu')
+		const menu = await row.getByRole('menu')
 		await menu.getByRole('button', { name: 'Delete' }).click()
 	}
 

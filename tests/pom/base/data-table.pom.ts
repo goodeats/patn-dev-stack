@@ -32,8 +32,8 @@ export abstract class BaseDataTablePOM {
 	 * Gets a specific row in the table by a unique text identifier within that row.
 	 * @param identifier The unique text to find the row, e.g., the item's name.
 	 */
-	getRow(identifier: string): Locator {
-		return this.table.getByRole('row').filter({ hasText: identifier })
+	async getRow(identifier: string): Promise<Locator> {
+		return await this.table.getByRole('row').filter({ hasText: identifier })
 	}
 
 	/**
@@ -64,8 +64,8 @@ export abstract class BaseDataTablePOM {
 	 * Gets the publish status switch for a given row.
 	 * @param name The name of the item in the row.
 	 */
-	getPublishSwitch(name: string): Locator {
-		const row = this.getRow(name)
+	async getPublishSwitch(name: string): Promise<Locator> {
+		const row = await this.getRow(name)
 		return row.getByRole('switch', {
 			name: `Toggle publish status for ${name}`,
 		})
@@ -76,7 +76,8 @@ export abstract class BaseDataTablePOM {
 	 * @param name The name of the item in the row.
 	 */
 	async togglePublishStatus(name: string): Promise<void> {
-		await this.getPublishSwitch(name).click()
+		const publishSwitch = await this.getPublishSwitch(name)
+		await publishSwitch.click()
 	}
 
 	async getHeaders(): Promise<string[]> {
@@ -91,23 +92,31 @@ export abstract class MenuDrivenDataTablePOM<
 > extends BaseDataTablePOM {
 	abstract readonly menuName: string
 
-	abstract edit(name: string): Promise<TEditPOM>
-
-	async delete(name: string): Promise<void> {
-		this.page.on('dialog', (dialog) => dialog.accept())
-		const row = this.getRow(name)
-		await this.openRowMenu(row)
-
-		const menu = row.getByRole('menu')
-		await menu.getByRole('button', { name: 'Delete' }).click()
-	}
-
 	/**
 	 * Opens the menu for a given row.
 	 * @param row The row locator to open the menu for.
 	 */
 	async openRowMenu(row: Locator): Promise<void> {
 		await row.getByRole('button', { name: this.menuName }).click()
+	}
+
+	async clickEditButton(name: string): Promise<void> {
+		const row = await this.getRow(name)
+		await this.openRowMenu(row)
+		await this.page.getByRole('menuitem', { name: 'Edit' }).click()
+	}
+
+	abstract edit(name: string): Promise<TEditPOM>
+
+	async clickDeleteButton(name: string): Promise<void> {
+		const row = await this.getRow(name)
+		await this.openRowMenu(row)
+		await this.page.getByRole('menuitem', { name: 'Delete' }).click()
+	}
+
+	async delete(name: string): Promise<void> {
+		this.page.on('dialog', (dialog) => dialog.accept())
+		await this.clickDeleteButton(name)
 	}
 }
 
@@ -121,11 +130,11 @@ export abstract class DialogDrivenDataTablePOM<
 
 	async delete(name: string): Promise<void> {
 		this.page.on('dialog', (dialog) => dialog.accept())
-		const row = this.getRow(name)
+		const row = await this.getRow(name)
 		await this.openRowMenu(row)
 
-		const menu = row.getByRole('menu')
-		await menu.getByRole('button', { name: 'Delete' }).click()
+		const menu = await row.getByRole('menu')
+		await menu.getByRole('menuitem', { name: 'Delete' }).click()
 	}
 
 	/**

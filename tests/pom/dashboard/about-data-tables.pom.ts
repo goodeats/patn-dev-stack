@@ -56,9 +56,8 @@ export class AboutMeSectionsTable extends MenuDrivenDataTablePOM<DashboardAboutM
 	}
 
 	async edit(name: string): Promise<DashboardAboutMeEditorPOM> {
-		const row = this.getRow(name)
-		await row.getByRole('button', { name: this.menuName }).click()
-		await this.page.getByRole('menuitem', { name: 'Edit' }).click()
+		await this.clickEditButton(name)
+		console.log('yooo')
 
 		// Construct and return the editor page object
 		return new DashboardAboutMeEditorPOM(this.page)
@@ -113,7 +112,8 @@ export class AboutMeCategoriesTable extends DialogDrivenDataTablePOM<DashboardAb
 	}
 
 	async edit(name: string): Promise<DashboardAboutCategoryEditorDialogPOM> {
-		await this.getRow(name).getByRole('button', { name }).click()
+		const row = await this.getRow(name)
+		await row.getByRole('button', { name: this.menuName }).click()
 
 		// Construct and return the editor dialog object
 		const dialog = new DashboardAboutCategoryEditorDialogPOM(this.page)

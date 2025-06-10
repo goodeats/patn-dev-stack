@@ -22,9 +22,10 @@ let categoryDialog: DashboardAboutCategoryEditorDialogPOM
 let category: AboutMeCategoryPlaywright
 let category2: AboutMeCategoryPlaywright
 let initialSection: AboutMePlaywright
+let sectionToDelete: AboutMePlaywright
 let sectionName: string
 let sectionContent: string
-let sectionDescription: string | null
+let sectionDescription: string
 let updatedName: string
 let updatedContent: string
 let updatedDescription: string
@@ -162,41 +163,30 @@ test.describe('About Me Sections', () => {
 			})
 		})
 
-		test('can be deleted from the list page', async ({
-			page,
-			login,
-			insertNewAboutMe,
-		}) => {
-			const user = await login()
-			const sectionToDelete = await insertNewAboutMe({
-				userId: user.id,
-				name: `SectionToDelete ${faker.lorem.word()}`,
+		test.describe('can delete an existing section', () => {
+			test.beforeEach(async ({ login, insertNewAboutMe }) => {
+				user = await login()
+				sectionToDelete = await insertNewAboutMe({ userId: user.id })
 			})
 
-			await listPage.goto()
-			await expect(page.getByText(sectionToDelete.name)).toBeVisible()
+			test('can be deleted from the list page', async ({ page }) => {
+				await listPage.goto()
+				await expect(page.getByText(sectionToDelete.name)).toBeVisible()
 
-			await listPage.aboutMeTable.delete(sectionToDelete.name)
+				await listPage.aboutMeTable.delete(sectionToDelete.name)
 
-			await expect(page.getByText(sectionToDelete.name)).not.toBeVisible()
-		})
+				await expect(page.getByText(sectionToDelete.name)).not.toBeVisible()
+			})
 
-		test('can be deleted from its edit page', async ({
-			page,
-			login,
-			insertNewAboutMe,
-		}) => {
-			const user = await login()
-			const sectionToDelete = await insertNewAboutMe({ userId: user.id })
-			const editorPage = new DashboardAboutMeEditorPOM(page)
+			test('can be deleted from its edit page', async ({ page }) => {
+				const editorPage = new DashboardAboutMeEditorPOM(page)
 
-			await editorPage.gotoEdit(sectionToDelete.id)
+				await editorPage.gotoEdit(sectionToDelete.id)
 
-			await editorPage.delete()
+				await editorPage.delete()
 
-			await expect(
-				listPage.aboutMeTable.getRow(sectionToDelete.name),
-			).not.toBeVisible()
+				await expect(page.getByText(sectionToDelete.name)).not.toBeVisible()
+			})
 		})
 
 		test('displays existing sections and categories on the main page', async ({

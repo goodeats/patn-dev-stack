@@ -92,6 +92,7 @@ type AboutMeDataItem = Info['loaderData']['aboutMeData'][number]
 type AboutMeCategoryDataItem = Info['loaderData']['aboutMeCategoryData'][number]
 
 export async function action(args: ActionFunctionArgs) {
+	console.log('action', args)
 	const { request } = args
 	const userId = await requireUserId(request)
 	const formData = await request.formData()
