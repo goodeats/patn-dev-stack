@@ -1,8 +1,10 @@
 import { type Locator, type Page, expect } from '@playwright/test'
 import { scrollDown } from '#tests/playwright-utils'
-import { BaseDialogEditorPOM } from '../base/editor-dialog.pom'
-import { BasePageEditorPOM } from '../base/editor-page.pom'
-import { type BaseEditorData } from '../base/editor.pom'
+import {
+	type BaseEditorData,
+	BaseDialogEditorPOM,
+	BasePageEditorPOM,
+} from '../base/editor.pom'
 
 export interface SectionData extends BaseEditorData {
 	content: string

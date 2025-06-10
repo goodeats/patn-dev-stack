@@ -11,6 +11,8 @@ export interface BaseEditorData {
 	description?: string
 }
 
+// --- LAYER 1: THE ROOT EDITOR POM ---
+// It handles common locators and the fillForm logic.
 export abstract class BaseEditorPOM<T extends BaseEditorData>
 	implements IEditorPOM
 {
@@ -18,7 +20,7 @@ export abstract class BaseEditorPOM<T extends BaseEditorData>
 	readonly descriptionInput: Locator
 	readonly createButton: Locator
 	readonly saveButton: Locator
-	readonly deleteButton: Locator // optional
+	readonly deleteButton: Locator
 	readonly nameError: Locator
 
 	/**
@@ -28,7 +30,7 @@ export abstract class BaseEditorPOM<T extends BaseEditorData>
 	 */
 	constructor(
 		protected page: Page,
-		protected scope: Locator | Page, // Can be the whole page or a specific locator like a dialog
+		protected scope: Locator | Page,
 		formId: string,
 	) {
 		this.nameInput = this.scope.getByLabel('Name')
@@ -41,7 +43,6 @@ export abstract class BaseEditorPOM<T extends BaseEditorData>
 		this.nameError = this.scope.locator(`#${formId}-name-error`)
 	}
 
-	// This method must be implemented by subclasses.
 	abstract waitUntilVisible(): Promise<void>
 
 	async fillForm(data: Partial<T>): Promise<void> {
@@ -55,8 +56,7 @@ export abstract class BaseEditorPOM<T extends BaseEditorData>
 	}
 
 	async update(data: Partial<T>): Promise<void> {
-		if (data.name) await this.nameInput.fill(data.name)
-		if (data.description) await this.descriptionInput.fill(data.description)
+		await this.fillForm(data)
 		await this.saveButton.click()
 	}
 
@@ -75,5 +75,58 @@ export abstract class BaseEditorPOM<T extends BaseEditorData>
 		} else {
 			await expect(this.nameError).not.toBeVisible()
 		}
+	}
+}
+
+// --- LAYER 2: THE PAGE-SPECIFIC EDITOR BASE ---
+export abstract class BasePageEditorPOM<
+	T extends BaseEditorData,
+> extends BaseEditorPOM<T> {
+	constructor(
+		page: Page,
+		formId: string,
+		protected url: string,
+	) {
+		super(page, page, formId)
+	}
+
+	async waitUntilVisible(): Promise<void> {
+		await expect(this.scope.locator('form')).toBeVisible()
+	}
+
+	async gotoNew(): Promise<void> {
+		await this.page.goto(`${this.url}/new`)
+	}
+
+	async gotoEdit(id: string): Promise<void> {
+		await this.page.goto(`${this.url}/${id}/edit`)
+	}
+}
+
+// --- LAYER 2: THE DIALOG-SPECIFIC EDITOR BASE ---
+export abstract class BaseDialogEditorPOM<
+	T extends BaseEditorData,
+> extends BaseEditorPOM<T> {
+	readonly dialog: Locator
+
+	constructor(page: Page, formId: string) {
+		const dialogLocator = page.getByRole('dialog')
+		super(page, dialogLocator, formId)
+		this.dialog = dialogLocator
+	}
+
+	async waitUntilVisible(): Promise<void> {
+		await expect(this.dialog).toBeVisible()
+	}
+
+	// Override to add dialog-specific behavior
+	override async create(data: T): Promise<void> {
+		await super.create(data)
+		await expect(this.dialog).not.toBeVisible()
+	}
+
+	override async update(data: Partial<T>): Promise<void> {
+		await super.update(data)
+		await expect(this.dialog).not.toBeVisible()
 	}
 }
