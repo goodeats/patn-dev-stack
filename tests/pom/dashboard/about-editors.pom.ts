@@ -120,13 +120,47 @@ export class DashboardAboutMeEditorPOM extends BasePageEditorPOM<SectionData> {
 	}
 }
 
-interface CategoryData {
-	name: string
-	description?: string
+interface CategoryData extends BaseEditorData {
+	isPublished?: boolean
 }
 
 export class DashboardAboutCategoryEditorDialogPOM extends BaseDialogEditorPOM<CategoryData> {
+	readonly publishSwitch: Locator
+
 	constructor(page: Page) {
 		super(page, 'about-category-editor')
+		this.publishSwitch = page.getByRole('switch', { name: 'Published' })
+	}
+
+	override async fillForm(data: Partial<CategoryData>) {
+		await super.fillForm(data)
+
+		if (data.isPublished !== undefined) {
+			if (data.isPublished) {
+				await this.publish()
+			} else {
+				await this.unpublish()
+			}
+		}
+	}
+
+	async togglePublish() {
+		await this.publishSwitch.click()
+	}
+
+	async publish() {
+		const isPublished = await this.publishSwitch.isChecked()
+		if (!isPublished) {
+			await this.togglePublish()
+		}
+		return isPublished
+	}
+
+	async unpublish() {
+		const isPublished = await this.publishSwitch.isChecked()
+		if (isPublished) {
+			await this.togglePublish()
+		}
+		return isPublished
 	}
 }

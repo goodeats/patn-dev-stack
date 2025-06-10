@@ -23,12 +23,18 @@ let category: AboutMeCategoryPlaywright
 let category2: AboutMeCategoryPlaywright
 let initialSection: AboutMePlaywright
 let sectionToDelete: AboutMePlaywright
+
 let sectionName: string
 let sectionContent: string
 let sectionDescription: string
 let updatedName: string
 let updatedContent: string
 let updatedDescription: string
+
+let categoryName: string
+let categoryDescription: string
+let updatedCategoryName: string
+let updatedCategoryDescription: string
 
 test.describe('About Me Sections', () => {
 	test.describe('CRUD', () => {
@@ -454,19 +460,44 @@ test.describe('About Me Categories', () => {
 	})
 
 	test.describe('CRUD (via Dialog)', () => {
-		test('can create a new category', async () => {
-			await listPage.createNewCategory()
+		test.beforeEach(async ({ page, login }) => {
+			await login()
+			listPage = new DashboardAboutListPOM(page)
+		})
 
-			const categoryName = faker.lorem.words(2)
-			const categoryDescription = faker.lorem.sentence()
-
-			await categoryDialog.create({
-				name: categoryName,
-				description: categoryDescription,
+		test.describe('can create a new category', () => {
+			test.beforeEach(async () => {
+				categoryName = faker.lorem.words(2)
+				categoryDescription = faker.lorem.sentence()
 			})
 
-			const categoryRow = await listPage.categoriesTable.getRow(categoryName)
-			await expect(categoryRow).toBeVisible()
+			test('that is published', async () => {
+				const categoryDialog = await listPage.createNewCategory()
+
+				await categoryDialog.create({
+					name: categoryName,
+					description: categoryDescription,
+					isPublished: true,
+				})
+
+				const categoryRow = await listPage.categoriesTable.getRow(categoryName)
+				await expect(categoryRow).toBeVisible()
+				await expect(categoryRow.getByRole('switch')).toBeChecked()
+			})
+
+			test('that is unpublished', async () => {
+				await listPage.createNewCategory()
+
+				await categoryDialog.create({
+					name: categoryName,
+					description: categoryDescription,
+					isPublished: false,
+				})
+
+				const categoryRow = await listPage.categoriesTable.getRow(categoryName)
+				await expect(categoryRow).toBeVisible()
+				await expect(categoryRow.getByRole('switch')).not.toBeChecked()
+			})
 		})
 
 		test('can edit an existing category', async ({
