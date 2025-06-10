@@ -31,11 +31,8 @@ let sectionDescription: string
 let updatedName: string
 let updatedContent: string
 let updatedDescription: string
-
 let categoryName: string
 let categoryDescription: string
-let updatedCategoryName: string
-let updatedCategoryDescription: string
 
 test.describe('About Me Sections', () => {
 	test.describe('CRUD', () => {
@@ -704,11 +701,9 @@ test.describe('Interactions between Sections and Categories', () => {
 
 	test('handles editing a section whose category is no longer published', async ({
 		page,
-		login,
 		insertNewAboutMeCategory,
 		insertNewAboutMe,
 	}) => {
-		const user = await login()
 		const categoryToUnpublish = await insertNewAboutMeCategory({
 			isPublished: true,
 		})
@@ -724,8 +719,11 @@ test.describe('Interactions between Sections and Categories', () => {
 		await listPage.goto()
 
 		// Unpublish the category
-		await listPage.toggleCategoryPublishStatus(categoryToUnpublish.name)
-		await page.waitForTimeout(100) // allow for server action to complete
+		const publishSwitch = await listPage.categoriesTable.getPublishSwitch(
+			categoryToUnpublish.name,
+		)
+		await publishSwitch.click()
+		await expect(publishSwitch).not.toBeChecked()
 
 		await editorPage.gotoEdit(section.id)
 
@@ -742,7 +740,7 @@ test.describe('Interactions between Sections and Categories', () => {
 		await expect(
 			editorPage.getCategoryOption(fallbackCategory.name),
 		).toBeVisible()
-		await editorPage.selectCategory(fallbackCategory.name)
+		await editorPage.selectCategoryOption(fallbackCategory.name)
 
 		// Attempt to save
 		await editorPage.saveButton.click()

@@ -45,9 +45,15 @@ export class DashboardAboutMeEditorPOM extends BasePageEditorPOM<SectionData> {
 		return this.page.getByRole('option', { name })
 	}
 
+	// use this if combobox is already open
+	// helpful when testing that an option is not there before
+	async selectCategoryOption(name: string) {
+		await this.page.getByRole('option', { name }).click()
+	}
+
 	async selectCategory(name: string) {
 		await this.openCategoryDropdown()
-		await this.page.getByRole('option', { name }).click()
+		await this.selectCategoryOption(name)
 	}
 
 	async getSelectedCategoryText() {
