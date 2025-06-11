@@ -193,6 +193,7 @@ model Passkey {
 model SkillCategory {
   id        String   @id @default(cuid())
   name      String   @unique // e.g., "Frontend", "Backend", "DevOps", "Other"
+  description String?
   isPublished Boolean @default(true)
 
   createdAt DateTime @default(now())

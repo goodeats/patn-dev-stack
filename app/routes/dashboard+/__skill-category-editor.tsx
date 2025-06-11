@@ -1,8 +1,8 @@
 import {
-	FormProvider,
+	useForm,
 	getFormProps,
 	getInputProps,
-	useForm,
+	FormProvider,
 } from '@conform-to/react'
 import { getZodConstraint, parseWithZod } from '@conform-to/zod'
 import { Form } from 'react-router'
@@ -17,16 +17,16 @@ import {
 	CheckboxFieldSchema,
 	StringMinMaxLengthSchema,
 } from '#app/utils/zod-helpers.tsx'
-import { DashboardAboutIntent } from './about.index'
+import { DashboardSkillsIntent } from './skills.index'
 
-export const AboutCategoryEditorSchema = z.object({
+export const SkillCategoryEditorSchema = z.object({
 	id: z.string().optional(),
 	name: StringMinMaxLengthSchema(1, 100),
 	description: StringMinMaxLengthSchema(1, 500).optional().nullable(),
 	isPublished: CheckboxFieldSchema.default(false),
 })
 
-export function AboutCategoryEditor({
+export function SkillCategoryEditor({
 	category,
 	actionData,
 	onClose,
@@ -34,7 +34,7 @@ export function AboutCategoryEditor({
 	category?: {
 		id: string
 		name: string
-		description: string | null
+		description?: string | null
 		isPublished: boolean
 	} | null
 	actionData?: { result: any }
@@ -43,15 +43,15 @@ export function AboutCategoryEditor({
 	const isPending = useIsPending()
 
 	const intent = category?.id
-		? DashboardAboutIntent.CATEGORY_UPDATE
-		: DashboardAboutIntent.CATEGORY_CREATE
+		? DashboardSkillsIntent.CATEGORY_UPDATE
+		: DashboardSkillsIntent.CATEGORY_CREATE
 
 	const [form, fields] = useForm({
-		id: 'about-category-editor',
-		constraint: getZodConstraint(AboutCategoryEditorSchema),
+		id: 'skill-category-editor',
+		constraint: getZodConstraint(SkillCategoryEditorSchema),
 		lastResult: actionData?.result,
 		onValidate({ formData }) {
-			return parseWithZod(formData, { schema: AboutCategoryEditorSchema })
+			return parseWithZod(formData, { schema: SkillCategoryEditorSchema })
 		},
 		defaultValue: {
 			...category,
@@ -149,17 +149,16 @@ export function AboutCategoryEditor({
 						<Form method="POST">
 							<input type="hidden" name="id" value={category.id} />
 							<StatusButton
-								form={form.id}
 								type="submit"
 								name="intent"
-								value={DashboardAboutIntent.CATEGORY_DELETE}
+								value={DashboardSkillsIntent.CATEGORY_DELETE}
 								variant="destructive"
 								disabled={isPending}
 								status={isPending ? 'pending' : 'idle'}
 								onClick={(e) => {
 									if (
 										!confirm(
-											'Are you sure you want to delete this category? This will also delete all associated About Me sections.',
+											'Are you sure you want to delete this category? This will also delete all associated skills.',
 										)
 									) {
 										e.preventDefault()

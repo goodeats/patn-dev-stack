@@ -1,13 +1,12 @@
 import {
-	FormProvider,
+	useForm,
 	getFormProps,
 	getInputProps,
-	getTextareaProps,
-	useForm,
+	FormProvider,
 } from '@conform-to/react'
 import { getZodConstraint, parseWithZod } from '@conform-to/zod'
 import { Form } from 'react-router'
-import { z } from 'zod'
+import z from 'zod'
 import { AppContainerContent } from '#app/components/app-container.tsx'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { nonFloatingToolbarClassName } from '#app/components/floating-toolbar.tsx'
@@ -15,7 +14,6 @@ import {
 	ErrorList,
 	Field,
 	SelectField,
-	TextareaField,
 	ToggleField,
 } from '#app/components/forms.tsx'
 import { Button } from '#app/components/ui/button.tsx'
@@ -25,40 +23,38 @@ import {
 	CheckboxFieldSchema,
 	StringMinMaxLengthSchema,
 } from '#app/utils/zod-helpers.tsx'
-import { type Info } from './+types/about.$aboutId_.edit.ts'
-import { DashboardAboutIntent } from './about.index.tsx'
+import { type Info } from './+types/skills.$skillId_.edit.ts'
+import { DashboardSkillsIntent } from './skills.index'
 
-export const AboutEditorSchema = z.object({
+export const SkillEditorSchema = z.object({
 	id: z.string().optional(),
 	name: StringMinMaxLengthSchema(1, 100),
-	content: StringMinMaxLengthSchema(1, 10000),
 	description: StringMinMaxLengthSchema(1, 500).optional().nullable(),
-	aboutMeCategoryId: z.string({ required_error: 'Category is required' }),
+	skillCategoryId: z.string({ required_error: 'Category is required' }),
 	isPublished: CheckboxFieldSchema.default(false),
 })
 
-export function AboutEditor({
-	aboutMe,
+export function SkillEditor({
+	skill,
 	categories,
 	actionData,
 }: {
-	aboutMe?: Info['loaderData']['aboutMe']
+	skill?: Info['loaderData']['skill']
 	categories: Info['loaderData']['categories']
 	actionData?: Info['actionData']
 }) {
 	const isPending = useIsPending()
 
 	const [form, fields] = useForm({
-		id: 'about-editor',
-		constraint: getZodConstraint(AboutEditorSchema),
+		id: 'skill-editor',
+		constraint: getZodConstraint(SkillEditorSchema),
 		lastResult: actionData?.result,
 		onValidate({ formData }) {
-			return parseWithZod(formData, { schema: AboutEditorSchema })
+			return parseWithZod(formData, { schema: SkillEditorSchema })
 		},
 		defaultValue: {
-			...aboutMe,
-			isPublished:
-				aboutMe?.isPublished === undefined ? true : aboutMe.isPublished,
+			...skill,
+			isPublished: skill?.isPublished === undefined ? true : skill.isPublished,
 		},
 		shouldRevalidate: 'onBlur',
 	})
@@ -72,8 +68,8 @@ export function AboutEditor({
 					{...getFormProps(form)}
 				>
 					<button type="submit" className="hidden" />
-					{aboutMe?.id ? (
-						<input type="hidden" name="id" value={aboutMe.id} />
+					{skill?.id ? (
+						<input type="hidden" name="id" value={skill.id} />
 					) : null}
 
 					<div className="flex flex-col gap-1">
@@ -82,32 +78,23 @@ export function AboutEditor({
 							inputProps={{
 								autoFocus: true,
 								...getInputProps(fields.name, { type: 'text' }),
-								placeholder: 'Enter a name for this section',
+								placeholder: 'Enter a name for this skill',
 							}}
 							errors={fields.name.errors}
-						/>
-						<TextareaField
-							labelProps={{ children: 'Content' }}
-							textareaProps={{
-								...getTextareaProps(fields.content),
-								rows: 6,
-								placeholder: 'Enter the content for this section',
-							}}
-							errors={fields.content.errors}
 						/>
 						<Field
 							labelProps={{ children: 'Description (Optional)' }}
 							inputProps={{
 								...getInputProps(fields.description, { type: 'text' }),
-								placeholder: 'Brief description of this section',
+								placeholder: 'Brief description of this skill',
 							}}
 							errors={fields.description.errors}
 						/>
 						<SelectField
 							labelProps={{ children: 'Category' }}
 							selectProps={{
-								name: fields.aboutMeCategoryId.name,
-								defaultValue: fields.aboutMeCategoryId.initialValue,
+								name: fields.skillCategoryId.name,
+								defaultValue: fields.skillCategoryId.initialValue,
 								disabled: isPending,
 								required: true,
 							}}
@@ -115,7 +102,7 @@ export function AboutEditor({
 								value: category.id,
 								label: category.name,
 							}))}
-							errors={fields.aboutMeCategoryId.errors}
+							errors={fields.skillCategoryId.errors}
 							placeholder="Select a category"
 						/>
 
@@ -146,27 +133,27 @@ export function AboutEditor({
 						type="submit"
 						name="intent"
 						value={
-							aboutMe?.id
-								? DashboardAboutIntent.ABOUT_ME_UPDATE
-								: DashboardAboutIntent.ABOUT_ME_CREATE
+							skill?.id
+								? DashboardSkillsIntent.SKILL_UPDATE
+								: DashboardSkillsIntent.SKILL_CREATE
 						}
 						disabled={isPending}
 						status={isPending ? 'pending' : 'idle'}
 					>
-						{aboutMe?.id ? 'Save Changes' : 'Create About Me'}
+						{skill?.id ? 'Save Changes' : 'Create Skill'}
 					</StatusButton>
 
-					{aboutMe?.id ? (
+					{skill?.id ? (
 						<StatusButton
 							form={form.id}
 							type="submit"
 							name="intent"
-							value={DashboardAboutIntent.ABOUT_ME_DELETE}
+							value={DashboardSkillsIntent.SKILL_DELETE}
 							variant="destructive"
 							disabled={isPending}
 							status={isPending ? 'pending' : 'idle'}
 							onClick={(e) => {
-								if (!confirm('Are you sure you want to delete this item?')) {
+								if (!confirm('Are you sure you want to delete this skill?')) {
 									e.preventDefault()
 								}
 							}}
@@ -184,7 +171,7 @@ export function ErrorBoundary() {
 	return (
 		<GeneralErrorBoundary
 			statusHandlers={{
-				404: () => <p>About Me item not found.</p>,
+				404: () => <p>Skill not found.</p>,
 			}}
 		/>
 	)

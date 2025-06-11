@@ -81,25 +81,23 @@ export async function action({ request }: ActionFunctionArgs) {
 		isPublished,
 	} = submission.value
 
+	const aboutMeData = {
+		name,
+		content,
+		description,
+		aboutMeCategoryId,
+		isPublished,
+	}
+
 	const updatedAboutMe = await prisma.aboutMe.upsert({
 		select: { id: true },
 		where: { id: aboutId },
 		create: {
 			id: aboutId,
-			name,
-			content,
-			description,
-			aboutMeCategoryId,
-			isPublished,
 			userId,
+			...aboutMeData,
 		},
-		update: {
-			name,
-			content,
-			description,
-			aboutMeCategoryId,
-			isPublished,
-		},
+		update: aboutMeData,
 	})
 
 	return redirect(`/dashboard/about/${updatedAboutMe.id}`)

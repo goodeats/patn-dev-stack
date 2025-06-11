@@ -45,9 +45,9 @@ import {
 	createToastHeaders,
 	redirectWithToast,
 } from '#app/utils/toast.server.ts'
-import { type Route, type Info } from './+types/about.index.ts'
-import { handleCategoryAction } from './__about-category-editor.server.tsx'
-import { AboutCategoryEditor } from './__about-category-editor.tsx'
+import { type Route, type Info } from './+types/skills.index.ts'
+import { handleCategoryAction } from './__skill-category-editor.server.tsx'
+import { SkillCategoryEditor } from './__skill-category-editor.tsx'
 
 export const handle: SEOHandle = {
 	getSitemapEntries: () => null,
@@ -55,18 +55,17 @@ export const handle: SEOHandle = {
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	const userId = await requireUserId(request)
-	const aboutMeData = await prisma.aboutMe.findMany({
+	const skillsData = await prisma.skill.findMany({
 		where: { userId },
 		select: {
 			id: true,
 			name: true,
-			content: true,
 			description: true,
 			isPublished: true,
 			createdAt: true,
 			updatedAt: true,
 			userId: true,
-			aboutMeCategory: {
+			skillCategory: {
 				select: {
 					id: true,
 					name: true,
@@ -76,7 +75,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		orderBy: { createdAt: 'desc' },
 	})
 
-	const aboutMeCategoryData = await prisma.aboutMeCategory.findMany({
+	const skillCategoryData = await prisma.skillCategory.findMany({
 		select: {
 			id: true,
 			name: true,
@@ -88,17 +87,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		orderBy: { createdAt: 'desc' },
 	})
 
-	return { aboutMeData, aboutMeCategoryData }
+	return data({ skillsData, skillCategoryData })
 }
 
-type AboutMeDataItem = Info['loaderData']['aboutMeData'][number]
-type AboutMeCategoryDataItem = Info['loaderData']['aboutMeCategoryData'][number]
+type SkillDataItem = Info['loaderData']['skillsData'][number]
+type SkillCategoryDataItem = Info['loaderData']['skillCategoryData'][number]
 
-export const DashboardAboutIntent = {
-	ABOUT_ME_DELETE: 'about-me-delete',
-	ABOUT_ME_CREATE: 'about-me-create',
-	ABOUT_ME_UPDATE: 'about-me-update',
-	ABOUT_ME_PUBLISH_TOGGLE: 'about-me-publish-toggle',
+export const DashboardSkillsIntent = {
+	SKILL_CREATE: 'skill-create',
+	SKILL_UPDATE: 'skill-update',
+	SKILL_DELETE: 'skill-delete',
+	SKILL_PUBLISH_TOGGLE: 'skill-publish-toggle',
 	CATEGORY_CREATE: 'category-create',
 	CATEGORY_UPDATE: 'category-update',
 	CATEGORY_DELETE: 'category-delete',
@@ -111,65 +110,62 @@ export async function action(args: ActionFunctionArgs) {
 	const formData = await request.formData()
 	const intent = formData.get('intent')
 
+	console.log(
+		'formData',
+		Array.from(formData.entries()).map(([key, value]) => ({ [key]: value })),
+	)
+
 	switch (intent) {
-		case DashboardAboutIntent.CATEGORY_CREATE:
-		case DashboardAboutIntent.CATEGORY_UPDATE:
-		case DashboardAboutIntent.CATEGORY_DELETE: {
+		case DashboardSkillsIntent.CATEGORY_CREATE:
+		case DashboardSkillsIntent.CATEGORY_UPDATE:
+		case DashboardSkillsIntent.CATEGORY_DELETE:
 			return handleCategoryAction(formData)
-		}
 
-		case DashboardAboutIntent.ABOUT_ME_DELETE: {
-			const aboutId = formData.get('aboutId')
-			invariantResponse(typeof aboutId === 'string', 'About ID is required')
+		case DashboardSkillsIntent.SKILL_DELETE: {
+			const skillId = formData.get('skillId')
+			invariantResponse(typeof skillId === 'string', 'Skill ID is required')
 
-			const deleted = await prisma.aboutMe.delete({
-				where: { id: aboutId, userId },
+			const deleted = await prisma.skill.delete({
+				where: { id: skillId, userId },
 			})
-
 			if (!deleted) {
-				return redirectWithToast('/dashboard/about', {
-					title: 'About Me Section not found',
-					description: 'The about me section was not found.',
+				return redirectWithToast('/dashboard/skills', {
+					title: 'Skill not found',
+					description: 'The skill was not found.',
 				})
 			}
 
 			return data(
-				{ type: 'success', entity: 'aboutMe' },
+				{ type: 'success', entity: 'skill' },
 				{
 					status: 200,
 					headers: await createToastHeaders({
 						title: `${deleted.name} deleted`,
-						description: 'The about me section has been deleted successfully.',
+						description: 'The skill has been deleted successfully.',
 						type: 'success',
 					}),
 				},
 			)
 		}
 
-		case DashboardAboutIntent.ABOUT_ME_PUBLISH_TOGGLE: {
-			const aboutId = formData.get('aboutId')
+		case DashboardSkillsIntent.SKILL_PUBLISH_TOGGLE: {
+			const skillId = formData.get('skillId')
 			const isPublished = formData.get('isPublished') === 'true'
+			invariantResponse(typeof skillId === 'string', 'Skill ID is required')
 
-			invariantResponse(typeof aboutId === 'string', 'About ID is required')
-
-			await prisma.aboutMe.updateMany({
-				where: {
-					id: aboutId,
-					userId,
-				},
-				data: {
-					isPublished,
-				},
+			await prisma.skill.updateMany({
+				where: { id: skillId, userId },
+				data: { isPublished },
 			})
 
-			return {
+			return data({
 				type: 'success',
-				message: 'Publish status updated for About Me section',
-				entity: 'aboutMe',
-			} as const
+				message: 'Publish status updated for skill',
+				entity: 'skill',
+			})
 		}
 
-		case DashboardAboutIntent.CATEGORY_PUBLISH_TOGGLE: {
+		case DashboardSkillsIntent.CATEGORY_PUBLISH_TOGGLE: {
 			const categoryId = formData.get('categoryId')
 			const isPublished = formData.get('isPublished') === 'true'
 			invariantResponse(
@@ -177,15 +173,15 @@ export async function action(args: ActionFunctionArgs) {
 				'Category ID is required',
 			)
 
-			await prisma.aboutMeCategory.update({
+			await prisma.skillCategory.update({
 				where: { id: categoryId },
 				data: { isPublished },
 			})
-			return {
+			return data({
 				type: 'success',
 				message: 'Publish status updated for category',
-				entity: 'aboutMeCategory',
-			} as const
+				entity: 'skillCategory',
+			})
 		}
 
 		default: {
@@ -194,8 +190,8 @@ export async function action(args: ActionFunctionArgs) {
 	}
 }
 
-const aboutMeColumns = (): ColumnDef<AboutMeDataItem>[] => [
-	createDataTableSelectColumn<AboutMeDataItem>(),
+const skillColumns = (): ColumnDef<SkillDataItem>[] => [
+	createDataTableSelectColumn<SkillDataItem>(),
 	{
 		accessorKey: 'name',
 		header: 'Name',
@@ -208,17 +204,10 @@ const aboutMeColumns = (): ColumnDef<AboutMeDataItem>[] => [
 		),
 	},
 	{
-		accessorKey: 'content',
-		header: 'Content',
-		cell: ({ row }) => (
-			<div className="max-w-xs truncate">{row.original.content}</div>
-		),
-	},
-	{
-		accessorKey: 'aboutMeCategory.name',
+		accessorKey: 'skillCategory.name',
 		id: 'categoryName',
 		header: 'Category',
-		cell: ({ row }) => row.original.aboutMeCategory.name,
+		cell: ({ row }) => row.original.skillCategory.name,
 	},
 	{
 		accessorKey: 'createdAt',
@@ -239,35 +228,32 @@ const aboutMeColumns = (): ColumnDef<AboutMeDataItem>[] => [
 		header: 'Published',
 		cell: function IsPublishedCell({ row }) {
 			const fetcher = useFetcher()
-			const aboutMe = row.original
+			const skill = row.original
 			const isOptimisticPublished = fetcher.formData
 				? fetcher.formData.get('isPublished') === 'true'
-				: aboutMe.isPublished
+				: skill.isPublished
 
 			return (
 				<fetcher.Form
 					method="post"
 					className="flex items-center justify-center"
 				>
-					<input type="hidden" name="aboutId" value={aboutMe.id} />
+					<input type="hidden" name="skillId" value={skill.id} />
 					<input
 						type="hidden"
 						name="intent"
-						value={DashboardAboutIntent.ABOUT_ME_PUBLISH_TOGGLE}
+						value={DashboardSkillsIntent.SKILL_PUBLISH_TOGGLE}
 					/>
 					<Switch
 						checked={isOptimisticPublished}
 						onCheckedChange={(checked) => {
 							const formData = new FormData()
-							formData.set(
-								'intent',
-								DashboardAboutIntent.ABOUT_ME_PUBLISH_TOGGLE,
-							)
-							formData.set('aboutId', aboutMe.id)
+							formData.set('intent', DashboardSkillsIntent.SKILL_PUBLISH_TOGGLE)
+							formData.set('skillId', skill.id)
 							formData.set('isPublished', String(checked))
 							void fetcher.submit(formData, { method: 'post' })
 						}}
-						aria-label={`Toggle publish status for ${aboutMe.name}`}
+						aria-label={`Toggle publish status for ${skill.name}`}
 					/>
 				</fetcher.Form>
 			)
@@ -283,7 +269,7 @@ const aboutMeColumns = (): ColumnDef<AboutMeDataItem>[] => [
 						className="data-[state=open]:bg-muted flex size-8 p-0"
 					>
 						<Icon name="dots-horizontal" className="size-4" />
-						<span className="sr-only">Open about section menu</span>
+						<span className="sr-only">Open skill menu</span>
 					</Button>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align="end" className="w-[160px]">
@@ -295,20 +281,16 @@ const aboutMeColumns = (): ColumnDef<AboutMeDataItem>[] => [
 						<Form
 							method="post"
 							onSubmit={(e) => {
-								if (
-									!confirm(
-										'Are you sure you want to delete this About Me section?',
-									)
-								) {
+								if (!confirm('Are you sure you want to delete this skill?')) {
 									e.preventDefault()
 								}
 							}}
 						>
-							<input type="hidden" name="aboutId" value={row.original.id} />
+							<input type="hidden" name="skillId" value={row.original.id} />
 							<button
 								type="submit"
 								name="intent"
-								value={DashboardAboutIntent.ABOUT_ME_DELETE}
+								value={DashboardSkillsIntent.SKILL_DELETE}
 								className="bg-destructive text-destructive-foreground hover:bg-destructive/90 relative flex w-full cursor-default items-center rounded-sm px-2 py-1.5 text-sm transition-colors outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
 							>
 								Delete
@@ -321,10 +303,10 @@ const aboutMeColumns = (): ColumnDef<AboutMeDataItem>[] => [
 	},
 ]
 
-const aboutMeCategoryColumns = (
-	onEditCategory: (category: AboutMeCategoryDataItem) => void,
-): ColumnDef<AboutMeCategoryDataItem>[] => [
-	createDataTableSelectColumn<AboutMeCategoryDataItem>(),
+const skillCategoryColumns = (
+	onEditCategory: (category: SkillCategoryDataItem) => void,
+): ColumnDef<SkillCategoryDataItem>[] => [
+	createDataTableSelectColumn<SkillCategoryDataItem>(),
 	{
 		accessorKey: 'name',
 		header: 'Name',
@@ -378,7 +360,7 @@ const aboutMeCategoryColumns = (
 					<input
 						type="hidden"
 						name="intent"
-						value={DashboardAboutIntent.CATEGORY_PUBLISH_TOGGLE}
+						value={DashboardSkillsIntent.CATEGORY_PUBLISH_TOGGLE}
 					/>
 					<Switch
 						checked={isOptimisticPublished}
@@ -386,7 +368,7 @@ const aboutMeCategoryColumns = (
 							const formData = new FormData()
 							formData.set(
 								'intent',
-								DashboardAboutIntent.CATEGORY_PUBLISH_TOGGLE,
+								DashboardSkillsIntent.CATEGORY_PUBLISH_TOGGLE,
 							)
 							formData.set('categoryId', category.id)
 							formData.set('isPublished', String(checked))
@@ -408,7 +390,7 @@ const aboutMeCategoryColumns = (
 						className="data-[state=open]:bg-muted flex size-8 p-0"
 					>
 						<Icon name="dots-horizontal" className="size-4" />
-						<span className="sr-only">Open about category menu</span>
+						<span className="sr-only">Open skill category menu</span>
 					</Button>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align="end" className="w-[160px]">
@@ -428,7 +410,7 @@ const aboutMeCategoryColumns = (
 							onSubmit={(e) => {
 								if (
 									!confirm(
-										'Are you sure you want to delete this category? This will also delete all associated About Me sections.',
+										'Are you sure you want to delete this category? This will also delete all associated skills.',
 									)
 								) {
 									e.preventDefault()
@@ -439,7 +421,7 @@ const aboutMeCategoryColumns = (
 							<button
 								type="submit"
 								name="intent"
-								value={DashboardAboutIntent.CATEGORY_DELETE}
+								value={DashboardSkillsIntent.CATEGORY_DELETE}
 								className="bg-destructive text-destructive-foreground hover:bg-destructive/90 relative flex w-full cursor-default items-center rounded-sm px-2 py-1.5 text-sm transition-colors outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
 							>
 								Delete
@@ -452,17 +434,17 @@ const aboutMeCategoryColumns = (
 	},
 ]
 
-export default function DashboardAboutIndexRoute({
+export default function DashboardSkillsIndexRoute({
 	loaderData,
 	actionData,
 }: Route.ComponentProps) {
-	const { aboutMeData, aboutMeCategoryData } = loaderData
+	const { skillsData, skillCategoryData } = loaderData
 	const [categoryDialogOpen, setCategoryDialogOpen] = React.useState(false)
 	const [currentCategory, setCurrentCategory] =
-		React.useState<AboutMeCategoryDataItem | null>(null)
+		React.useState<SkillCategoryDataItem | null>(null)
 
 	const handleEditCategory = React.useCallback(
-		(category: AboutMeCategoryDataItem) => {
+		(category: SkillCategoryDataItem) => {
 			setCurrentCategory(category)
 			setCategoryDialogOpen(true)
 		},
@@ -481,9 +463,9 @@ export default function DashboardAboutIndexRoute({
 		}
 	}, [])
 
-	const memoizedAboutMeColumns = React.useMemo(() => aboutMeColumns(), [])
-	const memoizedAboutMeCategoryColumns = React.useMemo(
-		() => aboutMeCategoryColumns(handleEditCategory),
+	const memoizedSkillColumns = React.useMemo(() => skillColumns(), [])
+	const memoizedSkillCategoryColumns = React.useMemo(
+		() => skillCategoryColumns(handleEditCategory),
 		[handleEditCategory],
 	)
 
@@ -494,7 +476,7 @@ export default function DashboardAboutIndexRoute({
 			'type' in actionData &&
 			actionData.type === 'success' &&
 			'entity' in actionData &&
-			actionData.entity === 'aboutMeCategory'
+			actionData.entity === 'skillCategory'
 		) {
 			setCategoryDialogOpen(false)
 			setCurrentCategory(null)
@@ -502,24 +484,24 @@ export default function DashboardAboutIndexRoute({
 	}, [actionData])
 
 	return (
-		<AppContainerContent id="about-me-content" className="container space-y-8">
+		<AppContainerContent id="skills-content" className="container space-y-8">
 			<AppContainerGroup className="px-0">
 				<BackLink label="Back to Dashboard" className="self-start" />
 			</AppContainerGroup>
 
 			<AppContainerGroup className="px-0">
-				<h1 className="text-2xl font-bold">About Me</h1>
+				<h1 className="text-2xl font-bold">Skills</h1>
 			</AppContainerGroup>
 
-			<AppContainerGroup id="about-me-sections" className="px-0">
-				<h1 className="text-xl font-bold">About Me Sections</h1>
+			<AppContainerGroup id="skills-list" className="px-0">
+				<h1 className="text-xl font-bold">Skills List</h1>
 				<DataTable
-					columns={memoizedAboutMeColumns}
-					data={aboutMeData}
+					columns={memoizedSkillColumns}
+					data={skillsData}
 					getRowId={(row) => row.id}
 					toolbarActions={<NewLink />}
 					filterFields={[
-						{ accessorKey: 'content', placeholder: 'Filter content...' },
+						{ accessorKey: 'name', placeholder: 'Filter name...' },
 						{
 							accessorKey: 'categoryName',
 							placeholder: 'Filter category...',
@@ -528,11 +510,11 @@ export default function DashboardAboutIndexRoute({
 				/>
 			</AppContainerGroup>
 
-			<AppContainerGroup id="about-me-categories" className="px-0">
-				<h1 className="text-xl font-bold">About Me Categories</h1>
+			<AppContainerGroup id="skill-categories" className="px-0">
+				<h1 className="text-xl font-bold">Skill Categories</h1>
 				<DataTable
-					columns={memoizedAboutMeCategoryColumns}
-					data={aboutMeCategoryData}
+					columns={memoizedSkillCategoryColumns}
+					data={skillCategoryData}
 					getRowId={(row) => row.id}
 					toolbarActions={
 						<Button onClick={handleCreateCategory}>
@@ -560,7 +542,7 @@ export default function DashboardAboutIndexRoute({
 							{currentCategory?.id ? 'Edit Category' : 'Create Category'}
 						</DialogTitle>
 					</DialogHeader>
-					<AboutCategoryEditor
+					<SkillCategoryEditor
 						category={currentCategory}
 						actionData={
 							actionData && 'result' in actionData ? actionData : undefined
@@ -575,10 +557,10 @@ export default function DashboardAboutIndexRoute({
 
 export const meta = () => {
 	return [
-		{ title: `About Info | Dashboard | ${APP_NAME}` },
+		{ title: `Skills Info | Dashboard | ${APP_NAME}` },
 		{
 			name: 'description',
-			content: `Manage 'About Me' sections and categories in the ${APP_NAME} dashboard.`,
+			content: `Manage skills and categories in the ${APP_NAME} dashboard.`,
 		},
 	]
 }
@@ -587,7 +569,7 @@ export function ErrorBoundary() {
 	return (
 		<GeneralErrorBoundary
 			statusHandlers={{
-				404: () => <p>No About Me sections or categories found.</p>,
+				404: () => <p>No skills or categories found.</p>,
 			}}
 		/>
 	)
