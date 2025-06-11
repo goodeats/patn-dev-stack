@@ -1,0 +1,24 @@
+---
+description:
+globs: *.test.ts
+alwaysApply: false
+---
+Use the following method for selecting and validating the current value of a select field:
+
+```ts
+// select
+await page.getByRole('combobox', { name: 'Category' }).click()
+await page.getByRole('option', { name: categoryToSelect }).click()
+
+// validate
+const categoryValue = await page
+  .getByRole('combobox', { name: 'Category' })
+  .textContent()
+await expect(categoryValue).toBe(category.name)
+
+// for validating errors
+const categoryError = page
+  .getByRole('combobox', { name: 'Category' })
+  .locator('xpath=./following-sibling::div')
+await expect(categoryError).toHaveText('Category is required')
+```
