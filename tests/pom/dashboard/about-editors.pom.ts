@@ -13,20 +13,20 @@ export interface SectionData extends BaseEditorData {
 
 export class DashboardAboutMeEditorPOM extends BasePageEditorPOM<SectionData> {
 	readonly contentInput: Locator
-	readonly categorySelect: Locator
-	readonly publishSwitch: Locator
 	readonly contentError: Locator
+	readonly categorySelect: Locator
 	readonly categoryError: Locator
+	readonly publishSwitch: Locator
 
 	constructor(page: Page) {
 		super(page, 'about-editor', '/dashboard/about')
 		this.contentInput = page.getByLabel('Content')
-		this.categorySelect = page.getByRole('combobox', { name: 'Category' })
-		this.publishSwitch = page.getByRole('switch', { name: 'Published' })
 		this.contentError = page.locator('#about-editor-content-error')
+		this.categorySelect = page.getByRole('combobox', { name: 'Category' })
 		this.categoryError = this.categorySelect.locator(
 			'xpath=./following-sibling::div',
 		)
+		this.publishSwitch = page.getByRole('switch', { name: 'Published' })
 	}
 
 	override async gotoNew(): Promise<void> {

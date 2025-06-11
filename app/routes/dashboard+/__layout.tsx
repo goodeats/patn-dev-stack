@@ -146,8 +146,8 @@ const navMain: DynamicNavLink[] = [
 		icon: IconFolder,
 	},
 	{
-		label: 'Contact',
-		to: 'contact',
+		label: 'Contacts',
+		to: 'contacts',
 		icon: IconAddressBook,
 	},
 ]
