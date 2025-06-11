@@ -137,14 +137,19 @@ function HeroSection() {
 					data-paragraph
 					className="text-muted-foreground mt-6 text-xl md:text-2xl lg:text-3xl"
 				>
-					A Modern Full-Stack Web Developer
+					A Full-Stack Web Developer
 				</p>
 				<p
 					data-paragraph
 					className="text-muted-foreground mt-4 max-w-2xl text-lg md:text-xl"
 				>
-					I craft intuitive user experiences, interactive layouts, and APIs to
-					transform ideas into web applications.
+					I design and engineer web applications that deliver real value.
+				</p>
+				<p
+					data-paragraph
+					className="text-muted-foreground mt-4 max-w-2xl text-lg md:text-xl"
+				>
+					Fast. Scalable. Built to grow.
 				</p>
 				<div className="mt-10 flex flex-wrap items-center justify-center gap-4">
 					<ScrollNavLinks
