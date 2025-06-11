@@ -17,9 +17,9 @@ let editorPage: DashboardProjectEditorPOM
 let initialProject: ProjectPlaywright
 let projectToDelete: ProjectPlaywright
 
-let projectName: string
+let projectTitle: string
 let projectDescription: string
-let updatedName: string
+let updatedTitle: string
 let updatedDescription: string
 
 test.describe('Projects', () => {
@@ -32,7 +32,7 @@ test.describe('Projects', () => {
 	test.describe('CRUD', () => {
 		test.describe('can create a new project', () => {
 			test.beforeEach(async () => {
-				projectName = faker.lorem.words(3)
+				projectTitle = faker.lorem.words(3)
 				projectDescription = faker.lorem.sentence()
 				await listPage.goto()
 			})
@@ -41,15 +41,18 @@ test.describe('Projects', () => {
 				const editorPage = await listPage.createNewProject()
 
 				await editorPage.create({
-					title: projectName,
+					title: projectTitle,
 					description: projectDescription,
 					isPublished: true,
 				})
 
 				await detailsPage.verifyProjectDetails({
-					name: projectName,
+					title: projectTitle,
 					description: projectDescription,
 					status: 'Published',
+					skillsCount: 0,
+					createdAt: testDateToday,
+					updatedAt: testDateToday,
 				})
 			})
 
@@ -57,15 +60,18 @@ test.describe('Projects', () => {
 				const editorPage = await listPage.createNewProject()
 
 				await editorPage.create({
-					title: projectName,
+					title: projectTitle,
 					description: projectDescription,
 					isPublished: false,
 				})
 
 				await detailsPage.verifyProjectDetails({
-					name: projectName,
+					title: projectTitle,
 					description: projectDescription,
 					status: 'Draft',
+					skillsCount: 0,
+					createdAt: testDateToday,
+					updatedAt: testDateToday,
 				})
 			})
 		})
@@ -76,29 +82,32 @@ test.describe('Projects', () => {
 				initialProject = await insertNewProject({
 					userId: user.id,
 				})
-				updatedName = faker.lorem.words(3)
+				updatedTitle = faker.lorem.words(3)
 				updatedDescription = faker.lorem.sentence()
 			})
 
 			test('from the list page', async ({ page }) => {
 				await listPage.goto()
 				const editorPage = await listPage.projectsTable.edit(
-					initialProject.name,
+					initialProject.title,
 				)
 
-				await expect(editorPage.nameInput).toHaveValue(initialProject.name)
+				await expect(editorPage.titleInput).toHaveValue(initialProject.title)
 
 				await editorPage.update({
-					name: updatedName,
+					title: updatedTitle,
 					description: updatedDescription,
 				})
 
 				await expect(page).toHaveURL(`/dashboard/projects/${initialProject.id}`)
 
 				await detailsPage.verifyProjectDetails({
-					name: updatedName,
+					title: updatedTitle,
 					description: updatedDescription,
 					status: 'Published',
+					skillsCount: 0,
+					createdAt: testDateToday,
+					updatedAt: testDateToday,
 				})
 			})
 
@@ -106,22 +115,25 @@ test.describe('Projects', () => {
 				await detailsPage.goto(initialProject.id)
 				const editorPage = await detailsPage.edit()
 
-				await expect(editorPage.nameInput).toHaveValue(initialProject.name)
+				await expect(editorPage.titleInput).toHaveValue(initialProject.title)
 
-				const updatedName = faker.lorem.words(3)
+				const updatedTitle = faker.lorem.words(3)
 				const updatedDescription = faker.lorem.sentence()
 
 				await editorPage.update({
-					name: updatedName,
+					title: updatedTitle,
 					description: updatedDescription,
 				})
 
 				await expect(page).toHaveURL(`/dashboard/projects/${initialProject.id}`)
 
 				await detailsPage.verifyProjectDetails({
-					name: updatedName,
+					title: updatedTitle,
 					description: updatedDescription,
 					status: 'Published',
+					skillsCount: 0,
+					createdAt: testDateToday,
+					updatedAt: testDateToday,
 				})
 			})
 		})
@@ -138,7 +150,7 @@ test.describe('Projects', () => {
 			test('from the list page', async ({ page }) => {
 				await listPage.goto()
 				const publishSwitch = await listPage.projectsTable.getSwitch(
-					initialProject.name,
+					initialProject.title,
 				)
 
 				// Initially published
@@ -151,18 +163,18 @@ test.describe('Projects', () => {
 				// Verify persisted after reload
 				await page.reload()
 				await expect(
-					await listPage.projectsTable.getSwitch(initialProject.name),
+					await listPage.projectsTable.getSwitch(initialProject.title),
 				).not.toBeChecked()
 
 				// Toggle back to published
-				await listPage.projectsTable.toggleSwitch(initialProject.name)
+				await listPage.projectsTable.toggleSwitch(initialProject.title)
 				await expect(
-					await listPage.projectsTable.getSwitch(initialProject.name),
+					await listPage.projectsTable.getSwitch(initialProject.title),
 				).toBeChecked()
 
 				await page.reload()
 				await expect(
-					await listPage.projectsTable.getSwitch(initialProject.name),
+					await listPage.projectsTable.getSwitch(initialProject.title),
 				).toBeChecked()
 			})
 
@@ -178,9 +190,12 @@ test.describe('Projects', () => {
 				await editorPage.saveButton.click()
 
 				await detailsPage.verifyProjectDetails({
-					name: initialProject.name,
+					title: initialProject.title,
 					description: initialProject.description ?? '',
 					status: 'Draft',
+					skillsCount: 0,
+					createdAt: testDateToday,
+					updatedAt: testDateToday,
 				})
 
 				// Toggle back to published
@@ -189,9 +204,12 @@ test.describe('Projects', () => {
 				await editorPage.saveButton.click()
 
 				await detailsPage.verifyProjectDetails({
-					name: initialProject.name,
+					title: initialProject.title,
 					description: initialProject.description ?? '',
 					status: 'Published',
+					skillsCount: 0,
+					createdAt: testDateToday,
+					updatedAt: testDateToday,
 				})
 			})
 		})
@@ -204,12 +222,12 @@ test.describe('Projects', () => {
 
 			test('can be deleted from the list page', async ({ page }) => {
 				await listPage.goto()
-				await expect(page.getByText(projectToDelete.name)).toBeVisible()
+				await expect(page.getByText(projectToDelete.title)).toBeVisible()
 
-				await listPage.projectsTable.delete(projectToDelete.name)
+				await listPage.projectsTable.delete(projectToDelete.title)
 
 				await expect(await listPage.projectsSectionContainer).toBeVisible()
-				await expect(page.getByText(projectToDelete.name)).not.toBeVisible()
+				await expect(page.getByText(projectToDelete.title)).not.toBeVisible()
 			})
 
 			test('can be deleted from its edit page', async ({ page }) => {
@@ -219,7 +237,7 @@ test.describe('Projects', () => {
 
 				await editorPage.delete()
 
-				await expect(page.getByText(projectToDelete.name)).not.toBeVisible()
+				await expect(page.getByText(projectToDelete.title)).not.toBeVisible()
 			})
 		})
 
@@ -240,8 +258,8 @@ test.describe('Projects', () => {
 			const projectsTable = listPage.projectsTable
 			await projectsTable.verifyHeaders()
 			await projectsTable.verifyData([
-				[project2.name, testDateToday, testDateToday],
-				[project1.name, testDateToday, testDateToday],
+				[project2.title, testDateToday, testDateToday],
+				[project1.title, testDateToday, testDateToday],
 			])
 		})
 	})
@@ -257,9 +275,9 @@ test.describe('Projects', () => {
 			await editorPage.createButton.click()
 			await editorPage.verifyRequiredErrors()
 
-			await editorPage.nameInput.fill(faker.lorem.words(2))
+			await editorPage.titleInput.fill(faker.lorem.words(2))
 			await editorPage.createButton.click()
-			await editorPage.verifyRequiredNameError(false)
+			await editorPage.verifyRequiredTitleError(false)
 
 			// Successfully create with valid data
 			await editorPage.createButton.click()
@@ -276,16 +294,16 @@ test.describe('Projects', () => {
 			await detailsPage.edit()
 
 			// Test editing validation
-			await editorPage.clearName()
+			await editorPage.clearTitle()
 			await editorPage.saveButton.click()
-			await expect(editorPage.nameError).toBeVisible()
+			await expect(editorPage.titleError).toBeVisible()
 
-			await editorPage.nameInput.fill(faker.lorem.words(2)) // Restore name
+			await editorPage.titleInput.fill(faker.lorem.words(2)) // Restore name
 		})
 	})
 
 	test.describe('List Page Functionality', () => {
-		test('filters projects by name', async ({
+		test('filters projects by title', async ({
 			page,
 			login,
 			insertNewProject,
@@ -293,18 +311,18 @@ test.describe('Projects', () => {
 			const user = await login()
 			const project1 = await insertNewProject({
 				userId: user.id,
-				name: `FilterProject1 ${faker.lorem.word()}`,
+				title: `FilterProject1 ${faker.lorem.word()}`,
 			})
 			const project2 = await insertNewProject({
 				userId: user.id,
-				name: `FilterProject2 ${faker.lorem.word()}`,
+				title: `FilterProject2 ${faker.lorem.word()}`,
 			})
 
 			await listPage.goto()
 
-			await listPage.projectsTable.filterByName(project1.name)
-			await expect(page.getByText(project1.name)).toBeVisible()
-			await expect(page.getByText(project2.name)).not.toBeVisible()
+			await listPage.projectsTable.filterByTitle(project1.title)
+			await expect(page.getByText(project1.title)).toBeVisible()
+			await expect(page.getByText(project2.title)).not.toBeVisible()
 		})
 	})
 })
