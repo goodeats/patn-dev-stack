@@ -1,16 +1,29 @@
-import { useForm, getFormProps, getInputProps  } from '@conform-to/react'
+import {
+	useForm,
+	getFormProps,
+	getInputProps,
+	FormProvider,
+} from '@conform-to/react'
 import { getZodConstraint, parseWithZod } from '@conform-to/zod'
-import { useFetcher, Form } from 'react-router'
+import { Form } from 'react-router'
 import { z } from 'zod'
-import { ErrorList, Field, TextareaField } from '#app/components/forms.tsx'
+import { AppContainerContent } from '#app/components/app-container.tsx'
+import { nonFloatingToolbarClassName } from '#app/components/floating-toolbar.tsx'
+import { ErrorList, Field, ToggleField } from '#app/components/forms.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
-import { DashboardSkillIntent } from './__skill-category-editor.server.tsx'
+import { cn, useIsPending } from '#app/utils/misc.tsx'
+import {
+	CheckboxFieldSchema,
+	StringMinMaxLengthSchema,
+} from '#app/utils/zod-helpers.tsx'
+import { DashboardSkillsIntent } from './skills.index'
 
-const SkillCategoryEditorSchema = z.object({
+export const SkillCategoryEditorSchema = z.object({
 	id: z.string().optional(),
-	name: z.string({ required_error: 'Name is required' }).min(1),
-	description: z.string().optional(),
+	name: StringMinMaxLengthSchema(1, 100),
+	description: StringMinMaxLengthSchema(1, 500).optional().nullable(),
+	isPublished: CheckboxFieldSchema.default(false),
 })
 
 export function SkillCategoryEditor({
@@ -18,14 +31,17 @@ export function SkillCategoryEditor({
 	actionData,
 	onClose,
 }: {
-	category?: { id: string; name: string; description?: string | null } | null
-	actionData?: {
-		result: any
-		status: string
-	}
-	onClose: () => void
+	category?: {
+		id: string
+		name: string
+		description?: string | null
+		isPublished: boolean
+	} | null
+	actionData?: { result: any }
+	onClose?: () => void
 }) {
-	const fetcher = useFetcher()
+	const isPending = useIsPending()
+
 	const [form, fields] = useForm({
 		id: 'skill-category-editor',
 		constraint: getZodConstraint(SkillCategoryEditorSchema),
@@ -35,54 +51,119 @@ export function SkillCategoryEditor({
 		},
 		defaultValue: {
 			...category,
-			description: category?.description ?? '',
+			isPublished:
+				category?.isPublished === undefined ? true : category.isPublished,
 		},
 		shouldRevalidate: 'onBlur',
 	})
 
 	return (
-		<fetcher.Form method="POST" {...getFormProps(form)} className="space-y-4">
-			<input type="hidden" name="id" value={category?.id} />
-
-			<Field
-				labelProps={{ children: 'Name' }}
-				inputProps={{
-					...getInputProps(fields.name, { type: 'text' }),
-					autoComplete: 'name',
-				}}
-				errors={fields.name.errors}
-			/>
-
-			<TextareaField
-				labelProps={{ children: 'Description' }}
-				textareaProps={{
-					...getInputProps(fields.description, {
-						type: 'text',
-					}),
-					autoComplete: 'description',
-				}}
-				errors={fields.description.errors}
-			/>
-
-			<ErrorList errors={form.errors} id={form.errorId} />
-
-			<div className="flex justify-end gap-4">
-				<Button type="button" variant="ghost" onClick={onClose}>
-					Cancel
-				</Button>
-				<StatusButton
-					type="submit"
-					name="intent"
-					value={
-						category?.id
-							? DashboardSkillIntent.CATEGORY_UPDATE
-							: DashboardSkillIntent.CATEGORY_CREATE
-					}
-					status={fetcher.state !== 'idle' ? 'pending' : 'idle'}
+		<AppContainerContent>
+			<FormProvider context={form.context}>
+				<Form
+					method="POST"
+					className="flex flex-col gap-y-4 overflow-x-hidden overflow-y-auto px-2"
+					{...getFormProps(form)}
 				>
-					{category?.id ? 'Update' : 'Create'}
-				</StatusButton>
-			</div>
-		</fetcher.Form>
+					<button type="submit" className="hidden" />
+					{category?.id ? (
+						<input type="hidden" name="id" value={category.id} />
+					) : null}
+
+					<div className="flex flex-col gap-1">
+						<Field
+							labelProps={{ children: 'Name' }}
+							inputProps={{
+								autoFocus: true,
+								...getInputProps(fields.name, { type: 'text' }),
+								placeholder: 'Enter category name',
+							}}
+							errors={fields.name.errors}
+						/>
+
+						<Field
+							labelProps={{ children: 'Description (Optional)' }}
+							inputProps={{
+								...getInputProps(fields.description, { type: 'text' }),
+								placeholder: 'Brief description of this category',
+							}}
+							errors={fields.description.errors}
+						/>
+
+						<ToggleField
+							labelProps={{ children: 'Published' }}
+							buttonProps={{
+								...getInputProps(fields.isPublished, { type: 'checkbox' }),
+								name: fields.isPublished.name,
+								form: form.id,
+								value: 'true',
+								defaultChecked: Boolean(fields.isPublished.initialValue),
+								disabled: isPending,
+							}}
+							errors={fields.isPublished.errors}
+							variant="switch"
+						/>
+					</div>
+
+					<ErrorList id={form.errorId} errors={form.errors} />
+				</Form>
+
+				<div className={cn(nonFloatingToolbarClassName, 'mt-10')}>
+					{onClose && (
+						<Button
+							type="button"
+							variant="outline"
+							onClick={onClose}
+							disabled={isPending}
+						>
+							Cancel
+						</Button>
+					)}
+					<Button
+						variant="destructive"
+						{...form.reset.getButtonProps()}
+						disabled={isPending}
+					>
+						Reset
+					</Button>
+					<StatusButton
+						form={form.id}
+						type="submit"
+						name="intent"
+						value={
+							category?.id
+								? DashboardSkillsIntent.CATEGORY_UPDATE
+								: DashboardSkillsIntent.CATEGORY_CREATE
+						}
+						disabled={isPending}
+						status={isPending ? 'pending' : 'idle'}
+					>
+						{category?.id ? 'Save Changes' : 'Create Category'}
+					</StatusButton>
+					{category?.id ? (
+						<StatusButton
+							form={form.id}
+							type="submit"
+							name="intent"
+							value={DashboardSkillsIntent.CATEGORY_DELETE}
+							variant="destructive"
+							disabled={isPending}
+							status={isPending ? 'pending' : 'idle'}
+							onClick={(e) => {
+								if (
+									!confirm(
+										'Are you sure you want to delete this category? This will also delete all associated skills.',
+									)
+								) {
+									e.preventDefault()
+								}
+							}}
+						>
+							Delete
+						</StatusButton>
+					) : null}
+				</div>
+			</FormProvider>
+		</AppContainerContent>
 	)
 }
