@@ -1,134 +1,121 @@
 import { faker } from '@faker-js/faker'
 import {
-	type AboutMeCategoryPlaywright,
-	type AboutMePlaywright,
+	type SkillCategoryPlaywright,
+	type SkillPlaywright,
 	type UserPlaywright,
 	expect,
 	test,
 	testDateToday,
 } from '#tests/playwright-utils.ts'
-import { DashboardAboutDetailsPOM } from '../pom/dashboard/about-details-page.pom'
+import { DashboardSkillDetailsPOM } from '../pom/dashboard/skill-details-page.pom'
 import {
-	DashboardAboutCategoryEditorDialogPOM,
-	DashboardAboutMeEditorPOM,
-} from '../pom/dashboard/about-editors.pom'
-import { DashboardAboutListPOM } from '../pom/dashboard/about-list-page.pom'
+	DashboardSkillCategoryEditorDialogPOM,
+	DashboardSkillEditorPOM,
+} from '../pom/dashboard/skill-editors.pom'
+import { DashboardSkillListPOM } from '../pom/dashboard/skill-list-page.pom'
 
 let user: UserPlaywright
-let listPage: DashboardAboutListPOM
-let detailsPage: DashboardAboutDetailsPOM
-let editorPage: DashboardAboutMeEditorPOM
-let categoryDialog: DashboardAboutCategoryEditorDialogPOM
-let category: AboutMeCategoryPlaywright
-let category2: AboutMeCategoryPlaywright
-let categoryToDelete: AboutMeCategoryPlaywright
-let initialSection: AboutMePlaywright
-let sectionToDelete: AboutMePlaywright
+let listPage: DashboardSkillListPOM
+let detailsPage: DashboardSkillDetailsPOM
+let editorPage: DashboardSkillEditorPOM
+let categoryDialog: DashboardSkillCategoryEditorDialogPOM
+let category: SkillCategoryPlaywright
+let category2: SkillCategoryPlaywright
+let categoryToDelete: SkillCategoryPlaywright
+let initialSkill: SkillPlaywright
+let skillToDelete: SkillPlaywright
 
-let sectionName: string
-let sectionContent: string
-let sectionDescription: string
+let skillName: string
+let skillDescription: string
 let updatedName: string
-let updatedContent: string
 let updatedDescription: string
 let categoryName: string
 let categoryDescription: string
 
-test.describe('About Me Sections', () => {
+test.describe('Skills', () => {
 	test.beforeEach(async ({ page, login }) => {
 		await login()
-		listPage = new DashboardAboutListPOM(page)
-		detailsPage = new DashboardAboutDetailsPOM(page)
+		listPage = new DashboardSkillListPOM(page)
+		detailsPage = new DashboardSkillDetailsPOM(page)
 	})
 
 	test.describe('CRUD', () => {
-		test.describe('can create a new section', () => {
-			test.beforeEach(async ({ insertNewAboutMeCategory }) => {
-				category = await insertNewAboutMeCategory()
-				sectionName = faker.lorem.words(3)
-				sectionContent = faker.lorem.paragraph()
-				sectionDescription = faker.lorem.sentence()
+		test.describe('can create a new skill', () => {
+			test.beforeEach(async ({ insertNewSkillCategory }) => {
+				category = await insertNewSkillCategory()
+				skillName = faker.lorem.words(3)
+				skillDescription = faker.lorem.sentence()
 				await listPage.goto()
 			})
 
 			test('that is published', async () => {
-				const editorPage = await listPage.createNewSection()
+				const editorPage = await listPage.createNewSkill()
 
 				await editorPage.create({
-					name: sectionName,
-					content: sectionContent,
-					description: sectionDescription,
+					name: skillName,
+					description: skillDescription,
 					categoryName: category.name,
 					isPublished: true,
 				})
 
-				await detailsPage.verifyAboutDetails({
-					name: sectionName,
-					content: sectionContent,
-					description: sectionDescription,
+				await detailsPage.verifySkillDetails({
+					name: skillName,
+					description: skillDescription,
 					category: category.name,
 					status: 'Published',
 				})
 			})
 
 			test('that is unpublished', async () => {
-				const editorPage = await listPage.createNewSection()
+				const editorPage = await listPage.createNewSkill()
 
 				await editorPage.create({
-					name: sectionName,
-					content: sectionContent,
-					description: sectionDescription,
+					name: skillName,
+					description: skillDescription,
 					categoryName: category.name,
 					isPublished: false,
 				})
 
-				await detailsPage.verifyAboutDetails({
-					name: sectionName,
-					content: sectionContent,
-					description: sectionDescription,
+				await detailsPage.verifySkillDetails({
+					name: skillName,
+					description: skillDescription,
 					category: category.name,
 					status: 'Draft',
 				})
 			})
 		})
 
-		test.describe('can edit an existing section', () => {
+		test.describe('can edit an existing skill', () => {
 			test.beforeEach(
-				async ({ login, insertNewAboutMeCategory, insertNewAboutMe }) => {
+				async ({ login, insertNewSkillCategory, insertNewSkill }) => {
 					user = await login()
-					category = await insertNewAboutMeCategory()
-					category2 = await insertNewAboutMeCategory()
-					initialSection = await insertNewAboutMe({
+					category = await insertNewSkillCategory()
+					category2 = await insertNewSkillCategory()
+					initialSkill = await insertNewSkill({
 						userId: user.id,
-						aboutMeCategoryId: category.id,
+						skillCategoryId: category.id,
 					})
 					updatedName = faker.lorem.words(3)
-					updatedContent = faker.lorem.paragraph()
 					updatedDescription = faker.lorem.sentence()
 				},
 			)
 
 			test('from the list page', async ({ page }) => {
 				await listPage.goto()
-				const editorPage = await listPage.aboutMeTable.edit(initialSection.name)
+				const editorPage = await listPage.skillsTable.edit(initialSkill.name)
 
-				await expect(editorPage.nameInput).toHaveValue(initialSection.name)
-				await expect(editorPage.contentInput).toHaveValue(
-					initialSection.content,
-				)
+				await expect(editorPage.nameInput).toHaveValue(initialSkill.name)
 
 				await editorPage.update({
 					name: updatedName,
-					content: updatedContent,
 					description: updatedDescription,
 					categoryName: category2.name,
 				})
 
-				await expect(page).toHaveURL(`/dashboard/about/${initialSection.id}`)
+				await expect(page).toHaveURL(`/dashboard/skills/${initialSkill.id}`)
 
-				await detailsPage.verifyAboutDetails({
+				await detailsPage.verifySkillDetails({
 					name: updatedName,
-					content: updatedContent,
 					description: updatedDescription,
 					category: category2.name,
 					status: 'Published',
@@ -136,30 +123,24 @@ test.describe('About Me Sections', () => {
 			})
 
 			test('from the details page', async ({ page }) => {
-				await detailsPage.goto(initialSection.id)
+				await detailsPage.goto(initialSkill.id)
 				const editorPage = await detailsPage.edit()
 
-				await expect(editorPage.nameInput).toHaveValue(initialSection.name)
-				await expect(editorPage.contentInput).toHaveValue(
-					initialSection.content,
-				)
+				await expect(editorPage.nameInput).toHaveValue(initialSkill.name)
 
 				const updatedName = faker.lorem.words(3)
-				const updatedContent = faker.lorem.paragraph()
 				const updatedDescription = faker.lorem.sentence()
 
 				await editorPage.update({
 					name: updatedName,
-					content: updatedContent,
 					description: updatedDescription,
 					categoryName: category2.name,
 				})
 
-				await expect(page).toHaveURL(`/dashboard/about/${initialSection.id}`)
+				await expect(page).toHaveURL(`/dashboard/skills/${initialSkill.id}`)
 
-				await detailsPage.verifyAboutDetails({
+				await detailsPage.verifySkillDetails({
 					name: updatedName,
-					content: updatedContent,
 					description: updatedDescription,
 					category: category2.name,
 					status: 'Published',
@@ -169,12 +150,12 @@ test.describe('About Me Sections', () => {
 
 		test.describe('can toggle publish status', () => {
 			test.beforeEach(
-				async ({ login, insertNewAboutMeCategory, insertNewAboutMe }) => {
+				async ({ login, insertNewSkillCategory, insertNewSkill }) => {
 					user = await login()
-					category = await insertNewAboutMeCategory()
-					initialSection = await insertNewAboutMe({
+					category = await insertNewSkillCategory()
+					initialSkill = await insertNewSkill({
 						userId: user.id,
-						aboutMeCategoryId: category.id,
+						skillCategoryId: category.id,
 						isPublished: true,
 					})
 				},
@@ -182,8 +163,8 @@ test.describe('About Me Sections', () => {
 
 			test('from the list page', async ({ page }) => {
 				await listPage.goto()
-				const publishSwitch = await listPage.aboutMeTable.getSwitch(
-					initialSection.name,
+				const publishSwitch = await listPage.skillsTable.getSwitch(
+					initialSkill.name,
 				)
 
 				// Initially published
@@ -196,23 +177,23 @@ test.describe('About Me Sections', () => {
 				// Verify persisted after reload
 				await page.reload()
 				await expect(
-					await listPage.aboutMeTable.getSwitch(initialSection.name),
+					await listPage.skillsTable.getSwitch(initialSkill.name),
 				).not.toBeChecked()
 
 				// Toggle back to published
-				await listPage.aboutMeTable.toggleSwitch(initialSection.name)
+				await listPage.skillsTable.toggleSwitch(initialSkill.name)
 				await expect(
-					await listPage.aboutMeTable.getSwitch(initialSection.name),
+					await listPage.skillsTable.getSwitch(initialSkill.name),
 				).toBeChecked()
 
 				await page.reload()
 				await expect(
-					await listPage.aboutMeTable.getSwitch(initialSection.name),
+					await listPage.skillsTable.getSwitch(initialSkill.name),
 				).toBeChecked()
 			})
 
 			test('from the edit page', async ({}) => {
-				await detailsPage.goto(initialSection.id)
+				await detailsPage.goto(initialSkill.id)
 				const editorPage = await detailsPage.edit()
 
 				// Initially published
@@ -222,10 +203,9 @@ test.describe('About Me Sections', () => {
 				await editorPage.publishSwitch.click()
 				await editorPage.saveButton.click()
 
-				await detailsPage.verifyAboutDetails({
-					name: initialSection.name,
-					content: initialSection.content,
-					description: initialSection.description ?? '',
+				await detailsPage.verifySkillDetails({
+					name: initialSkill.name,
+					description: initialSkill.description ?? '',
 					category: category.name,
 					status: 'Draft',
 				})
@@ -235,79 +215,66 @@ test.describe('About Me Sections', () => {
 				await editorPage.publishSwitch.click()
 				await editorPage.saveButton.click()
 
-				await detailsPage.verifyAboutDetails({
-					name: initialSection.name,
-					content: initialSection.content,
-					description: initialSection.description ?? '',
+				await detailsPage.verifySkillDetails({
+					name: initialSkill.name,
+					description: initialSkill.description ?? '',
 					category: category.name,
 					status: 'Published',
 				})
 			})
 		})
 
-		test.describe('can delete an existing section', () => {
-			test.beforeEach(async ({ login, insertNewAboutMe }) => {
+		test.describe('can delete an existing skill', () => {
+			test.beforeEach(async ({ login, insertNewSkill }) => {
 				user = await login()
-				sectionToDelete = await insertNewAboutMe({ userId: user.id })
+				skillToDelete = await insertNewSkill({ userId: user.id })
 			})
 
 			test('can be deleted from the list page', async ({ page }) => {
 				await listPage.goto()
-				await expect(page.getByText(sectionToDelete.name)).toBeVisible()
+				await expect(page.getByText(skillToDelete.name)).toBeVisible()
 
-				await listPage.aboutMeTable.delete(sectionToDelete.name)
+				await listPage.skillsTable.delete(skillToDelete.name)
 
-				await expect(await listPage.aboutMeSectionContainer).toBeVisible()
-				await expect(page.getByText(sectionToDelete.name)).not.toBeVisible()
+				await expect(await listPage.skillsSectionContainer).toBeVisible()
+				await expect(page.getByText(skillToDelete.name)).not.toBeVisible()
 			})
 
 			test('can be deleted from its edit page', async ({ page }) => {
-				const editorPage = new DashboardAboutMeEditorPOM(page)
+				const editorPage = new DashboardSkillEditorPOM(page)
 
-				await editorPage.gotoEdit(sectionToDelete.id)
+				await editorPage.gotoEdit(skillToDelete.id)
 
 				await editorPage.delete()
 
-				await expect(page.getByText(sectionToDelete.name)).not.toBeVisible()
+				await expect(page.getByText(skillToDelete.name)).not.toBeVisible()
 			})
 		})
 
-		test('displays existing sections and categories on the main page', async ({
+		test('displays existing skills and categories on the main page', async ({
 			login,
-			insertNewAboutMe,
-			insertNewAboutMeCategory,
+			insertNewSkill,
+			insertNewSkillCategory,
 		}) => {
 			const user = await login()
-			const category1 = await insertNewAboutMeCategory()
-			const category2 = await insertNewAboutMeCategory()
-			const aboutMe1 = await insertNewAboutMe({
+			const category1 = await insertNewSkillCategory()
+			const category2 = await insertNewSkillCategory()
+			const skill1 = await insertNewSkill({
 				userId: user.id,
-				aboutMeCategoryId: category1.id,
+				skillCategoryId: category1.id,
 			})
-			const aboutMe2 = await insertNewAboutMe({
+			const skill2 = await insertNewSkill({
 				userId: user.id,
-				aboutMeCategoryId: category2.id,
+				skillCategoryId: category2.id,
 			})
 
 			await listPage.goto()
 
-			const aboutMeTable = listPage.aboutMeTable
-			await aboutMeTable.verifyHeaders()
-			await aboutMeTable.verifyData([
-				[
-					aboutMe2.name,
-					aboutMe2.content,
-					category2.name,
-					testDateToday,
-					testDateToday,
-				],
-				[
-					aboutMe1.name,
-					aboutMe1.content,
-					category1.name,
-					testDateToday,
-					testDateToday,
-				],
+			const skillsTable = listPage.skillsTable
+			await skillsTable.verifyHeaders()
+			await skillsTable.verifyData([
+				[skill2.name, category2.name, testDateToday, testDateToday],
+				[skill1.name, category1.name, testDateToday, testDateToday],
 			])
 
 			const categoriesTable = listPage.categoriesTable
@@ -330,15 +297,15 @@ test.describe('About Me Sections', () => {
 	})
 
 	test.describe('Validation', () => {
-		test.beforeEach(async ({ page, login, insertNewAboutMeCategory }) => {
+		test.beforeEach(async ({ page, login, insertNewSkillCategory }) => {
 			user = await login({ name: faker.person.firstName() })
-			category = await insertNewAboutMeCategory({
+			category = await insertNewSkillCategory({
 				name: 'Professional',
 			})
-			editorPage = new DashboardAboutMeEditorPOM(page)
+			editorPage = new DashboardSkillEditorPOM(page)
 		})
 
-		test('validates About Me Section creation', async ({ page }) => {
+		test('validates Skill creation', async ({ page }) => {
 			await editorPage.gotoNew()
 			await editorPage.createButton.click()
 			await editorPage.verifyRequiredErrors()
@@ -346,31 +313,22 @@ test.describe('About Me Sections', () => {
 			await editorPage.nameInput.fill(faker.lorem.words(2))
 			await editorPage.createButton.click()
 			await editorPage.verifyRequiredNameError(false)
-			await editorPage.verifyRequiredContentError()
-			await editorPage.verifyRequiredCategoryError()
-
-			await editorPage.contentInput.fill(faker.lorem.paragraph())
-			await editorPage.createButton.click()
-			await editorPage.verifyRequiredContentError(false)
 			await editorPage.verifyRequiredCategoryError()
 
 			// Successfully create with valid data
 			await editorPage.selectCategory(category.name)
 			await editorPage.createButton.click()
-			await expect(page).toHaveURL(/\/dashboard\/about\/[a-zA-Z0-9]+$/)
+			await expect(page).toHaveURL(/\/dashboard\/skills\/[a-zA-Z0-9]+$/)
 		})
 
-		test('validates About Me Section editing', async ({
-			page,
-			insertNewAboutMe,
-		}) => {
-			const section = await insertNewAboutMe({
+		test('validates Skill editing', async ({ page, insertNewSkill }) => {
+			const skill = await insertNewSkill({
 				userId: user.id,
-				aboutMeCategoryId: category.id,
+				skillCategoryId: category.id,
 			})
-			const detailsPage = new DashboardAboutDetailsPOM(page)
+			const detailsPage = new DashboardSkillDetailsPOM(page)
 
-			await detailsPage.goto(section.id)
+			await detailsPage.goto(skill.id)
 			await detailsPage.edit()
 
 			// Test editing validation
@@ -379,59 +337,50 @@ test.describe('About Me Sections', () => {
 			await expect(editorPage.nameError).toBeVisible()
 
 			await editorPage.nameInput.fill(faker.lorem.words(2)) // Restore name
-			await editorPage.clearContent()
-			await editorPage.saveButton.click()
-			await expect(editorPage.contentError).toBeVisible()
 		})
 	})
 
 	test.describe('List Page Functionality', () => {
-		test('filters sections by content and category', async ({
+		test('filters skills by category', async ({
 			page,
 			login,
-			insertNewAboutMeCategory,
-			insertNewAboutMe,
+			insertNewSkillCategory,
+			insertNewSkill,
 		}) => {
 			const user = await login()
-			const category1 = await insertNewAboutMeCategory()
-			const category2 = await insertNewAboutMeCategory()
-			const section1 = await insertNewAboutMe({
+			const category1 = await insertNewSkillCategory()
+			const category2 = await insertNewSkillCategory()
+			const skill1 = await insertNewSkill({
 				userId: user.id,
-				aboutMeCategoryId: category1.id,
+				skillCategoryId: category1.id,
 			})
-			const section2 = await insertNewAboutMe({
+			const skill2 = await insertNewSkill({
 				userId: user.id,
-				aboutMeCategoryId: category2.id,
+				skillCategoryId: category2.id,
 			})
 
 			await listPage.goto()
 
-			// Filter by content
-			await listPage.aboutMeTable.filterByContent(section1.content.slice(0, 10))
-			await expect(page.getByText(section1.name)).toBeVisible()
-			await expect(page.getByText(section2.name)).not.toBeVisible()
-
 			// Filter by category
-			await listPage.aboutMeTable.clearContentFilter()
-			await listPage.aboutMeTable.filterByCategory(category2.name)
-			await expect(page.getByText(section1.name)).not.toBeVisible()
-			await expect(page.getByText(section2.name)).toBeVisible()
+			await listPage.skillsTable.filterByCategory(category2.name)
+			await expect(page.getByText(skill1.name)).not.toBeVisible()
+			await expect(page.getByText(skill2.name)).toBeVisible()
 		})
 	})
 })
 
-test.describe('About Me Categories', () => {
+test.describe('Skill Categories', () => {
 	test.beforeEach(async ({ page, login }) => {
 		await login()
-		listPage = new DashboardAboutListPOM(page)
-		categoryDialog = new DashboardAboutCategoryEditorDialogPOM(page)
+		listPage = new DashboardSkillListPOM(page)
+		categoryDialog = new DashboardSkillCategoryEditorDialogPOM(page)
 		await listPage.goto()
 	})
 
 	test.describe('CRUD (via Dialog)', () => {
 		test.beforeEach(async ({ page, login }) => {
 			await login()
-			listPage = new DashboardAboutListPOM(page)
+			listPage = new DashboardSkillListPOM(page)
 		})
 
 		test.describe('can create a new category', () => {
@@ -470,9 +419,9 @@ test.describe('About Me Categories', () => {
 		})
 
 		test('can edit an existing category', async ({
-			insertNewAboutMeCategory,
+			insertNewSkillCategory,
 		}) => {
-			const category = await insertNewAboutMeCategory()
+			const category = await insertNewSkillCategory()
 			const initialCategoryName = category.name
 			await listPage.goto() // needed to see the new category
 			await listPage.categoriesTable.edit(category.name)
@@ -496,8 +445,8 @@ test.describe('About Me Categories', () => {
 		})
 
 		test.describe('can toggle publish status', () => {
-			test.beforeEach(async ({ insertNewAboutMeCategory }) => {
-				category = await insertNewAboutMeCategory({
+			test.beforeEach(async ({ insertNewSkillCategory }) => {
+				category = await insertNewSkillCategory({
 					isPublished: true,
 				})
 				await listPage.goto()
@@ -564,8 +513,8 @@ test.describe('About Me Categories', () => {
 			})
 		})
 
-		test('can be deleted', async ({ insertNewAboutMeCategory }) => {
-			const category = await insertNewAboutMeCategory()
+		test('can be deleted', async ({ insertNewSkillCategory }) => {
+			const category = await insertNewSkillCategory()
 			await listPage.goto()
 			await listPage.categoriesTable.delete(category.name)
 
@@ -587,9 +536,9 @@ test.describe('About Me Categories', () => {
 		})
 
 		test('validates the required name field on editing', async ({
-			insertNewAboutMeCategory,
+			insertNewSkillCategory,
 		}) => {
-			const category = await insertNewAboutMeCategory()
+			const category = await insertNewSkillCategory()
 			await listPage.goto()
 			await listPage.categoriesTable.edit(category.name)
 
@@ -607,13 +556,13 @@ test.describe('About Me Categories', () => {
 	test.describe('List Page Functionality', () => {
 		test('filters categories by name and description', async ({
 			page,
-			insertNewAboutMeCategory,
+			insertNewSkillCategory,
 		}) => {
-			const cat1 = await insertNewAboutMeCategory({
+			const cat1 = await insertNewSkillCategory({
 				name: `FilterCat1 ${faker.lorem.word()}`,
 				description: `UniqueDesc1 ${faker.string.uuid()}`,
 			})
-			const cat2 = await insertNewAboutMeCategory({
+			const cat2 = await insertNewSkillCategory({
 				name: `FilterCat2 ${faker.lorem.word()}`,
 				description: `UniqueDesc2 ${faker.string.uuid()}`,
 			})
@@ -633,9 +582,9 @@ test.describe('About Me Categories', () => {
 
 	test('can open category dialog by clicking name', async ({
 		page,
-		insertNewAboutMeCategory,
+		insertNewSkillCategory,
 	}) => {
-		const category = await insertNewAboutMeCategory()
+		const category = await insertNewSkillCategory()
 		await listPage.goto()
 
 		// Use the new clickName method from DialogDriven mixin
@@ -654,25 +603,25 @@ test.describe('About Me Categories', () => {
 	})
 })
 
-test.describe('Interactions between Sections and Categories', () => {
+test.describe('Interactions between Skills and Categories', () => {
 	test.beforeEach(async ({ page, login }) => {
 		user = await login()
-		listPage = new DashboardAboutListPOM(page)
+		listPage = new DashboardSkillListPOM(page)
 	})
 
-	test('deleting a category also deletes its associated sections', async ({
-		insertNewAboutMeCategory,
-		insertNewAboutMe,
+	test('deleting a category also deletes its associated skills', async ({
+		insertNewSkillCategory,
+		insertNewSkill,
 	}) => {
-		categoryToDelete = await insertNewAboutMeCategory()
-		sectionToDelete = await insertNewAboutMe({
+		categoryToDelete = await insertNewSkillCategory()
+		skillToDelete = await insertNewSkill({
 			userId: user.id,
-			aboutMeCategoryId: categoryToDelete.id,
+			skillCategoryId: categoryToDelete.id,
 		})
 
 		await listPage.goto()
-		const sectionRow = await listPage.aboutMeTable.getRow(sectionToDelete.name)
-		await expect(sectionRow).toBeVisible()
+		const skillRow = await listPage.skillsTable.getRow(skillToDelete.name)
+		await expect(skillRow).toBeVisible()
 		const categoryRow = await listPage.categoriesTable.getRow(
 			categoryToDelete.name,
 		)
@@ -681,28 +630,28 @@ test.describe('Interactions between Sections and Categories', () => {
 		await listPage.categoriesTable.delete(categoryToDelete.name)
 
 		await expect(categoryRow).not.toBeVisible()
-		await expect(sectionRow).not.toBeVisible()
+		await expect(skillRow).not.toBeVisible()
 	})
 
-	test('non-published categories are not available for selection in the section editor', async ({
+	test('non-published categories are not available for selection in the skill editor', async ({
 		page,
-		insertNewAboutMeCategory,
-		insertNewAboutMe,
+		insertNewSkillCategory,
+		insertNewSkill,
 	}) => {
-		const publishedCat = await insertNewAboutMeCategory({ isPublished: true })
-		const unpublishedCat = await insertNewAboutMeCategory({
+		const publishedCat = await insertNewSkillCategory({ isPublished: true })
+		const unpublishedCat = await insertNewSkillCategory({
 			isPublished: false,
 		})
-		const sectionWithPublishedCat = await insertNewAboutMe({
+		const skillWithPublishedCat = await insertNewSkill({
 			userId: user.id,
-			aboutMeCategoryId: publishedCat.id,
+			skillCategoryId: publishedCat.id,
 		})
-		const editorPage = new DashboardAboutMeEditorPOM(page)
+		const editorPage = new DashboardSkillEditorPOM(page)
 
 		await listPage.goto()
 
-		// Test on 'new section' page
-		await listPage.gotoNewSection()
+		// Test on 'new skill' page
+		await listPage.gotoNewSkill()
 		await editorPage.openCategoryDropdown()
 		await expect(editorPage.getCategoryOption(publishedCat.name)).toBeVisible()
 		await expect(
@@ -710,8 +659,8 @@ test.describe('Interactions between Sections and Categories', () => {
 		).not.toBeVisible()
 		await page.keyboard.press('Escape')
 
-		// Test on 'edit section' page
-		await editorPage.gotoEdit(sectionWithPublishedCat.id)
+		// Test on 'edit skill' page
+		await editorPage.gotoEdit(skillWithPublishedCat.id)
 		await editorPage.openCategoryDropdown()
 		await expect(editorPage.getCategoryOption(publishedCat.name)).toBeVisible()
 		await expect(
@@ -719,22 +668,22 @@ test.describe('Interactions between Sections and Categories', () => {
 		).not.toBeVisible()
 	})
 
-	test('handles editing a section whose category is no longer published', async ({
+	test('handles editing a skill whose category is no longer published', async ({
 		page,
-		insertNewAboutMeCategory,
-		insertNewAboutMe,
+		insertNewSkillCategory,
+		insertNewSkill,
 	}) => {
-		const categoryToUnpublish = await insertNewAboutMeCategory({
+		const categoryToUnpublish = await insertNewSkillCategory({
 			isPublished: true,
 		})
-		const fallbackCategory = await insertNewAboutMeCategory({
+		const fallbackCategory = await insertNewSkillCategory({
 			isPublished: true,
 		})
-		const section = await insertNewAboutMe({
+		const skill = await insertNewSkill({
 			userId: user.id,
-			aboutMeCategoryId: categoryToUnpublish.id,
+			skillCategoryId: categoryToUnpublish.id,
 		})
-		const editorPage = new DashboardAboutMeEditorPOM(page)
+		const editorPage = new DashboardSkillEditorPOM(page)
 
 		await listPage.goto()
 
@@ -745,7 +694,7 @@ test.describe('Interactions between Sections and Categories', () => {
 		)
 		await expect(publishSwitch).not.toBeChecked()
 
-		await editorPage.gotoEdit(section.id)
+		await editorPage.gotoEdit(skill.id)
 
 		// The unpublished category should not be selected anymore
 		const categoryValue = await editorPage.getSelectedCategoryText()
@@ -766,7 +715,7 @@ test.describe('Interactions between Sections and Categories', () => {
 		await editorPage.saveButton.click()
 
 		// Assert save is successful and category is updated
-		await expect(page).toHaveURL(`/dashboard/about/${section.id}`)
+		await expect(page).toHaveURL(`/dashboard/skills/${skill.id}`)
 		await expect(page.getByText(fallbackCategory.name)).toBeVisible()
 	})
 })

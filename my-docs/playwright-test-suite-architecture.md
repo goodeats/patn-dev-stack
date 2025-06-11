@@ -160,3 +160,47 @@ await expect(categoryError).toHaveText('Category is required')
 By adhering to this structure, we ensure our test suite remains maintainable, readable, and scalable for years to come.
 
 Golden Rules Applied 🫡
+
+---
+
+## Test Data Setup for Models
+
+To ensure reliable and isolated E2E tests, this codebase uses model-specific test setup helpers and Playwright fixtures for preparing and cleaning up test data.
+
+### Model Setup Helpers
+
+- All model setup helpers are defined in `tests/models/` (e.g., `about-test-setup.ts`, `user-test-setup.ts`).
+- Each helper provides functions like `getOrInsertAboutMe`, `getOrInsertAboutMeCategory`, and `createAboutMeData` for generating and inserting test data using Prisma.
+
+### Playwright Fixtures for Test Data
+
+- The helpers are exposed as Playwright fixtures in `tests/playwright-utils.ts`.
+- Example fixtures:
+  - `insertNewAboutMeCategory(options)`
+  - `insertNewAboutMe(options)`
+  - `insertNewUser(options)`
+- These fixtures:
+  - Insert the required test data before the test runs.
+  - Automatically clean up (delete) the data after the test completes.
+
+#### Example Usage in a Test
+
+```ts
+test('can create and display an About Me section', async ({ insertNewUser, insertNewAboutMeCategory, insertNewAboutMe, page }) => {
+  const user = await insertNewUser()
+  const category = await insertNewAboutMeCategory({ name: 'Professional' })
+  const aboutMe = await insertNewAboutMe({ userId: user.id, aboutMeCategoryId: category.id })
+
+  await page.goto('/dashboard/about')
+  await expect(page.getByText(aboutMe.name)).toBeVisible()
+})
+```
+
+- The fixtures ensure that each test runs with its own isolated data, and no leftover data pollutes other tests.
+
+#### Reference
+
+- Model setup helpers: `tests/models/`
+- Playwright fixtures: `tests/playwright-utils.ts`
+
+Golden Rules Applied 🫡

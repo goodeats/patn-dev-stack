@@ -19,6 +19,14 @@ import {
 	getOrInsertAboutMe,
 } from './models/about-test-setup.ts'
 import {
+	type CreateSkillCategoryOptions,
+	type SkillPlaywright,
+	type CreateSkillOptions,
+	type SkillCategoryPlaywright,
+	getOrInsertSkillCategory,
+	getOrInsertSkill,
+} from './models/skill-test-setup.ts'
+import {
 	getOrInsertUser,
 	type GetOrInsertUserOptions,
 	type UserPlaywright,
@@ -35,6 +43,10 @@ export const test = base.extend<{
 		options?: CreateAboutMeCategoryOptions,
 	): Promise<AboutMeCategoryPlaywright>
 	insertNewAboutMe(options: CreateAboutMeOptions): Promise<AboutMePlaywright>
+	insertNewSkillCategory(
+		options?: CreateSkillCategoryOptions,
+	): Promise<SkillCategoryPlaywright>
+	insertNewSkill(options: CreateSkillOptions): Promise<SkillPlaywright>
 }>({
 	insertNewUser: async ({}, use) => {
 		let userId: string | undefined = undefined
@@ -122,6 +134,30 @@ export const test = base.extend<{
 		})
 		if (aboutMeId) {
 			await prisma.aboutMe.delete({ where: { id: aboutMeId } }).catch(() => {})
+		}
+	},
+	insertNewSkillCategory: async ({}, use) => {
+		let categoryId: string | undefined = undefined
+		await use(async (options) => {
+			const category = await getOrInsertSkillCategory(options)
+			categoryId = category.id
+			return category
+		})
+		if (categoryId) {
+			await prisma.skillCategory
+				.delete({ where: { id: categoryId } })
+				.catch(() => {})
+		}
+	},
+	insertNewSkill: async ({}, use) => {
+		let skillId: string | undefined = undefined
+		await use(async (options) => {
+			const skill = await getOrInsertSkill(options)
+			skillId = skill.id
+			return skill
+		})
+		if (skillId) {
+			await prisma.skill.delete({ where: { id: skillId } }).catch(() => {})
 		}
 	},
 })

@@ -493,8 +493,8 @@ export default function DashboardSkillsIndexRoute({
 				<h1 className="text-2xl font-bold">Skills</h1>
 			</AppContainerGroup>
 
-			<AppContainerGroup id="skills-sections" className="px-0">
-				<h1 className="text-xl font-bold">Skills</h1>
+			<AppContainerGroup id="skills-list" className="px-0">
+				<h1 className="text-xl font-bold">Skills List</h1>
 				<DataTable
 					columns={memoizedSkillColumns}
 					data={skillsData}

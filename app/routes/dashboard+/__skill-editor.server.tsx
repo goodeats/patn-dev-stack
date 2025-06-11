@@ -14,7 +14,7 @@ export async function action({ request }: ActionFunctionArgs) {
 	const intent = formData.get('intent')
 
 	if (intent === DashboardSkillsIntent.SKILL_DELETE) {
-		const skillId = formData.get('skillId')
+		const skillId = formData.get('id')
 		invariantResponse(typeof skillId === 'string', 'Skill ID is required')
 
 		const deleted = await prisma.skill.delete({
