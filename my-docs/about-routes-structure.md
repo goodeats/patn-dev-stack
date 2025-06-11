@@ -2,6 +2,64 @@
 
 This document describes the organization and relationships of the About Me dashboard feature in the codebase.
 
+# AboutMe & AboutMeCategory: Data Model and Route Integration
+
+## Data Model Relationship
+
+In the Prisma schema, the relationship between `AboutMe` and `AboutMeCategory` is defined as a classic one-to-many association:
+
+- **AboutMeCategory** (the category) can have many **AboutMe** (sections).
+- Each **AboutMe** section belongs to exactly one **AboutMeCategory**.
+
+**Prisma Schema Excerpt:**
+```prisma
+model AboutMeCategory {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  // ...
+  aboutMes  AboutMe[]
+}
+
+model AboutMe {
+  id                 String   @id @default(cuid())
+  // ...
+  aboutMeCategoryId  String
+  aboutMeCategory    AboutMeCategory @relation(fields: [aboutMeCategoryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+```
+- The `aboutMeCategoryId` foreign key on `AboutMe` enforces this link.
+- The `aboutMes` field on `AboutMeCategory` provides access to all sections in that category.
+
+## How This Relation Is Applied in the Dashboard Routes
+
+- **Listing:**
+  The main dashboard (`about.index.tsx`) fetches and displays all AboutMe sections, grouped or filtered by their associated category. This enables users to see which sections belong to which categories at a glance.
+
+- **Filtering:**
+  The AboutMe sections table supports filtering by category. This is implemented by querying AboutMe records with a specific `aboutMeCategoryId`, leveraging the Prisma relation.
+
+- **Details & Editing:**
+  - The details page (`about.$aboutId.tsx`) displays the category name for each AboutMe section by accessing the related `aboutMeCategory`.
+  - The editor form (`__about-editor.tsx`) allows users to select a category for a section. When editing, the current category is pre-selected, and on save, the `aboutMeCategoryId` is updated.
+
+- **Category CRUD:**
+  - Creating or editing a category (via the dialog in `about.index.tsx`) updates the available categories for all AboutMe sections.
+  - Deleting a category will cascade and affect all associated AboutMe sections, as enforced by the Prisma relation.
+
+## Example: Data Flow
+
+- When a user creates or edits an AboutMe section, the form includes a dropdown of all available AboutMeCategories.
+- On submission, the selected category's ID is saved as `aboutMeCategoryId` in the AboutMe record.
+- When displaying a section, the UI joins the AboutMe record with its AboutMeCategory to show the category name.
+
+**Summary Table:**
+
+| AboutMe Field         | AboutMeCategory Field | Usage in UI/Routes                |
+|----------------------|----------------------|-----------------------------------|
+| aboutMeCategoryId    | id                   | Foreign key for relation          |
+| aboutMeCategory.name | name                 | Displayed in details/list/editor  |
+| aboutMeCategory      | aboutMes             | Used for grouping/filtering       |
+
 ---
 
 ## Route File Overview
@@ -164,7 +222,7 @@ switch (intent) {
 </EntityDetailsCard>
 ```
 
-#### Summary Table
+#### Details Page Summary Table
 
 | Component              | Purpose/Usage                                                                 |
 |------------------------|-------------------------------------------------------------------------------|
@@ -218,7 +276,7 @@ flowchart TD
     A1[about.index.tsx] -- open dialog --> C1[__about-category-editor.tsx]
     A2[about.new.tsx] -- render --> B1[__about-editor.tsx]
     A3[about.$aboutId_.edit.tsx] -- render --> B1
-    A4[about.$aboutId.tsx] -- display --> [Details View]
+    A4[about.$aboutId.tsx] -- display --> D1[Details View]
   end
 
   subgraph Server
@@ -263,7 +321,3 @@ flowchart TD
 
 - All About Me section and category CRUD operations are handled via forms and server actions, not client-side state.
 - The structure supports easy extension for new features (e.g., more fields, validation, or additional routes).
-
----
-
-Golden Rules Applied 🫡
