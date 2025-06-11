@@ -76,25 +76,41 @@ export class DashboardContactEditorPOM extends BasePageEditorPOM<ContactData> {
 		return isPublished
 	}
 
-	async verifyRequiredTextError(isVisible: boolean = true) {
+	async clearText(): Promise<void> {
+		await this.textInput.clear()
+	}
+
+	async verifyRequiredTextError(isVisible: boolean = true): Promise<void> {
 		await expect(this.textError.getByText('Required')).toBeVisible({
 			visible: isVisible,
 		})
 	}
 
-	async verifyRequiredLabelError(isVisible: boolean = true) {
+	async clearLabel(): Promise<void> {
+		await this.labelInput.clear()
+	}
+
+	async verifyRequiredLabelError(isVisible: boolean = true): Promise<void> {
 		await expect(this.labelError.getByText('Required')).toBeVisible({
 			visible: isVisible,
 		})
 	}
 
-	async verifyRequiredHrefError(isVisible: boolean = true) {
+	async clearHref(): Promise<void> {
+		await this.hrefInput.clear()
+	}
+
+	async verifyRequiredHrefError(isVisible: boolean = true): Promise<void> {
 		await expect(this.hrefError.getByText('Required')).toBeVisible({
 			visible: isVisible,
 		})
 	}
 
-	async verifyRequiredIconError(isVisible: boolean = true) {
+	async clearIcon(): Promise<void> {
+		await this.iconInput.clear()
+	}
+
+	async verifyRequiredIconError(isVisible: boolean = true): Promise<void> {
 		await expect(this.iconError.getByText('Required')).toBeVisible({
 			visible: isVisible,
 		})

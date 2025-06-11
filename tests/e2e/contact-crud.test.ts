@@ -301,10 +301,22 @@ test.describe('Contacts', () => {
 			await editorPage.textInput.fill(faker.lorem.words(2))
 			await editorPage.createButton.click()
 			await editorPage.verifyRequiredTextError(false)
+			await editorPage.verifyRequiredLabelError()
 			await editorPage.verifyRequiredHrefError()
+			await editorPage.verifyRequiredIconError()
 
-			// Successfully create with valid data
+			await editorPage.labelInput.fill(faker.lorem.words(2))
+			await editorPage.createButton.click()
+			await editorPage.verifyRequiredLabelError(false)
+			await editorPage.verifyRequiredHrefError()
+			await editorPage.verifyRequiredIconError()
+
 			await editorPage.hrefInput.fill(faker.internet.url())
+			await editorPage.createButton.click()
+			await editorPage.verifyRequiredHrefError(false)
+			await editorPage.verifyRequiredIconError()
+
+			await editorPage.iconInput.fill(faker.lorem.words(2))
 			await editorPage.createButton.click()
 			await expect(page).toHaveURL(/\/dashboard\/contacts\/[a-zA-Z0-9]+$/)
 		})
@@ -319,9 +331,19 @@ test.describe('Contacts', () => {
 			// Test editing validation
 			await editorPage.clearText()
 			await editorPage.saveButton.click()
-			await expect(editorPage.textError).toBeVisible()
+			await editorPage.verifyRequiredTextError()
 
-			await editorPage.textInput.fill(faker.lorem.words(2)) // Restore text
+			await editorPage.clearHref()
+			await editorPage.saveButton.click()
+			await editorPage.verifyRequiredHrefError()
+
+			await editorPage.clearLabel()
+			await editorPage.saveButton.click()
+			await editorPage.verifyRequiredLabelError()
+
+			await editorPage.clearIcon()
+			await editorPage.saveButton.click()
+			await editorPage.verifyRequiredIconError()
 		})
 	})
 
@@ -339,14 +361,22 @@ test.describe('Contacts', () => {
 
 			// Filter by text
 			await listPage.contactsTable.filterByName(contact2.text)
-			await expect(page.getByText(contact1.text)).not.toBeVisible()
-			await expect(page.getByText(contact2.text)).toBeVisible()
+			await expect(
+				page.getByRole('link', { name: contact1.text }),
+			).not.toBeVisible()
+			await expect(
+				page.getByRole('link', { name: contact2.text }),
+			).toBeVisible()
 
 			// Filter by URL
 			await listPage.contactsTable.clearNameFilter()
 			await listPage.contactsTable.filterByUrl(contact1.href)
-			await expect(page.getByText(contact2.text)).not.toBeVisible()
-			await expect(page.getByText(contact1.text)).toBeVisible()
+			await expect(
+				page.getByRole('link', { name: contact2.text }),
+			).not.toBeVisible()
+			await expect(
+				page.getByRole('link', { name: contact1.text }),
+			).toBeVisible()
 		})
 	})
 })
