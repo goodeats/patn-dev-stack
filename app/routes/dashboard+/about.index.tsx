@@ -162,21 +162,6 @@ export async function action(args: ActionFunctionArgs) {
 			} as const
 		}
 
-		case DashboardAboutIntent.CATEGORY_DELETE: {
-			const categoryId = formData.get('categoryId')
-			invariantResponse(
-				typeof categoryId === 'string',
-				'Category ID is required',
-			)
-
-			await prisma.aboutMeCategory.delete({
-				where: {
-					id: categoryId,
-				},
-			})
-			return { type: 'success', entity: 'aboutMeCategory' } as const
-		}
-
 		case DashboardAboutIntent.CATEGORY_PUBLISH_TOGGLE: {
 			const categoryId = formData.get('categoryId')
 			const isPublished = formData.get('isPublished') === 'true'
