@@ -30,6 +30,50 @@ app/routes/dashboard+/
 - **Data Loading:** Loader fetches all sections and categories.
 - **Actions:** Handles category CRUD via `handleCategoryAction` (imported from `__about-category-editor.server.tsx`).
 
+#### Data Table Features
+
+The About Me dashboard list page displays two data tables:
+
+- **About Me Sections Table**
+- **About Me Categories Table**
+
+Both tables are built with the following interactive features:
+
+##### About Me Sections Table
+
+- **Filtering:**
+  - By content
+  - By category
+- **Switch Form:**
+  - Toggle published status for each section using a switch component. This submits a form to update the status immediately.
+- **Menu-Driven Actions:**
+  - Edit: Navigates to the edit page for the selected section.
+  - Delete: Submits a form to delete the section, with a confirmation prompt.
+- **Row Link:**
+  - The section name is a link to the details page for that section.
+
+##### About Me Categories Table
+
+- **Filtering:**
+  - By name
+  - By description
+- **Switch Form:**
+  - Toggle published status for each category using a switch component. This submits a form to update the status immediately.
+- **Menu-Driven Actions:**
+  - Edit: Opens a dialog for editing the selected category.
+  - Delete: Submits a form to delete the category, with a confirmation prompt.
+- **Dialog-Driven Editing:**
+  - Creating or editing a category opens a modal dialog with the category editor form.
+
+##### Data Table Features Summary
+
+| Table                    | Filtering Fields         | Switch (Publish) | Menu Actions (Edit/Delete) | Edit Method         |
+|-------------------------|-------------------------|------------------|---------------------------|---------------------|
+| About Me Sections       | Content, Category       | Yes              | Edit (link), Delete       | Edit page           |
+| About Me Categories     | Name, Description       | Yes              | Edit (dialog), Delete     | Dialog (modal form) |
+
+These features provide a rich, interactive experience for managing both About Me sections and their categories directly from the dashboard list page.
+
 ---
 
 ### 2. Create Page: `about.new.tsx`
