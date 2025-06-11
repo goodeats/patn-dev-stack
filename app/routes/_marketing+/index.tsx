@@ -246,7 +246,7 @@ function ProjectCard({
 	return (
 		<MarketingCard
 			title={title}
-			description={description}
+			description={description ?? ''}
 			className="text-left"
 		>
 			<CardContent className="flex-1">

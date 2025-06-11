@@ -9,7 +9,7 @@ import { prisma } from '#app/utils/db.server.ts'
 export type ProjectPlaywright = {
 	id: string
 	title: string
-	description: string
+	description: string | null
 	isPublished: boolean
 	liveDemoUrl?: string | null
 	sourceCodeUrl?: string | null

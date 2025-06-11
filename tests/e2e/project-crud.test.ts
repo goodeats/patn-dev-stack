@@ -153,6 +153,9 @@ test.describe('Projects', () => {
 				await editorPage.update({
 					title: updatedTitle,
 					description: updatedDescription,
+					liveDemoUrl: updatedLiveDemoUrl,
+					sourceCodeUrl: updatedSourceCodeUrl,
+					comments: updatedComments,
 				})
 
 				await expect(page).toHaveURL(`/dashboard/projects/${initialProject.id}`)
