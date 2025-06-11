@@ -1,18 +1,29 @@
-import { useForm, getFormProps, getInputProps } from '@conform-to/react'
+import {
+	useForm,
+	getFormProps,
+	getInputProps,
+	FormProvider,
+} from '@conform-to/react'
 import { getZodConstraint, parseWithZod } from '@conform-to/zod'
-import { useActionData, useFetcher, Form } from 'react-router'
+import { Form } from 'react-router'
 import z from 'zod'
+import { AppContainerContent } from '#app/components/app-container.tsx'
+import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
+import { nonFloatingToolbarClassName } from '#app/components/floating-toolbar.tsx'
 import {
 	ErrorList,
 	Field,
 	SelectField,
-	TextareaField,
+	ToggleField,
 } from '#app/components/forms.tsx'
+import { Button } from '#app/components/ui/button.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
+import { cn, useIsPending } from '#app/utils/misc.tsx'
 import {
 	CheckboxFieldSchema,
 	StringMinMaxLengthSchema,
 } from '#app/utils/zod-helpers.tsx'
+import { type Info } from './+types/skills.$skillId_.edit.ts'
 import { DashboardSkillsIntent } from './skills.index'
 
 export const SkillEditorSchema = z.object({
@@ -28,81 +39,140 @@ export function SkillEditor({
 	categories,
 	actionData,
 }: {
-	skill?: {
-		id: string
-		name: string
-		description?: string | null
-		skillCategoryId: string
-		isPublished: boolean
-	} | null
-	categories: { id: string; name: string }[]
-	actionData?: {
-		result: any
-		status: string
-	}
+	skill?: Info['loaderData']['skill']
+	categories: Info['loaderData']['categories']
+	actionData?: Info['actionData']
 }) {
-	const fetcher = useFetcher()
+	const isPending = useIsPending()
+
 	const [form, fields] = useForm({
 		id: 'skill-editor',
 		constraint: getZodConstraint(SkillEditorSchema),
-		lastResult: actionData?.status === 'error' ? actionData.result : undefined,
+		lastResult: actionData?.result,
 		onValidate({ formData }) {
 			return parseWithZod(formData, { schema: SkillEditorSchema })
 		},
 		defaultValue: {
 			...skill,
-			description: skill?.description ?? '',
+			isPublished: skill?.isPublished === undefined ? true : skill.isPublished,
 		},
+		shouldRevalidate: 'onBlur',
 	})
 
 	return (
-		<fetcher.Form method="POST" {...getFormProps(form)} className="space-y-4">
-			<input type="hidden" name="id" value={skill?.id} />
-			<Field
-				labelProps={{ children: 'Name' }}
-				inputProps={{
-					...getInputProps(fields.name, { type: 'text' }),
-					autoComplete: 'name',
-				}}
-				errors={fields.name.errors}
-			/>
-			<TextareaField
-				labelProps={{ children: 'Description' }}
-				textareaProps={{
-					...getInputProps(fields.description, {
-						type: 'text',
-					}),
-					autoComplete: 'description',
-				}}
-				errors={fields.description.errors}
-			/>
-			<SelectField
-				labelProps={{ children: 'Category' }}
-				selectProps={{
-					...getInputProps(fields.skillCategoryId, { type: 'text' }),
-					defaultValue: skill?.skillCategoryId,
-				}}
-				options={categories.map((c) => ({ label: c.name, value: c.id }))}
-				errors={fields.skillCategoryId.errors}
-			/>
-
-			<ErrorList errors={form.errors} id={form.errorId} />
-
-			<div className="flex justify-end gap-4">
-				<StatusButton
-					type="submit"
-					name="intent"
-					value={
-						skill?.id
-							? DashboardSkillIntent.SKILL_UPDATE
-							: DashboardSkillIntent.SKILL_CREATE
-					}
-					status={fetcher.state !== 'idle' ? 'pending' : 'idle'}
-					className="w-full"
+		<AppContainerContent>
+			<FormProvider context={form.context}>
+				<Form
+					method="POST"
+					className="flex flex-col gap-y-4 overflow-x-hidden overflow-y-auto px-2"
+					{...getFormProps(form)}
 				>
-					{skill?.id ? 'Update Skill' : 'Create Skill'}
-				</StatusButton>
-			</div>
-		</fetcher.Form>
+					<button type="submit" className="hidden" />
+					{skill?.id ? (
+						<input type="hidden" name="id" value={skill.id} />
+					) : null}
+
+					<div className="flex flex-col gap-1">
+						<Field
+							labelProps={{ children: 'Name' }}
+							inputProps={{
+								autoFocus: true,
+								...getInputProps(fields.name, { type: 'text' }),
+								placeholder: 'Enter a name for this skill',
+							}}
+							errors={fields.name.errors}
+						/>
+						<Field
+							labelProps={{ children: 'Description (Optional)' }}
+							inputProps={{
+								...getInputProps(fields.description, { type: 'text' }),
+								placeholder: 'Brief description of this skill',
+							}}
+							errors={fields.description.errors}
+						/>
+						<SelectField
+							labelProps={{ children: 'Category' }}
+							selectProps={{
+								name: fields.skillCategoryId.name,
+								defaultValue: fields.skillCategoryId.initialValue,
+								disabled: isPending,
+								required: true,
+							}}
+							options={categories.map((category) => ({
+								value: category.id,
+								label: category.name,
+							}))}
+							errors={fields.skillCategoryId.errors}
+							placeholder="Select a category"
+						/>
+
+						<ToggleField
+							labelProps={{ children: 'Published' }}
+							buttonProps={{
+								...getInputProps(fields.isPublished, { type: 'checkbox' }),
+								name: fields.isPublished.name,
+								form: form.id,
+								value: 'true',
+								defaultChecked: Boolean(fields.isPublished.initialValue),
+								disabled: isPending,
+							}}
+							errors={fields.isPublished.errors}
+							variant="switch"
+						/>
+					</div>
+					<ErrorList id={form.errorId} errors={form.errors} />
+				</Form>
+
+				<div className={cn(nonFloatingToolbarClassName, 'mt-10')}>
+					<Button variant="destructive" {...form.reset.getButtonProps()}>
+						Reset
+					</Button>
+
+					<StatusButton
+						form={form.id}
+						type="submit"
+						name="intent"
+						value={
+							skill?.id
+								? DashboardSkillsIntent.SKILL_UPDATE
+								: DashboardSkillsIntent.SKILL_CREATE
+						}
+						disabled={isPending}
+						status={isPending ? 'pending' : 'idle'}
+					>
+						{skill?.id ? 'Save Changes' : 'Create Skill'}
+					</StatusButton>
+
+					{skill?.id ? (
+						<StatusButton
+							form={form.id}
+							type="submit"
+							name="intent"
+							value={DashboardSkillsIntent.SKILL_DELETE}
+							variant="destructive"
+							disabled={isPending}
+							status={isPending ? 'pending' : 'idle'}
+							onClick={(e) => {
+								if (!confirm('Are you sure you want to delete this skill?')) {
+									e.preventDefault()
+								}
+							}}
+						>
+							Delete
+						</StatusButton>
+					) : null}
+				</div>
+			</FormProvider>
+		</AppContainerContent>
+	)
+}
+
+export function ErrorBoundary() {
+	return (
+		<GeneralErrorBoundary
+			statusHandlers={{
+				404: () => <p>Skill not found.</p>,
+			}}
+		/>
 	)
 }

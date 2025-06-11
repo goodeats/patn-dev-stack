@@ -37,8 +37,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	return { categories }
 }
 
-export default function DashboardSkillNewRoute() {
-	const { categories } = useLoaderData<typeof loader>()
+export default function DashboardSkillNewRoute({
+	loaderData,
+}: Route.ComponentProps) {
+	const { categories } = loaderData
 	const actionData = useActionData<typeof skillEditorAction>()
 
 	return (

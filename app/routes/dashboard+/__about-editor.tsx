@@ -135,10 +135,12 @@ export function AboutEditor({
 					</div>
 					<ErrorList id={form.errorId} errors={form.errors} />
 				</Form>
+
 				<div className={cn(nonFloatingToolbarClassName, 'mt-10')}>
 					<Button variant="destructive" {...form.reset.getButtonProps()}>
 						Reset
 					</Button>
+
 					<StatusButton
 						form={form.id}
 						type="submit"
@@ -153,6 +155,7 @@ export function AboutEditor({
 					>
 						{aboutMe?.id ? 'Save Changes' : 'Create About Me'}
 					</StatusButton>
+
 					{aboutMe?.id ? (
 						<StatusButton
 							form={form.id}

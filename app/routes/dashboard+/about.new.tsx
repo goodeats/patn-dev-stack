@@ -1,9 +1,5 @@
 import { type SEOHandle } from '@nasa-gcn/remix-seo'
-import {
-	type LoaderFunctionArgs,
-	useLoaderData,
-	useActionData,
-} from 'react-router'
+import { type LoaderFunctionArgs, useActionData } from 'react-router'
 import {
 	AppContainerContent,
 	AppContainerGroup,
@@ -37,8 +33,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	return { categories }
 }
 
-export default function DashboardAboutNewRoute() {
-	const { categories } = useLoaderData<typeof loader>()
+export default function DashboardAboutNewRoute({
+	loaderData,
+}: Route.ComponentProps) {
+	const { categories } = loaderData
 	const actionData = useActionData<typeof aboutEditorAction>()
 
 	return (
