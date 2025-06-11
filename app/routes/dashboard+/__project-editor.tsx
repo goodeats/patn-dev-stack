@@ -33,7 +33,7 @@ export const ProjectEditorSchema = z.object({
 	description: StringMinMaxLengthSchema(1, 1000).optional().nullable(),
 	liveDemoUrl: z.string().url('Must be a valid URL').optional().nullable(),
 	sourceCodeUrl: z.string().url('Must be a valid URL').optional().nullable(),
-	isPublished: CheckboxFieldSchema.default(true),
+	isPublished: CheckboxFieldSchema.default(false),
 	comments: StringMinMaxLengthSchema(1, 1000).optional().nullable(),
 })
 

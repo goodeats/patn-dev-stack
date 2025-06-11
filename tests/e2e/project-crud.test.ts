@@ -19,8 +19,14 @@ let projectToDelete: ProjectPlaywright
 
 let projectTitle: string
 let projectDescription: string
+let projectLiveDemoUrl: string
+let projectSourceCodeUrl: string
+let projectComments: string
 let updatedTitle: string
 let updatedDescription: string
+let updatedLiveDemoUrl: string
+let updatedSourceCodeUrl: string
+let updatedComments: string
 
 test.describe('Projects', () => {
 	test.beforeEach(async ({ page, login }) => {
@@ -34,6 +40,9 @@ test.describe('Projects', () => {
 			test.beforeEach(async () => {
 				projectTitle = faker.lorem.words(3)
 				projectDescription = faker.lorem.sentence()
+				projectLiveDemoUrl = faker.internet.url()
+				projectSourceCodeUrl = faker.internet.url()
+				projectComments = faker.lorem.sentence()
 				await listPage.goto()
 			})
 
@@ -43,12 +52,18 @@ test.describe('Projects', () => {
 				await editorPage.create({
 					title: projectTitle,
 					description: projectDescription,
+					liveDemoUrl: projectLiveDemoUrl,
+					sourceCodeUrl: projectSourceCodeUrl,
+					comments: projectComments,
 					isPublished: true,
 				})
 
 				await detailsPage.verifyProjectDetails({
 					title: projectTitle,
 					description: projectDescription,
+					liveDemoUrl: projectLiveDemoUrl,
+					sourceCodeUrl: projectSourceCodeUrl,
+					comments: projectComments,
 					status: 'Published',
 					skillsCount: 0,
 					createdAt: testDateToday,
@@ -68,6 +83,9 @@ test.describe('Projects', () => {
 				await detailsPage.verifyProjectDetails({
 					title: projectTitle,
 					description: projectDescription,
+					liveDemoUrl: 'None',
+					sourceCodeUrl: 'None',
+					comments: 'None',
 					status: 'Draft',
 					skillsCount: 0,
 					createdAt: testDateToday,
