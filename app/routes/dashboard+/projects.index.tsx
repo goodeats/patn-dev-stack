@@ -21,6 +21,7 @@ import {
 	DataTableSortHeader,
 } from '#app/components/data-table.tsx'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
+import { ExternalLink } from '#app/components/external-link.tsx'
 import { TooltipDataTableRowLink } from '#app/components/tooltip-links.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import {
@@ -152,13 +153,37 @@ const projectColumns = (): ColumnDef<ProjectDataItem>[] => [
 		),
 	},
 	{
-		accessorKey: 'description',
-		header: 'Description',
-		cell: ({ row }) => (
-			<span className="text-muted-foreground line-clamp-2 text-sm">
-				{row.original.description}
-			</span>
-		),
+		accessorKey: 'liveDemoUrl',
+		header: 'Live Demo',
+		cell: ({ row }) => {
+			if (row.original.liveDemoUrl) {
+				return (
+					<ExternalLink href={row.original.liveDemoUrl} ariaLabel="Live Demo">
+						{row.original.liveDemoUrl}
+					</ExternalLink>
+				)
+			}
+			return <span className="text-muted-foreground text-sm">No live demo</span>
+		},
+	},
+	{
+		accessorKey: 'sourceCodeUrl',
+		header: 'Source Code',
+		cell: ({ row }) => {
+			if (row.original.sourceCodeUrl) {
+				return (
+					<ExternalLink
+						href={row.original.sourceCodeUrl}
+						ariaLabel="Source Code"
+					>
+						{row.original.sourceCodeUrl}
+					</ExternalLink>
+				)
+			}
+			return (
+				<span className="text-muted-foreground text-sm">Not Available</span>
+			)
+		},
 	},
 	{
 		accessorKey: '_count.skills',
@@ -293,8 +318,12 @@ export default function DashboardProjectIndexRoute({
 					filterFields={[
 						{ accessorKey: 'title', placeholder: 'Filter title...' },
 						{
-							accessorKey: 'description',
-							placeholder: 'Filter description...',
+							accessorKey: 'liveDemoUrl',
+							placeholder: 'Filter live demo...',
+						},
+						{
+							accessorKey: 'sourceCodeUrl',
+							placeholder: 'Filter source code...',
 						},
 					]}
 				/>
