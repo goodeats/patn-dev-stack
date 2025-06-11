@@ -146,26 +146,28 @@ export function SkillCategoryEditor({
 						{category?.id ? 'Save Changes' : 'Create Category'}
 					</StatusButton>
 					{category?.id ? (
-						<StatusButton
-							form={form.id}
-							type="submit"
-							name="intent"
-							value={DashboardSkillsIntent.CATEGORY_DELETE}
-							variant="destructive"
-							disabled={isPending}
-							status={isPending ? 'pending' : 'idle'}
-							onClick={(e) => {
-								if (
-									!confirm(
-										'Are you sure you want to delete this category? This will also delete all associated skills.',
-									)
-								) {
-									e.preventDefault()
-								}
-							}}
-						>
-							Delete
-						</StatusButton>
+						<Form method="POST">
+							<input type="hidden" name="id" value={category.id} />
+							<StatusButton
+								type="submit"
+								name="intent"
+								value={DashboardSkillsIntent.CATEGORY_DELETE}
+								variant="destructive"
+								disabled={isPending}
+								status={isPending ? 'pending' : 'idle'}
+								onClick={(e) => {
+									if (
+										!confirm(
+											'Are you sure you want to delete this category? This will also delete all associated skills.',
+										)
+									) {
+										e.preventDefault()
+									}
+								}}
+							>
+								Delete
+							</StatusButton>
+						</Form>
 					) : null}
 				</div>
 			</FormProvider>

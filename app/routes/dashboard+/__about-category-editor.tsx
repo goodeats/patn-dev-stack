@@ -42,6 +42,10 @@ export function AboutCategoryEditor({
 }) {
 	const isPending = useIsPending()
 
+	const intent = category?.id
+		? DashboardAboutIntent.CATEGORY_UPDATE
+		: DashboardAboutIntent.CATEGORY_CREATE
+
 	const [form, fields] = useForm({
 		id: 'about-category-editor',
 		constraint: getZodConstraint(AboutCategoryEditorSchema),
@@ -65,7 +69,12 @@ export function AboutCategoryEditor({
 					className="flex flex-col gap-y-4 overflow-x-hidden overflow-y-auto px-2"
 					{...getFormProps(form)}
 				>
-					<button type="submit" className="hidden" />
+					<button
+						type="submit"
+						name="intent"
+						value={intent}
+						className="hidden"
+					/>
 					{category?.id ? (
 						<input type="hidden" name="id" value={category.id} />
 					) : null}
@@ -130,37 +139,36 @@ export function AboutCategoryEditor({
 						form={form.id}
 						type="submit"
 						name="intent"
-						value={
-							category?.id
-								? DashboardAboutIntent.CATEGORY_UPDATE
-								: DashboardAboutIntent.CATEGORY_CREATE
-						}
+						value={intent}
 						disabled={isPending}
 						status={isPending ? 'pending' : 'idle'}
 					>
 						{category?.id ? 'Save Changes' : 'Create Category'}
 					</StatusButton>
 					{category?.id ? (
-						<StatusButton
-							form={form.id}
-							type="submit"
-							name="intent"
-							value={DashboardAboutIntent.CATEGORY_DELETE}
-							variant="destructive"
-							disabled={isPending}
-							status={isPending ? 'pending' : 'idle'}
-							onClick={(e) => {
-								if (
-									!confirm(
-										'Are you sure you want to delete this category? This will also delete all associated About Me sections.',
-									)
-								) {
-									e.preventDefault()
-								}
-							}}
-						>
-							Delete
-						</StatusButton>
+						<Form method="POST">
+							<input type="hidden" name="id" value={category.id} />
+							<StatusButton
+								form={form.id}
+								type="submit"
+								name="intent"
+								value={DashboardAboutIntent.CATEGORY_DELETE}
+								variant="destructive"
+								disabled={isPending}
+								status={isPending ? 'pending' : 'idle'}
+								onClick={(e) => {
+									if (
+										!confirm(
+											'Are you sure you want to delete this category? This will also delete all associated About Me sections.',
+										)
+									) {
+										e.preventDefault()
+									}
+								}}
+							>
+								Delete
+							</StatusButton>
+						</Form>
 					) : null}
 				</div>
 			</FormProvider>
