@@ -1,25 +1,22 @@
----
-description:
-globs:
-alwaysApply: false
----
 # Playwright Test Suite Architecture
 
-This document outlines the architecture and conventions for our Playwright End-to-End (E2E) test suite. It serves as a guide for both human developers and as a **cursor rule for LLM assistants** to ensure that new tests and Page Object Models (POMs) adhere to our established patterns.
+This document summarizes the architecture and conventions for the Playwright End-to-End (E2E) test suite, ensuring maintainable, scalable, and readable tests.
+
+---
 
 ## Guiding Principles
 
-1. **Separation of Concerns**: Test files (`*.test.ts`) should describe *user stories* and *workflows*, not implementation details. The "how" of an interaction belongs in a Page Object Model.
-2. **Composition over Inheritance (for Pages & Tables)**: Main page POMs (like `DashboardAboutPage`) *compose* smaller component POMs (like `AboutMeSectionsTable`). For data tables, we use **mixins** to compose features (see below).
-3. **Inheritance for Patterns**: Abstract base classes define and reuse common *interaction patterns* (e.g., how to interact with a menu-driven table vs. a dialog-driven table).
-4. **Fluent API**: Methods that transition the user to a new state (like clicking "Edit") should return an instance of the POM for that new state. This creates a highly readable, chainable API in our tests (e.g., `const editor = await table.edit('Item');`).
-5. **Single Responsibility**: Each class should have one primary reason to change. A table POM handles table interactions. An editor POM handles form interactions. A page POM handles page-level navigation and component composition.
+1. **Separation of Concerns:** Test files (`*.test.ts`) describe user stories and workflows. Implementation details (locators, interactions) belong in Page Object Models (POMs).
+2. **Composition over Inheritance (for Pages & Tables):** Main page POMs compose smaller component POMs. Data tables use mixins to compose features.
+3. **Inheritance for Patterns:** Abstract base classes define and reuse common interaction patterns (e.g., menu-driven, dialog-driven tables).
+4. **Fluent API:** Methods that transition state (e.g., `edit`) return the new POM instance for chaining.
+5. **Single Responsibility:** Each class has one primary reason to change (table POM for table, editor POM for form, page POM for navigation).
 
 ---
 
 ## Directory Structure
 
-All Page Object Models are located in `tests/poms/`.
+All POMs are located in `tests/poms/`.
 
 ```bash
 poms/
@@ -37,21 +34,17 @@ poms/
 
 ---
 
-## Composable Data Table POMs (NEW)
+## Composable Data Table POMs
 
-**LLM ASSISTANT RULE:**
-When creating a new POM for a data table, you **MUST** use the mixin-based approach from `base/data-table.pom.ts`. Do not create flat, monolithic POMs. Compose your table POM from the following mixins as needed:
+- **Always** use the mixin-based approach from `base/data-table.pom.ts` for new data table POMs.
+- **Never** create flat, monolithic table POMs.
+- Compose your table POM from these mixins as needed:
+  - `MenuDriven`: Row menu actions (edit/delete via dropdown menu)
+  - `DialogDriven`: Dialog-opening behavior (clicking a row name opens an editor dialog)
+  - `Switchable`: Row-level toggle switches (publish/unpublish)
+  - `Filterable`: Column filters (filter by name, category)
 
-### Data Table Mixins
-
-- **MenuDriven**: Adds row menu actions (edit/delete via dropdown menu).
-- **DialogDriven**: Adds dialog-opening behavior (e.g., clicking a row name opens an editor dialog).
-- **Switchable**: Adds support for row-level toggle switches (e.g., publish/unpublish).
-- **Filterable**: Adds support for column filters (e.g., filter by name, category).
-
-Mixins are composed using TypeScript's functional mixin pattern. This allows you to build highly flexible, DRY, and readable table POMs.
-
-#### Example: Composing a Table POM
+**Example:**
 
 ```ts
 import { MenuDriven, Switchable, Filterable, DialogDriven, MixinBase } from '../base/data-table.pom'
@@ -84,11 +77,8 @@ export class MyTablePOM extends MyComposableTable {
 }
 ```
 
-#### Flexibility
-
-- Mixins can be combined in any order, depending on the table's features.
-- You can extend and override methods as needed for custom behavior.
-- This approach enables rapid creation of new CRUD table POMs with minimal boilerplate.
+- Mixins can be combined in any order.
+- Extend and override methods as needed for custom behavior.
 
 ---
 
@@ -103,25 +93,21 @@ export class MyTablePOM extends MyComposableTable {
 ## Checklist for New CRUD Features
 
 1. **Create the List Page POM:**
-    - Create e.g. `dashboard/project/dashboard-project-page.pom.ts`.
+    - E.g. `dashboard/project/dashboard-project-page.pom.ts`.
     - **MUST** extend `BaseListPagePOM`.
-    - Compose instances of your table POMs (see above for mixin usage).
-
+    - Compose instances of your table POMs.
 2. **Create the Data Table POMs:**
-    - Create e.g. `dashboard/project/dashboard-project-data-tables.pom.ts`.
+    - E.g. `dashboard/project/dashboard-project-data-tables.pom.ts`.
     - Compose each table POM from the required mixins.
     - Implement required methods (e.g., `edit`, `delete`, `filterByX`).
-
 3. **Create the Editor POMs:**
-    - Create e.g. `dashboard/project/dashboard-project-editor-page.pom.ts` (extends `BasePageEditorPOM`).
-    - Create e.g. `dashboard/project/dashboard-project-category-editor-dialog.pom.ts` (extends `BaseDialogEditorPOM`).
-
+    - E.g. `dashboard/project/dashboard-project-editor-page.pom.ts` (extends `BasePageEditorPOM`).
+    - E.g. `dashboard/project/dashboard-project-category-editor-dialog.pom.ts` (extends `BaseDialogEditorPOM`).
 4. **Create the Details Page POM:**
-    - Create e.g. `dashboard/project/dashboard-project-details-page.pom.ts` (extends `BaseDetailsPagePOM`).
+    - E.g. `dashboard/project/dashboard-project-details-page.pom.ts` (extends `BaseDetailsPagePOM`).
     - Implement the `goto(itemId)` method and provide a typed `edit()` method.
-
 5. **Write the Test File:**
-    - Create e.g. `tests/e2e/project-crud.test.ts`.
+    - E.g. `tests/e2e/project-crud.test.ts`.
     - Instantiate your page and table POMs.
     - All interactions must flow through the POMs. Use the fluent API.
     - Focus the test on asserting user-facing outcomes, not on how locators are found.
@@ -131,8 +117,6 @@ export class MyTablePOM extends MyComposableTable {
 ## Test Utility Patterns
 
 ### Select Field Validation
-
-Use this pattern for selecting and validating the current value of a select field:
 
 ```ts
 // select
@@ -174,3 +158,5 @@ await expect(categoryError).toHaveText('Category is required')
 - **Checklist:** Follow the steps above for new CRUD features.
 
 By adhering to this structure, we ensure our test suite remains maintainable, readable, and scalable for years to come.
+
+Golden Rules Applied 🫡
