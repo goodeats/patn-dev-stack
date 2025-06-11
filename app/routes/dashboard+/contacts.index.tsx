@@ -155,7 +155,14 @@ const contactColumns = (): ColumnDef<ContactDataItem>[] => [
 		accessorKey: 'href',
 		id: 'href',
 		header: 'URL',
-		cell: ({ row }) => <ExternalIconLink iconLink={row.original} />,
+		cell: ({ row }) => (
+			<div className="flex items-center gap-2">
+				<ExternalIconLink iconLink={row.original} />
+				<span className="text-muted-foreground text-sm">
+					{row.original.href}
+				</span>
+			</div>
+		),
 	},
 	{
 		accessorKey: 'createdAt',

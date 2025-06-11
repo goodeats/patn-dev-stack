@@ -255,16 +255,34 @@ test.describe('Contacts', () => {
 			insertNewContact,
 		}) => {
 			const user = await login()
-			const contact1 = await insertNewContact({ userId: user.id })
-			const contact2 = await insertNewContact({ userId: user.id })
+			const contact1 = await insertNewContact({
+				text: `Contact1 ${faker.lorem.words(1)}`,
+				label: `Label1 ${faker.lorem.words(1)}`,
+				userId: user.id,
+			})
+			const contact2 = await insertNewContact({
+				text: `Contact2 ${faker.lorem.words(1)}`,
+				label: `Label2 ${faker.lorem.words(1)}`,
+				userId: user.id,
+			})
 
 			await listPage.goto()
 
 			const contactsTable = listPage.contactsTable
 			await contactsTable.verifyHeaders()
 			await contactsTable.verifyData([
-				[contact2.text, contact2.href, testDateToday, testDateToday],
-				[contact1.text, contact1.href, testDateToday, testDateToday],
+				[
+					contact2.text,
+					`${contact2.text}${contact2.href}`, // account for tooltip over icon link
+					testDateToday,
+					testDateToday,
+				],
+				[
+					contact1.text,
+					`${contact1.text}${contact1.href}`, // account for tooltip over icon link
+					testDateToday,
+					testDateToday,
+				],
 			])
 		})
 	})
