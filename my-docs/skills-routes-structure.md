@@ -2,9 +2,9 @@
 
 This document describes the organization and relationships of the Skills dashboard feature in the codebase. It is based on the architecture of the "About Me" feature.
 
-# Skill & SkillCategory: Data Model and Route Integration
+## Skill & SkillCategory: Data Model and Route Integration
 
-## Data Model Relationship
+### Data Model Relationship
 
 In the Prisma schema, the relationship between `Skill` and `SkillCategory` is a one-to-many association:
 
@@ -12,6 +12,7 @@ In the Prisma schema, the relationship between `Skill` and `SkillCategory` is a 
 - Each **Skill** belongs to exactly one **SkillCategory**.
 
 **Prisma Schema Excerpt:**
+
 ```prisma
 model SkillCategory {
   id        String   @id @default(cuid())
@@ -37,10 +38,11 @@ model Skill {
   projects Project[] @relation("ProjectSkills")
 }
 ```
+
 - The `skillCategoryId` foreign key on `Skill` enforces this link.
 - The `skills` field on `SkillCategory` provides access to all skills in that category.
 
-## How This Relation Is Applied in the Dashboard Routes
+### How This Relation Is Applied in the Dashboard Routes
 
 - **Listing:** The main dashboard (`skills.index.tsx`) will fetch and display all Skills, grouped or filtered by their associated category.
 - **Filtering:** The Skills table will support filtering by category, implemented by querying Skill records with a specific `skillCategoryId`.
