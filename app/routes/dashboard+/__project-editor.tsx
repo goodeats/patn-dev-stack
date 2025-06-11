@@ -78,10 +78,10 @@ export function ProjectEditor({
 							errors={fields.title.errors}
 						/>
 						<Field
-							labelProps={{ children: 'Description' }}
+							labelProps={{ children: 'Description (Optional)' }}
 							inputProps={{
-								...getInputProps(fields.description, { type: 'textarea' }),
-								placeholder: 'Enter project description',
+								...getInputProps(fields.description, { type: 'text' }),
+								placeholder: 'Brief description of this project',
 							}}
 							errors={fields.description.errors}
 						/>

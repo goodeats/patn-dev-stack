@@ -10,7 +10,7 @@ import {
 	EntityDetailsLinks,
 } from '#app/components/entity-details.tsx'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
-import { ExternalIconLink } from '#app/components/external-icon-link.tsx'
+import { ExternalLink } from '#app/components/external-link.tsx'
 import { CardDetailsValue, CardDetailsItem } from '#app/components/ui/card.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
@@ -83,7 +83,9 @@ export default function DashboardProjectDetailsRoute({
 					{project.liveDemoUrl ? (
 						<CardDetailsItem label="Live Demo URL">
 							<CardDetailsValue>
-								<ExternalIconLink href={project.liveDemoUrl} />
+								<ExternalLink href={project.liveDemoUrl} ariaLabel="Live Demo">
+									{project.liveDemoUrl}
+								</ExternalLink>
 							</CardDetailsValue>
 						</CardDetailsItem>
 					) : null}
@@ -91,7 +93,12 @@ export default function DashboardProjectDetailsRoute({
 					{project.sourceCodeUrl ? (
 						<CardDetailsItem label="Source Code URL">
 							<CardDetailsValue>
-								<ExternalIconLink href={project.sourceCodeUrl} />
+								<ExternalLink
+									href={project.sourceCodeUrl}
+									ariaLabel="Source Code"
+								>
+									{project.sourceCodeUrl}
+								</ExternalLink>
 							</CardDetailsValue>
 						</CardDetailsItem>
 					) : null}
