@@ -102,6 +102,9 @@ test.describe('Projects', () => {
 				})
 				updatedTitle = faker.lorem.words(3)
 				updatedDescription = faker.lorem.sentence()
+				updatedLiveDemoUrl = faker.internet.url()
+				updatedSourceCodeUrl = faker.internet.url()
+				updatedComments = faker.lorem.sentence()
 			})
 
 			test('from the list page', async ({ page }) => {
@@ -115,6 +118,9 @@ test.describe('Projects', () => {
 				await editorPage.update({
 					title: updatedTitle,
 					description: updatedDescription,
+					liveDemoUrl: updatedLiveDemoUrl,
+					sourceCodeUrl: updatedSourceCodeUrl,
+					comments: updatedComments,
 				})
 
 				await expect(page).toHaveURL(`/dashboard/projects/${initialProject.id}`)
@@ -122,9 +128,9 @@ test.describe('Projects', () => {
 				await detailsPage.verifyProjectDetails({
 					title: updatedTitle,
 					description: updatedDescription,
-					liveDemoUrl: initialProject.liveDemoUrl ?? 'None',
-					sourceCodeUrl: initialProject.sourceCodeUrl ?? 'None',
-					comments: initialProject.comments ?? 'None',
+					liveDemoUrl: updatedLiveDemoUrl,
+					sourceCodeUrl: updatedSourceCodeUrl,
+					comments: updatedComments,
 					status: 'Published',
 					skillsCount: 0,
 					createdAt: testDateToday,
@@ -140,6 +146,9 @@ test.describe('Projects', () => {
 
 				const updatedTitle = faker.lorem.words(3)
 				const updatedDescription = faker.lorem.sentence()
+				const updatedLiveDemoUrl = faker.internet.url()
+				const updatedSourceCodeUrl = faker.internet.url()
+				const updatedComments = faker.lorem.sentence()
 
 				await editorPage.update({
 					title: updatedTitle,
@@ -151,9 +160,9 @@ test.describe('Projects', () => {
 				await detailsPage.verifyProjectDetails({
 					title: updatedTitle,
 					description: updatedDescription,
-					liveDemoUrl: initialProject.liveDemoUrl ?? 'None',
-					sourceCodeUrl: initialProject.sourceCodeUrl ?? 'None',
-					comments: initialProject.comments ?? 'None',
+					liveDemoUrl: updatedLiveDemoUrl,
+					sourceCodeUrl: updatedSourceCodeUrl,
+					comments: updatedComments,
 					status: 'Published',
 					skillsCount: 0,
 					createdAt: testDateToday,
@@ -327,7 +336,44 @@ test.describe('Projects', () => {
 			await editorPage.verifyRequiredTitleError(false)
 
 			// Successfully create with valid data
+			await expect(page).toHaveURL(/\/dashboard\/projects\/[a-zA-Z0-9]+$/)
+		})
+
+		test('validates Project live demo url', async ({ page }) => {
+			await editorPage.gotoNew()
 			await editorPage.createButton.click()
+			await editorPage.verifyRequiredErrors()
+
+			await editorPage.titleInput.fill(faker.lorem.words(2))
+			await editorPage.liveDemoUrlInput.fill(faker.lorem.words(1))
+			await editorPage.createButton.click()
+			await editorPage.verifyRequiredTitleError(false)
+			await editorPage.verifyInvalidLiveDemoUrlError()
+
+			await editorPage.liveDemoUrlInput.fill(faker.internet.url())
+			await editorPage.createButton.click()
+			await editorPage.verifyInvalidLiveDemoUrlError(false)
+
+			// Successfully create with valid data
+			await expect(page).toHaveURL(/\/dashboard\/projects\/[a-zA-Z0-9]+$/)
+		})
+
+		test('validates Project source code url', async ({ page }) => {
+			await editorPage.gotoNew()
+			await editorPage.createButton.click()
+			await editorPage.verifyRequiredErrors()
+
+			await editorPage.titleInput.fill(faker.lorem.words(2))
+			await editorPage.sourceCodeUrlInput.fill(faker.lorem.words(1))
+			await editorPage.createButton.click()
+			await editorPage.verifyRequiredTitleError(false)
+			await editorPage.verifyInvalidSourceCodeUrlError()
+
+			await editorPage.sourceCodeUrlInput.fill(faker.internet.url())
+			await editorPage.createButton.click()
+			await editorPage.verifyInvalidSourceCodeUrlError(false)
+
+			// Successfully create with valid data
 			await expect(page).toHaveURL(/\/dashboard\/projects\/[a-zA-Z0-9]+$/)
 		})
 
