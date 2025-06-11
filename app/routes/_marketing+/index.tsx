@@ -62,7 +62,13 @@ export async function loader({}: Route.LoaderArgs) {
 					name: true,
 					description: true,
 				},
+				orderBy: {
+					name: 'asc',
+				},
 			},
+		},
+		orderBy: {
+			name: 'asc',
 		},
 	})
 
@@ -83,6 +89,9 @@ export async function loader({}: Route.LoaderArgs) {
 				},
 			},
 		},
+		orderBy: {
+			createdAt: 'desc',
+		},
 	})
 
 	const socialLinks = await prisma.socialLink.findMany({
@@ -94,6 +103,9 @@ export async function loader({}: Route.LoaderArgs) {
 			icon: true,
 			label: true,
 			text: true,
+		},
+		orderBy: {
+			createdAt: 'asc',
 		},
 	})
 
