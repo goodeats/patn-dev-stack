@@ -42,6 +42,10 @@ export function SkillCategoryEditor({
 }) {
 	const isPending = useIsPending()
 
+	const intent = category?.id
+		? DashboardSkillsIntent.CATEGORY_UPDATE
+		: DashboardSkillsIntent.CATEGORY_CREATE
+
 	const [form, fields] = useForm({
 		id: 'skill-category-editor',
 		constraint: getZodConstraint(SkillCategoryEditorSchema),
@@ -65,7 +69,12 @@ export function SkillCategoryEditor({
 					className="flex flex-col gap-y-4 overflow-x-hidden overflow-y-auto px-2"
 					{...getFormProps(form)}
 				>
-					<button type="submit" className="hidden" />
+					<button
+						type="submit"
+						name="intent"
+						value={intent}
+						className="hidden"
+					/>
 					{category?.id ? (
 						<input type="hidden" name="id" value={category.id} />
 					) : null}
@@ -130,11 +139,7 @@ export function SkillCategoryEditor({
 						form={form.id}
 						type="submit"
 						name="intent"
-						value={
-							category?.id
-								? DashboardSkillsIntent.CATEGORY_UPDATE
-								: DashboardSkillsIntent.CATEGORY_CREATE
-						}
+						value={intent}
 						disabled={isPending}
 						status={isPending ? 'pending' : 'idle'}
 					>

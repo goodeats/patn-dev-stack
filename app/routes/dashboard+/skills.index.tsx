@@ -110,6 +110,11 @@ export async function action(args: ActionFunctionArgs) {
 	const formData = await request.formData()
 	const intent = formData.get('intent')
 
+	console.log(
+		'formData',
+		Array.from(formData.entries()).map(([key, value]) => ({ [key]: value })),
+	)
+
 	switch (intent) {
 		case DashboardSkillsIntent.CATEGORY_CREATE:
 		case DashboardSkillsIntent.CATEGORY_UPDATE:
