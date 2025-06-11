@@ -5,11 +5,12 @@ import { data } from 'react-router'
 import { prisma } from '#app/utils/db.server.ts'
 import { createToastHeaders } from '#app/utils/toast.server.ts'
 import { AboutCategoryEditorSchema } from './__about-category-editor.tsx'
+import { DashboardAboutIntent } from './about.index.tsx'
 
 export async function handleCategoryAction(formData: FormData) {
 	const intent = formData.get('intent')
 
-	if (intent === 'deleteCategory') {
+	if (intent === DashboardAboutIntent.CATEGORY_DELETE) {
 		const categoryId = formData.get('id')
 		invariantResponse(
 			typeof categoryId === 'string',
@@ -83,7 +84,7 @@ export async function handleCategoryAction(formData: FormData) {
 
 	const { id: categoryId, name, description, isPublished } = submission.value
 
-	const isUpdate = intent === 'updateCategory'
+	const isUpdate = intent === DashboardAboutIntent.CATEGORY_UPDATE
 	const action = isUpdate ? 'updated' : 'created'
 
 	const updatedCategory = await prisma.aboutMeCategory.upsert({

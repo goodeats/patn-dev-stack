@@ -74,6 +74,48 @@ Both tables are built with the following interactive features:
 
 These features provide a rich, interactive experience for managing both About Me sections and their categories directly from the dashboard list page.
 
+#### Intent Constants for Actions
+
+The `about.index.tsx` file defines a `DashboardAboutIntent` constant object to standardize all intent values used in form submissions and server-side action handling. This approach ensures consistency and type safety across the UI and server logic.
+
+**Example:**
+
+```ts
+export const DashboardAboutIntent = {
+  CATEGORY_CREATE: 'category-create',
+  CATEGORY_UPDATE: 'category-update',
+  CATEGORY_DELETE: 'category-delete',
+  ABOUT_ME_DELETE: 'about-me-delete',
+  ABOUT_ME_PUBLISH_TOGGLE: 'about-me-publish-toggle',
+  CATEGORY_PUBLISH_TOGGLE: 'category-publish-toggle',
+} as const
+```
+
+These constants are referenced throughout the data table action forms and switches, for example:
+
+```tsx
+<input type="hidden" name="intent" value={DashboardAboutIntent.ABOUT_ME_PUBLISH_TOGGLE} />
+<button type="submit" name="intent" value={DashboardAboutIntent.ABOUT_ME_DELETE}>Delete</button>
+```
+
+On the server, the action function uses these constants in a switch statement to determine which operation to perform:
+
+```ts
+switch (intent) {
+  case DashboardAboutIntent.CATEGORY_CREATE:
+    // ...
+  case DashboardAboutIntent.ABOUT_ME_DELETE:
+    // ...
+  // etc.
+}
+```
+
+**Benefits:**
+
+- Prevents typos and mismatches between client and server intent values.
+- Makes it easy to update or add new actions in a single place.
+- Improves maintainability and type safety for all About Me dashboard actions.
+
 ---
 
 ### 2. Create Page: `about.new.tsx`

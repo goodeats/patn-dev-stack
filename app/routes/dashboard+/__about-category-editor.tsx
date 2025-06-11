@@ -17,6 +17,7 @@ import {
 	CheckboxFieldSchema,
 	StringMinMaxLengthSchema,
 } from '#app/utils/zod-helpers.tsx'
+import { DashboardAboutIntent } from './about.index'
 
 export const AboutCategoryEditorSchema = z.object({
 	id: z.string().optional(),
@@ -129,7 +130,11 @@ export function AboutCategoryEditor({
 						form={form.id}
 						type="submit"
 						name="intent"
-						value={category?.id ? 'updateCategory' : 'createCategory'}
+						value={
+							category?.id
+								? DashboardAboutIntent.CATEGORY_UPDATE
+								: DashboardAboutIntent.CATEGORY_CREATE
+						}
 						disabled={isPending}
 						status={isPending ? 'pending' : 'idle'}
 					>
@@ -140,7 +145,7 @@ export function AboutCategoryEditor({
 							form={form.id}
 							type="submit"
 							name="intent"
-							value="deleteCategory"
+							value={DashboardAboutIntent.CATEGORY_DELETE}
 							variant="destructive"
 							disabled={isPending}
 							status={isPending ? 'pending' : 'idle'}

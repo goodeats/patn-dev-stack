@@ -92,11 +92,13 @@ type AboutMeDataItem = Info['loaderData']['aboutMeData'][number]
 type AboutMeCategoryDataItem = Info['loaderData']['aboutMeCategoryData'][number]
 
 export const DashboardAboutIntent = {
+	ABOUT_ME_DELETE: 'about-me-delete',
+	ABOUT_ME_CREATE: 'about-me-create',
+	ABOUT_ME_UPDATE: 'about-me-update',
+	ABOUT_ME_PUBLISH_TOGGLE: 'about-me-publish-toggle',
 	CATEGORY_CREATE: 'category-create',
 	CATEGORY_UPDATE: 'category-update',
 	CATEGORY_DELETE: 'category-delete',
-	ABOUT_ME_DELETE: 'about-me-delete',
-	ABOUT_ME_PUBLISH_TOGGLE: 'about-me-publish-toggle',
 	CATEGORY_PUBLISH_TOGGLE: 'category-publish-toggle',
 } as const
 

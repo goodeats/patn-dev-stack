@@ -6,13 +6,14 @@ import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { redirectWithToast } from '#app/utils/toast.server.ts'
 import { AboutEditorSchema } from './__about-editor.tsx'
+import { DashboardAboutIntent } from './about.index.tsx'
 
 export async function action({ request }: ActionFunctionArgs) {
 	const userId = await requireUserId(request)
 	const formData = await request.formData()
 	const intent = formData.get('intent')
 
-	if (intent === 'delete') {
+	if (intent === DashboardAboutIntent.ABOUT_ME_DELETE) {
 		const aboutId = formData.get('id')
 		invariantResponse(
 			typeof aboutId === 'string',

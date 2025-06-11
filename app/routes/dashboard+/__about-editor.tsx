@@ -26,6 +26,7 @@ import {
 	StringMinMaxLengthSchema,
 } from '#app/utils/zod-helpers.tsx'
 import { type Info } from './+types/about.$aboutId_.edit.ts'
+import { DashboardAboutIntent } from './about.index.tsx'
 
 export const AboutEditorSchema = z.object({
 	id: z.string().optional(),
@@ -142,7 +143,11 @@ export function AboutEditor({
 						form={form.id}
 						type="submit"
 						name="intent"
-						value={aboutMe?.id ? 'update' : 'create'}
+						value={
+							aboutMe?.id
+								? DashboardAboutIntent.ABOUT_ME_UPDATE
+								: DashboardAboutIntent.ABOUT_ME_CREATE
+						}
 						disabled={isPending}
 						status={isPending ? 'pending' : 'idle'}
 					>
@@ -153,7 +158,7 @@ export function AboutEditor({
 							form={form.id}
 							type="submit"
 							name="intent"
-							value="delete"
+							value={DashboardAboutIntent.ABOUT_ME_DELETE}
 							variant="destructive"
 							disabled={isPending}
 							status={isPending ? 'pending' : 'idle'}
