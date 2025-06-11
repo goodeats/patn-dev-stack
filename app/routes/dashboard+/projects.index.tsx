@@ -164,7 +164,7 @@ const projectColumns = (): ColumnDef<ProjectDataItem>[] => [
 					</ExternalLink>
 				)
 			}
-			return <span className="text-muted-foreground text-sm">No live demo</span>
+			return <span className="text-muted-foreground text-sm">No Live Demo</span>
 		},
 	},
 	{

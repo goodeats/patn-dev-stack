@@ -122,6 +122,9 @@ test.describe('Projects', () => {
 				await detailsPage.verifyProjectDetails({
 					title: updatedTitle,
 					description: updatedDescription,
+					liveDemoUrl: initialProject.liveDemoUrl ?? 'None',
+					sourceCodeUrl: initialProject.sourceCodeUrl ?? 'None',
+					comments: initialProject.comments ?? 'None',
 					status: 'Published',
 					skillsCount: 0,
 					createdAt: testDateToday,
@@ -148,6 +151,9 @@ test.describe('Projects', () => {
 				await detailsPage.verifyProjectDetails({
 					title: updatedTitle,
 					description: updatedDescription,
+					liveDemoUrl: initialProject.liveDemoUrl ?? 'None',
+					sourceCodeUrl: initialProject.sourceCodeUrl ?? 'None',
+					comments: initialProject.comments ?? 'None',
 					status: 'Published',
 					skillsCount: 0,
 					createdAt: testDateToday,
@@ -210,6 +216,9 @@ test.describe('Projects', () => {
 				await detailsPage.verifyProjectDetails({
 					title: initialProject.title,
 					description: initialProject.description ?? '',
+					liveDemoUrl: initialProject.liveDemoUrl ?? 'None',
+					sourceCodeUrl: initialProject.sourceCodeUrl ?? 'None',
+					comments: initialProject.comments ?? 'None',
 					status: 'Draft',
 					skillsCount: 0,
 					createdAt: testDateToday,
@@ -224,6 +233,9 @@ test.describe('Projects', () => {
 				await detailsPage.verifyProjectDetails({
 					title: initialProject.title,
 					description: initialProject.description ?? '',
+					liveDemoUrl: initialProject.liveDemoUrl ?? 'None',
+					sourceCodeUrl: initialProject.sourceCodeUrl ?? 'None',
+					comments: initialProject.comments ?? 'None',
 					status: 'Published',
 					skillsCount: 0,
 					createdAt: testDateToday,
@@ -269,6 +281,9 @@ test.describe('Projects', () => {
 			})
 			const project2 = await insertNewProject({
 				userId: user.id,
+				liveDemoUrl: '',
+				sourceCodeUrl: '',
+				comments: '',
 			})
 
 			await listPage.goto()
@@ -276,8 +291,22 @@ test.describe('Projects', () => {
 			const projectsTable = listPage.projectsTable
 			await projectsTable.verifyHeaders()
 			await projectsTable.verifyData([
-				[project2.title, testDateToday, testDateToday],
-				[project1.title, testDateToday, testDateToday],
+				[
+					project2.title,
+					'No Live Demo',
+					'Not Available',
+					'0',
+					testDateToday,
+					testDateToday,
+				],
+				[
+					project1.title,
+					project1.liveDemoUrl ?? 'None',
+					project1.sourceCodeUrl ?? 'None',
+					'0',
+					testDateToday,
+					testDateToday,
+				],
 			])
 		})
 	})
