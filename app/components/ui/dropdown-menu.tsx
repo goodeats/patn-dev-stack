@@ -1,7 +1,8 @@
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu'
 import * as React from 'react'
 
-import { cn } from '#app/utils/misc.tsx'
+import { cn } from '#app/utils/misc'
+import { Icon } from './icon'
 
 function DropdownMenu(
 	props: React.ComponentProps<typeof DropdownMenuPrimitive.Root>,
@@ -114,6 +115,7 @@ const DropdownMenuItem = ({
 	...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Item> & {
 	inset?: boolean
+	variant?: 'default' | 'destructive'
 }) => (
 	<DropdownMenuPrimitive.Item
 		data-slot="dropdown-menu-item"
@@ -144,7 +146,8 @@ const DropdownMenuCheckboxItem = ({
 	>
 		<span className="absolute left-2 flex size-3.5 items-center justify-center">
 			<DropdownMenuPrimitive.ItemIndicator>
-				<span className="size-4">
+				<Icon className="h-4 w-4" name="check" />
+				{/* <span className="size-4">
 					<svg viewBox="0 0 8 8">
 						<path
 							d="M1,4 L3,6 L7,2"
@@ -153,7 +156,7 @@ const DropdownMenuCheckboxItem = ({
 							fill="none"
 						/>
 					</svg>
-				</span>
+				</span> */}
 			</DropdownMenuPrimitive.ItemIndicator>
 		</span>
 		{children}

@@ -1,7 +1,9 @@
 import { type Skill, type SocialLink } from '@prisma/client'
 import { ExternalIconLink } from '#app/components/external-icon-link.tsx'
-import { ExternalLink } from '#app/components/external-link.tsx'
+import { ExternalLinkButton } from '#app/components/external-link.tsx'
 import { FloatingShapes } from '#app/components/floating-shapes.tsx'
+import { Footer } from '#app/components/footer.tsx'
+import { Header } from '#app/components/header.tsx'
 import {
 	MarketingCard,
 	MarketingSection,
@@ -244,7 +246,7 @@ function ProjectCard({
 	return (
 		<MarketingCard
 			title={title}
-			description={description}
+			description={description ?? ''}
 			className="text-left"
 		>
 			<CardContent className="flex-1">
@@ -259,20 +261,20 @@ function ProjectCard({
 			</CardContent>
 			<CardFooter className="gap-4">
 				{liveDemoUrl && (
-					<ExternalLink
+					<ExternalLinkButton
 						href={liveDemoUrl}
 						ariaLabel={`View project demo for ${title}`}
 					>
 						Live Demo
-					</ExternalLink>
+					</ExternalLinkButton>
 				)}
 				{sourceCodeUrl && (
-					<ExternalLink
+					<ExternalLinkButton
 						href={sourceCodeUrl}
 						ariaLabel={`View source code for ${title} on GitHub`}
 					>
 						GitHub
-					</ExternalLink>
+					</ExternalLinkButton>
 				)}
 				{comments && (
 					<p className="text-muted-foreground mt-4 text-sm">{comments}</p>
@@ -341,6 +343,8 @@ export default function Index({ loaderData }: Route.ComponentProps) {
 
 	return (
 		<main className="font-poppins bg-background text-foreground min-h-screen">
+			<Header />
+
 			<HeroSection />
 			<AboutSection
 				professionalAboutMe={professionalAboutMe}
@@ -349,6 +353,8 @@ export default function Index({ loaderData }: Route.ComponentProps) {
 			<SkillsSection skillCategories={skillCategories} />
 			<ProjectsSection projects={projects} />
 			<ContactSection socialLinks={socialLinks} />
+
+			<Footer />
 		</main>
 	)
 }

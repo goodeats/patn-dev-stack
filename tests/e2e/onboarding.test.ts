@@ -9,9 +9,10 @@ import {
 	USERNAME_MAX_LENGTH,
 	USERNAME_MIN_LENGTH,
 } from '#app/utils/user-validation'
-import { logout } from '#tests/actions/logout.ts'
+import { login, logout } from '#tests/actions/auth.ts'
 import { readEmail } from '#tests/mocks/utils.ts'
-import { createUser, expect, test as base } from '#tests/playwright-utils.ts'
+import { createUser } from '#tests/models/user-test-setup.ts'
+import { expect, test as base } from '#tests/playwright-utils.ts'
 
 // This file contains end-to-end tests for the user onboarding process.
 // It covers different scenarios including signing up with email verification links and codes,
@@ -117,7 +118,7 @@ test('onboarding with link', async ({ page, getOnboardingData }) => {
 	await page.getByRole('button', { name: /Create an account/i }).click()
 
 	await expect(page).toHaveURL(`/`)
-	await logout(page, onboardingData)
+	await logout(page)
 })
 
 test('onboarding with a short code', async ({ page, getOnboardingData }) => {
@@ -343,11 +344,13 @@ test('login as existing user', async ({ page, insertNewUser }) => {
 	const password = faker.internet.password()
 	const user = await insertNewUser({ password })
 	invariant(user.name, 'User name not found')
-	await page.goto('/login')
-	await page.getByRole('textbox', { name: /username/i }).fill(user.username)
-	await page.getByLabel(/^password$/i).fill(password)
-	await page.getByRole('button', { name: /log in/i }).click()
-	await expect(page).toHaveURL(`/`)
+
+	await login(page, {
+		username: user.username,
+		password: password,
+		name: user.name,
+	})
+
 	await expect(page.getByRole('link', { name: user.name })).toBeVisible()
 	await expect(page.getByRole('link', { name: /log in/i })).not.toBeVisible()
 	await expect(
