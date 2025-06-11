@@ -14,29 +14,32 @@ import {
 export class DashboardAboutListPOM extends BasePagePOM {
 	readonly aboutMeTable: AboutMeSectionsTablePOM
 	readonly categoriesTable: AboutMeCategoriesTablePOM
+	readonly aboutMeSectionContainer: Locator
+	readonly categoriesSectionContainer: Locator
 	private readonly newSectionButton: Locator
 	private readonly newCategoryButton: Locator
 
 	constructor(page: Page) {
 		super(page)
-		const aboutMeSectionContainer = page.locator('#about-me-sections')
-		const categoriesSectionContainer = page.locator('#about-me-categories')
+		this.aboutMeSectionContainer = page.locator('#about-me-sections')
+		this.categoriesSectionContainer = page.locator('#about-me-categories')
 
 		this.aboutMeTable = new AboutMeSectionsTablePOM(
 			page,
-			aboutMeSectionContainer,
+			this.aboutMeSectionContainer,
 		)
 		this.categoriesTable = new AboutMeCategoriesTablePOM(
 			page,
-			categoriesSectionContainer,
+			this.categoriesSectionContainer,
 		)
 
-		this.newSectionButton = aboutMeSectionContainer.getByRole('link', {
+		this.newSectionButton = this.aboutMeSectionContainer.getByRole('link', {
 			name: 'New',
 		})
-		this.newCategoryButton = categoriesSectionContainer.getByRole('button', {
-			name: 'New',
-		})
+		this.newCategoryButton = this.categoriesSectionContainer.getByRole(
+			'button',
+			{ name: 'New' },
+		)
 	}
 
 	async goto() {

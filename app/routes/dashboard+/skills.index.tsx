@@ -412,7 +412,7 @@ const skillCategoryColumns = (
 								}
 							}}
 						>
-							<input type="hidden" name="categoryId" value={row.original.id} />
+							<input type="hidden" name="id" value={row.original.id} />
 							<button
 								type="submit"
 								name="intent"

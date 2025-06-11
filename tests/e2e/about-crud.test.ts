@@ -262,6 +262,7 @@ test.describe('About Me Sections', () => {
 
 				await listPage.aboutMeTable.delete(sectionToDelete.name)
 
+				await expect(await listPage.aboutMeSectionContainer).toBeVisible()
 				await expect(page.getByText(sectionToDelete.name)).not.toBeVisible()
 			})
 
@@ -573,6 +574,7 @@ test.describe('About Me Categories', () => {
 			await listPage.goto()
 			await listPage.categoriesTable.delete(category.name)
 
+			await expect(await listPage.categoriesSectionContainer).toBeVisible()
 			const categoryRow = await listPage.categoriesTable.getRow(category.name)
 			await expect(categoryRow).not.toBeVisible()
 		})
