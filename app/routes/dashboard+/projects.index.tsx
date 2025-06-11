@@ -153,7 +153,8 @@ const projectColumns = (): ColumnDef<ProjectDataItem>[] => [
 		),
 	},
 	{
-		accessorKey: 'liveDemoUrl',
+		id: 'liveDemoUrl',
+		accessorFn: (row) => row.liveDemoUrl ?? '',
 		header: 'Live Demo',
 		cell: ({ row }) => {
 			if (row.original.liveDemoUrl) {
@@ -167,7 +168,8 @@ const projectColumns = (): ColumnDef<ProjectDataItem>[] => [
 		},
 	},
 	{
-		accessorKey: 'sourceCodeUrl',
+		id: 'sourceCodeUrl',
+		accessorFn: (row) => row.sourceCodeUrl ?? '',
 		header: 'Source Code',
 		cell: ({ row }) => {
 			if (row.original.sourceCodeUrl) {
