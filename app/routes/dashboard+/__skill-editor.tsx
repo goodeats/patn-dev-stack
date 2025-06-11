@@ -1,6 +1,7 @@
 import { useForm, getFormProps, getInputProps } from '@conform-to/react'
 import { getZodConstraint, parseWithZod } from '@conform-to/zod'
 import { useActionData, useFetcher, Form } from 'react-router'
+import z from 'zod'
 import {
 	ErrorList,
 	Field,
@@ -9,14 +10,23 @@ import {
 } from '#app/components/forms.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
 import {
-	type action,
-	SkillEditorSchema,
-	DashboardSkillIntent,
-} from './__skill-editor.server.tsx'
+	CheckboxFieldSchema,
+	StringMinMaxLengthSchema,
+} from '#app/utils/zod-helpers.tsx'
+import { DashboardSkillsIntent } from './skills.index'
+
+export const SkillEditorSchema = z.object({
+	id: z.string().optional(),
+	name: StringMinMaxLengthSchema(1, 100),
+	description: StringMinMaxLengthSchema(1, 500).optional().nullable(),
+	skillCategoryId: z.string({ required_error: 'Category is required' }),
+	isPublished: CheckboxFieldSchema.default(false),
+})
 
 export function SkillEditor({
 	skill,
 	categories,
+	actionData,
 }: {
 	skill?: {
 		id: string
@@ -26,8 +36,11 @@ export function SkillEditor({
 		isPublished: boolean
 	} | null
 	categories: { id: string; name: string }[]
+	actionData?: {
+		result: any
+		status: string
+	}
 }) {
-	const actionData = useActionData<typeof action>()
 	const fetcher = useFetcher()
 	const [form, fields] = useForm({
 		id: 'skill-editor',
