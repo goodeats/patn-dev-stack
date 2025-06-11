@@ -19,6 +19,11 @@ import {
 	getOrInsertAboutMe,
 } from './models/about-test-setup.ts'
 import {
+	type ContactPlaywright,
+	type CreateContactOptions,
+	getOrInsertContact,
+} from './models/contact-test-setup.ts'
+import {
 	type CreateSkillCategoryOptions,
 	type SkillPlaywright,
 	type CreateSkillOptions,
@@ -47,6 +52,7 @@ export const test = base.extend<{
 		options?: CreateSkillCategoryOptions,
 	): Promise<SkillCategoryPlaywright>
 	insertNewSkill(options: CreateSkillOptions): Promise<SkillPlaywright>
+	insertNewContact(options: CreateContactOptions): Promise<ContactPlaywright>
 }>({
 	insertNewUser: async ({}, use) => {
 		let userId: string | undefined = undefined
@@ -158,6 +164,19 @@ export const test = base.extend<{
 		})
 		if (skillId) {
 			await prisma.skill.delete({ where: { id: skillId } }).catch(() => {})
+		}
+	},
+	insertNewContact: async ({}, use) => {
+		let contactId: string | undefined = undefined
+		await use(async (options) => {
+			const contact = await getOrInsertContact(options)
+			contactId = contact.id
+			return contact
+		})
+		if (contactId) {
+			await prisma.socialLink
+				.delete({ where: { id: contactId } })
+				.catch(() => {})
 		}
 	},
 })
