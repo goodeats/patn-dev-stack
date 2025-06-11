@@ -41,7 +41,10 @@ import { Switch } from '#app/components/ui/switch.tsx'
 import { APP_NAME } from '#app/utils/app-name.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
-import { createToastHeaders } from '#app/utils/toast.server.ts'
+import {
+	createToastHeaders,
+	redirectWithToast,
+} from '#app/utils/toast.server.ts'
 import { type Route, type Info } from './+types/skills.index.ts'
 import { handleCategoryAction } from './__skill-category-editor.server.tsx'
 import { SkillCategoryEditor } from './__skill-category-editor.tsx'
@@ -117,17 +120,23 @@ export async function action(args: ActionFunctionArgs) {
 			const skillId = formData.get('skillId')
 			invariantResponse(typeof skillId === 'string', 'Skill ID is required')
 
-			await prisma.skill.deleteMany({
+			const deleted = await prisma.skill.delete({
 				where: { id: skillId, userId },
 			})
+			if (!deleted) {
+				return redirectWithToast('/dashboard/skills', {
+					title: 'Skill not found',
+					description: 'The skill was not found.',
+				})
+			}
 
 			return data(
 				{ type: 'success', entity: 'skill' },
 				{
 					status: 200,
 					headers: await createToastHeaders({
-						title: 'Skill Deleted',
-						description: 'Skill deleted successfully!',
+						title: `${deleted.name} deleted`,
+						description: 'The skill has been deleted successfully.',
 						type: 'success',
 					}),
 				},

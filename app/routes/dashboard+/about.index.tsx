@@ -41,7 +41,10 @@ import { Switch } from '#app/components/ui/switch.tsx'
 import { APP_NAME } from '#app/utils/app-name.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
-import { createToastHeaders } from '#app/utils/toast.server.ts'
+import {
+	createToastHeaders,
+	redirectWithToast,
+} from '#app/utils/toast.server.ts'
 import { type Route, type Info } from './+types/about.index.ts'
 import { handleCategoryAction } from './__about-category-editor.server.tsx'
 import { AboutCategoryEditor } from './__about-category-editor.tsx'
@@ -119,17 +122,24 @@ export async function action(args: ActionFunctionArgs) {
 			const aboutId = formData.get('aboutId')
 			invariantResponse(typeof aboutId === 'string', 'About ID is required')
 
-			await prisma.aboutMe.deleteMany({
+			const deleted = await prisma.aboutMe.delete({
 				where: { id: aboutId, userId },
 			})
+
+			if (!deleted) {
+				return redirectWithToast('/dashboard/about', {
+					title: 'About Me Section not found',
+					description: 'The about me section was not found.',
+				})
+			}
 
 			return data(
 				{ type: 'success', entity: 'aboutMe' },
 				{
 					status: 200,
 					headers: await createToastHeaders({
-						title: 'About Me Section Deleted',
-						description: 'About Me section deleted successfully!',
+						title: `${deleted.name} deleted`,
+						description: 'The about me section has been deleted successfully.',
 						type: 'success',
 					}),
 				},
