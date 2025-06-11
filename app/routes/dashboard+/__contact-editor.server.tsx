@@ -22,13 +22,13 @@ export async function action({ request }: ActionFunctionArgs) {
 		})
 
 		if (!deleted) {
-			return redirectWithToast('/dashboard/contact', {
+			return redirectWithToast('/dashboard/contacts', {
 				title: 'Contact not found',
 				description: 'The contact was not found.',
 			})
 		}
 
-		return redirectWithToast('/dashboard/contact', {
+		return redirectWithToast('/dashboard/contacts', {
 			title: `${deleted.text} deleted`,
 			description: 'The contact has been deleted successfully.',
 		})

@@ -96,7 +96,7 @@ export async function action(args: ActionFunctionArgs) {
 				where: { id: contactId, userId },
 			})
 			if (!deleted) {
-				return redirectWithToast('/dashboard/contact', {
+				return redirectWithToast('/dashboard/contacts', {
 					title: 'Contact not found',
 					description: 'The contact was not found.',
 				})

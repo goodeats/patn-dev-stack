@@ -7,7 +7,7 @@ export interface IEditorPOM {
 
 // A base interface for data passed to editor methods
 export interface BaseEditorData {
-	name: string
+	name?: string
 	description?: string
 }
 

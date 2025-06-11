@@ -1,164 +1,163 @@
 import { faker } from '@faker-js/faker'
 import {
-	type SkillCategoryPlaywright,
-	type SkillPlaywright,
 	type UserPlaywright,
+	type ContactPlaywright,
 	expect,
 	test,
 	testDateToday,
 } from '#tests/playwright-utils.ts'
-import { DashboardSkillDetailsPOM } from '../pom/dashboard/skill-details-page.pom'
-import {
-	type DashboardSkillCategoryEditorDialogPOM,
-	DashboardSkillEditorPOM,
-} from '../pom/dashboard/skill-editors.pom'
-import { DashboardSkillListPOM } from '../pom/dashboard/skill-list-page.pom'
+import { DashboardContactDetailsPOM } from '../pom/dashboard/contact-details-page.pom'
+import { DashboardContactEditorPOM } from '../pom/dashboard/contact-editors.pom'
+import { DashboardContactListPOM } from '../pom/dashboard/contact-list-page.pom'
 
 let user: UserPlaywright
-let listPage: DashboardSkillListPOM
-let detailsPage: DashboardSkillDetailsPOM
-let editorPage: DashboardSkillEditorPOM
-let initialSkill: SkillPlaywright
-let skillToDelete: SkillPlaywright
+let listPage: DashboardContactListPOM
+let detailsPage: DashboardContactDetailsPOM
+let editorPage: DashboardContactEditorPOM
+let initialContact: ContactPlaywright
+let contactToDelete: ContactPlaywright
 
-let skillName: string
-let skillDescription: string
-let updatedName: string
-let updatedDescription: string
+let contactText: string
+let contactHref: string
+let contactIcon: string
+let contactLabel: string
+let updatedText: string
+let updatedHref: string
+let updatedIcon: string
+let updatedLabel: string
 
-test.describe('Skills', () => {
+test.describe('Contacts', () => {
 	test.beforeEach(async ({ page, login }) => {
 		await login()
-		listPage = new DashboardSkillListPOM(page)
-		detailsPage = new DashboardSkillDetailsPOM(page)
+		listPage = new DashboardContactListPOM(page)
+		detailsPage = new DashboardContactDetailsPOM(page)
 	})
 
 	test.describe('CRUD', () => {
-		test.describe('can create a new skill', () => {
-			test.beforeEach(async ({ insertNewSkillCategory }) => {
-				category = await insertNewSkillCategory()
-				skillName = faker.lorem.words(3)
-				skillDescription = faker.lorem.sentence()
+		test.describe('can create a new contact', () => {
+			test.beforeEach(async () => {
+				contactText = faker.lorem.words(3)
+				contactHref = faker.internet.url()
+				contactIcon = 'github'
+				contactLabel = faker.lorem.words(2)
 				await listPage.goto()
 			})
 
 			test('that is published', async () => {
-				const editorPage = await listPage.createNewSkill()
+				const editorPage = await listPage.createNewContact()
 
 				await editorPage.create({
-					name: skillName,
-					description: skillDescription,
-					categoryName: category.name,
+					text: contactText,
+					href: contactHref,
+					icon: contactIcon,
+					label: contactLabel,
 					isPublished: true,
 				})
 
-				await detailsPage.verifySkillDetails({
-					name: skillName,
-					description: skillDescription,
-					category: category.name,
+				await detailsPage.verifyContactDetails({
+					text: contactText,
+					href: contactHref,
+					icon: contactIcon,
+					label: contactLabel,
 					status: 'Published',
 				})
 			})
 
 			test('that is unpublished', async () => {
-				const editorPage = await listPage.createNewSkill()
+				const editorPage = await listPage.createNewContact()
 
 				await editorPage.create({
-					name: skillName,
-					description: skillDescription,
-					categoryName: category.name,
+					text: contactText,
+					href: contactHref,
+					icon: contactIcon,
+					label: contactLabel,
 					isPublished: false,
 				})
 
-				await detailsPage.verifySkillDetails({
-					name: skillName,
-					description: skillDescription,
-					category: category.name,
+				await detailsPage.verifyContactDetails({
+					text: contactText,
+					href: contactHref,
+					icon: contactIcon,
+					label: contactLabel,
 					status: 'Draft',
 				})
 			})
 		})
 
-		test.describe('can edit an existing skill', () => {
-			test.beforeEach(
-				async ({ login, insertNewSkillCategory, insertNewSkill }) => {
-					user = await login()
-					category = await insertNewSkillCategory()
-					category2 = await insertNewSkillCategory()
-					initialSkill = await insertNewSkill({
-						userId: user.id,
-						skillCategoryId: category.id,
-					})
-					updatedName = faker.lorem.words(3)
-					updatedDescription = faker.lorem.sentence()
-				},
-			)
+		test.describe('can edit an existing contact', () => {
+			test.beforeEach(async ({ login, insertNewContact }) => {
+				user = await login()
+				initialContact = await insertNewContact({ userId: user.id })
+				updatedText = faker.lorem.words(3)
+				updatedHref = faker.internet.url()
+				updatedIcon = 'linkedin'
+				updatedLabel = faker.lorem.words(2)
+			})
 
 			test('from the list page', async ({ page }) => {
 				await listPage.goto()
-				const editorPage = await listPage.skillsTable.edit(initialSkill.name)
+				const editorPage = await listPage.contactsTable.edit(
+					initialContact.text,
+				)
 
-				await expect(editorPage.nameInput).toHaveValue(initialSkill.name)
+				await expect(editorPage.textInput).toHaveValue(initialContact.text)
 
 				await editorPage.update({
-					name: updatedName,
-					description: updatedDescription,
-					categoryName: category2.name,
+					text: updatedText,
+					href: updatedHref,
+					icon: updatedIcon,
+					label: updatedLabel,
 				})
 
-				await expect(page).toHaveURL(`/dashboard/skills/${initialSkill.id}`)
+				await expect(page).toHaveURL(`/dashboard/contacts/${initialContact.id}`)
 
-				await detailsPage.verifySkillDetails({
-					name: updatedName,
-					description: updatedDescription,
-					category: category2.name,
+				await detailsPage.verifyContactDetails({
+					text: updatedText,
+					href: updatedHref,
+					icon: updatedIcon,
+					label: updatedLabel,
 					status: 'Published',
 				})
 			})
 
 			test('from the details page', async ({ page }) => {
-				await detailsPage.goto(initialSkill.id)
+				await detailsPage.goto(initialContact.id)
 				const editorPage = await detailsPage.edit()
 
-				await expect(editorPage.nameInput).toHaveValue(initialSkill.name)
-
-				const updatedName = faker.lorem.words(3)
-				const updatedDescription = faker.lorem.sentence()
+				await expect(editorPage.textInput).toHaveValue(initialContact.text)
 
 				await editorPage.update({
-					name: updatedName,
-					description: updatedDescription,
-					categoryName: category2.name,
+					text: updatedText,
+					href: updatedHref,
+					icon: updatedIcon,
+					label: updatedLabel,
 				})
 
-				await expect(page).toHaveURL(`/dashboard/skills/${initialSkill.id}`)
+				await expect(page).toHaveURL(`/dashboard/contacts/${initialContact.id}`)
 
-				await detailsPage.verifySkillDetails({
-					name: updatedName,
-					description: updatedDescription,
-					category: category2.name,
+				await detailsPage.verifyContactDetails({
+					text: updatedText,
+					href: updatedHref,
+					icon: updatedIcon,
+					label: updatedLabel,
 					status: 'Published',
 				})
 			})
 		})
 
 		test.describe('can toggle publish status', () => {
-			test.beforeEach(
-				async ({ login, insertNewSkillCategory, insertNewSkill }) => {
-					user = await login()
-					category = await insertNewSkillCategory()
-					initialSkill = await insertNewSkill({
-						userId: user.id,
-						skillCategoryId: category.id,
-						isPublished: true,
-					})
-				},
-			)
+			test.beforeEach(async ({ login, insertNewContact }) => {
+				user = await login()
+				initialContact = await insertNewContact({
+					userId: user.id,
+					isPublished: true,
+				})
+			})
 
 			test('from the list page', async ({ page }) => {
 				await listPage.goto()
-				const publishSwitch = await listPage.skillsTable.getSwitch(
-					initialSkill.name,
+				const publishSwitch = await listPage.contactsTable.getSwitch(
+					initialContact.text,
 				)
 
 				// Initially published
@@ -171,23 +170,23 @@ test.describe('Skills', () => {
 				// Verify persisted after reload
 				await page.reload()
 				await expect(
-					await listPage.skillsTable.getSwitch(initialSkill.name),
+					await listPage.contactsTable.getSwitch(initialContact.text),
 				).not.toBeChecked()
 
 				// Toggle back to published
-				await listPage.skillsTable.toggleSwitch(initialSkill.name)
+				await listPage.contactsTable.toggleSwitch(initialContact.text)
 				await expect(
-					await listPage.skillsTable.getSwitch(initialSkill.name),
+					await listPage.contactsTable.getSwitch(initialContact.text),
 				).toBeChecked()
 
 				await page.reload()
 				await expect(
-					await listPage.skillsTable.getSwitch(initialSkill.name),
+					await listPage.contactsTable.getSwitch(initialContact.text),
 				).toBeChecked()
 			})
 
 			test('from the edit page', async ({}) => {
-				await detailsPage.goto(initialSkill.id)
+				await detailsPage.goto(initialContact.id)
 				const editorPage = await detailsPage.edit()
 
 				// Initially published
@@ -197,10 +196,11 @@ test.describe('Skills', () => {
 				await editorPage.publishSwitch.click()
 				await editorPage.saveButton.click()
 
-				await detailsPage.verifySkillDetails({
-					name: initialSkill.name,
-					description: initialSkill.description ?? '',
-					category: category.name,
+				await detailsPage.verifyContactDetails({
+					text: initialContact.text,
+					href: initialContact.href,
+					icon: initialContact.icon,
+					label: initialContact.label,
 					status: 'Draft',
 				})
 
@@ -209,156 +209,126 @@ test.describe('Skills', () => {
 				await editorPage.publishSwitch.click()
 				await editorPage.saveButton.click()
 
-				await detailsPage.verifySkillDetails({
-					name: initialSkill.name,
-					description: initialSkill.description ?? '',
-					category: category.name,
+				await detailsPage.verifyContactDetails({
+					text: initialContact.text,
+					href: initialContact.href,
+					icon: initialContact.icon,
+					label: initialContact.label,
 					status: 'Published',
 				})
 			})
 		})
 
-		test.describe('can delete an existing skill', () => {
-			test.beforeEach(async ({ login, insertNewSkill }) => {
+		test.describe('can delete an existing contact', () => {
+			test.beforeEach(async ({ login, insertNewContact }) => {
 				user = await login()
-				skillToDelete = await insertNewSkill({ userId: user.id })
+				contactToDelete = await insertNewContact({ userId: user.id })
 			})
 
 			test('can be deleted from the list page', async ({ page }) => {
 				await listPage.goto()
-				await expect(page.getByText(skillToDelete.name)).toBeVisible()
+				await expect(
+					page.getByRole('link', { name: contactToDelete.text }),
+				).toBeVisible()
 
-				await listPage.skillsTable.delete(skillToDelete.name)
+				await listPage.contactsTable.delete(contactToDelete.text)
 
-				await expect(await listPage.skillsSectionContainer).toBeVisible()
-				await expect(page.getByText(skillToDelete.name)).not.toBeVisible()
+				await expect(await listPage.contactsSectionContainer).toBeVisible()
+				await expect(
+					page.getByRole('link', { name: contactToDelete.text }),
+				).not.toBeVisible()
 			})
 
 			test('can be deleted from its edit page', async ({ page }) => {
-				const editorPage = new DashboardSkillEditorPOM(page)
+				const editorPage = new DashboardContactEditorPOM(page)
 
-				await editorPage.gotoEdit(skillToDelete.id)
+				await editorPage.gotoEdit(contactToDelete.id)
 
 				await editorPage.delete()
 
-				await expect(page.getByText(skillToDelete.name)).not.toBeVisible()
+				await expect(page.getByText(contactToDelete.text)).not.toBeVisible()
 			})
 		})
 
-		test('displays existing skills and categories on the main page', async ({
+		test('displays existing contacts on the main page', async ({
 			login,
-			insertNewSkill,
-			insertNewSkillCategory,
+			insertNewContact,
 		}) => {
 			const user = await login()
-			const category1 = await insertNewSkillCategory()
-			const category2 = await insertNewSkillCategory()
-			const skill1 = await insertNewSkill({
-				userId: user.id,
-				skillCategoryId: category1.id,
-			})
-			const skill2 = await insertNewSkill({
-				userId: user.id,
-				skillCategoryId: category2.id,
-			})
+			const contact1 = await insertNewContact({ userId: user.id })
+			const contact2 = await insertNewContact({ userId: user.id })
 
 			await listPage.goto()
 
-			const skillsTable = listPage.skillsTable
-			await skillsTable.verifyHeaders()
-			await skillsTable.verifyData([
-				[skill2.name, category2.name, testDateToday, testDateToday],
-				[skill1.name, category1.name, testDateToday, testDateToday],
-			])
-
-			const categoriesTable = listPage.categoriesTable
-			await categoriesTable.verifyHeaders()
-			await categoriesTable.verifyData([
-				[
-					category2.name,
-					category2.description ?? '',
-					testDateToday,
-					testDateToday,
-				],
-				[
-					category1.name,
-					category1.description ?? '',
-					testDateToday,
-					testDateToday,
-				],
+			const contactsTable = listPage.contactsTable
+			await contactsTable.verifyHeaders()
+			await contactsTable.verifyData([
+				[contact2.text, contact2.href, testDateToday, testDateToday],
+				[contact1.text, contact1.href, testDateToday, testDateToday],
 			])
 		})
 	})
 
 	test.describe('Validation', () => {
-		test.beforeEach(async ({ page, login, insertNewSkillCategory }) => {
+		test.beforeEach(async ({ page, login }) => {
 			user = await login({ name: faker.person.firstName() })
-			category = await insertNewSkillCategory({
-				name: 'Professional',
-			})
-			editorPage = new DashboardSkillEditorPOM(page)
+			editorPage = new DashboardContactEditorPOM(page)
 		})
 
-		test('validates Skill creation', async ({ page }) => {
+		test('validates Contact creation', async ({ page }) => {
 			await editorPage.gotoNew()
 			await editorPage.createButton.click()
 			await editorPage.verifyRequiredErrors()
 
-			await editorPage.nameInput.fill(faker.lorem.words(2))
+			await editorPage.textInput.fill(faker.lorem.words(2))
 			await editorPage.createButton.click()
-			await editorPage.verifyRequiredNameError(false)
-			await editorPage.verifyRequiredCategoryError()
+			await editorPage.verifyRequiredTextError(false)
+			await editorPage.verifyRequiredHrefError()
 
 			// Successfully create with valid data
-			await editorPage.selectCategory(category.name)
+			await editorPage.hrefInput.fill(faker.internet.url())
 			await editorPage.createButton.click()
-			await expect(page).toHaveURL(/\/dashboard\/skills\/[a-zA-Z0-9]+$/)
+			await expect(page).toHaveURL(/\/dashboard\/contacts\/[a-zA-Z0-9]+$/)
 		})
 
-		test('validates Skill editing', async ({ page, insertNewSkill }) => {
-			const skill = await insertNewSkill({
-				userId: user.id,
-				skillCategoryId: category.id,
-			})
-			const detailsPage = new DashboardSkillDetailsPOM(page)
+		test('validates Contact editing', async ({ page, insertNewContact }) => {
+			const contact = await insertNewContact({ userId: user.id })
+			const detailsPage = new DashboardContactDetailsPOM(page)
 
-			await detailsPage.goto(skill.id)
+			await detailsPage.goto(contact.id)
 			await detailsPage.edit()
 
 			// Test editing validation
-			await editorPage.clearName()
+			await editorPage.clearText()
 			await editorPage.saveButton.click()
-			await expect(editorPage.nameError).toBeVisible()
+			await expect(editorPage.textError).toBeVisible()
 
-			await editorPage.nameInput.fill(faker.lorem.words(2)) // Restore name
+			await editorPage.textInput.fill(faker.lorem.words(2)) // Restore text
 		})
 	})
 
 	test.describe('List Page Functionality', () => {
-		test('filters skills by category', async ({
+		test('filters contacts by text and URL', async ({
 			page,
 			login,
-			insertNewSkillCategory,
-			insertNewSkill,
+			insertNewContact,
 		}) => {
 			const user = await login()
-			const category1 = await insertNewSkillCategory()
-			const category2 = await insertNewSkillCategory()
-			const skill1 = await insertNewSkill({
-				userId: user.id,
-				skillCategoryId: category1.id,
-			})
-			const skill2 = await insertNewSkill({
-				userId: user.id,
-				skillCategoryId: category2.id,
-			})
+			const contact1 = await insertNewContact({ userId: user.id })
+			const contact2 = await insertNewContact({ userId: user.id })
 
 			await listPage.goto()
 
-			// Filter by category
-			await listPage.skillsTable.filterByCategory(category2.name)
-			await expect(page.getByText(skill1.name)).not.toBeVisible()
-			await expect(page.getByText(skill2.name)).toBeVisible()
+			// Filter by text
+			await listPage.contactsTable.filterByName(contact2.text)
+			await expect(page.getByText(contact1.text)).not.toBeVisible()
+			await expect(page.getByText(contact2.text)).toBeVisible()
+
+			// Filter by URL
+			await listPage.contactsTable.clearNameFilter()
+			await listPage.contactsTable.filterByUrl(contact1.href)
+			await expect(page.getByText(contact2.text)).not.toBeVisible()
+			await expect(page.getByText(contact1.text)).toBeVisible()
 		})
 	})
 })
