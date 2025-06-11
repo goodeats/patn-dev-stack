@@ -21,7 +21,6 @@ import {
 	DataTableSortHeader,
 } from '#app/components/data-table.tsx'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
-import { ExternalIconLink } from '#app/components/external-icon-link.tsx'
 import { TooltipDataTableRowLink } from '#app/components/tooltip-links.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import {
@@ -40,7 +39,7 @@ import {
 	createToastHeaders,
 	redirectWithToast,
 } from '#app/utils/toast.server.ts'
-import { type Route, type Info } from './+types/contacts.index.ts'
+import { type Route, type Info } from './+types/projects.index.ts'
 
 export const handle: SEOHandle = {
 	getSitemapEntries: () => null,
@@ -48,32 +47,38 @@ export const handle: SEOHandle = {
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	const userId = await requireUserId(request)
-	const contactsData = await prisma.socialLink.findMany({
+	const projectsData = await prisma.project.findMany({
 		where: { userId },
 		select: {
 			id: true,
-			href: true,
-			icon: true,
-			label: true,
-			text: true,
+			title: true,
+			description: true,
 			isPublished: true,
+			liveDemoUrl: true,
+			sourceCodeUrl: true,
+			comments: true,
 			createdAt: true,
 			updatedAt: true,
 			userId: true,
+			_count: {
+				select: {
+					skills: true,
+				},
+			},
 		},
 		orderBy: { createdAt: 'desc' },
 	})
 
-	return data({ contactsData })
+	return data({ projectsData })
 }
 
-type ContactDataItem = Info['loaderData']['contactsData'][number]
+type ProjectDataItem = Info['loaderData']['projectsData'][number]
 
-export const DashboardContactIntent = {
-	CONTACT_CREATE: 'contact-create',
-	CONTACT_UPDATE: 'contact-update',
-	CONTACT_DELETE: 'contact-delete',
-	CONTACT_PUBLISH_TOGGLE: 'contact-publish-toggle',
+export const DashboardProjectIntent = {
+	PROJECT_CREATE: 'project-create',
+	PROJECT_UPDATE: 'project-update',
+	PROJECT_DELETE: 'project-delete',
+	PROJECT_PUBLISH_TOGGLE: 'project-publish-toggle',
 } as const
 
 export async function action(args: ActionFunctionArgs) {
@@ -83,47 +88,47 @@ export async function action(args: ActionFunctionArgs) {
 	const intent = formData.get('intent')
 
 	switch (intent) {
-		case DashboardContactIntent.CONTACT_DELETE: {
-			const contactId = formData.get('contactId')
-			invariantResponse(typeof contactId === 'string', 'Contact ID is required')
+		case DashboardProjectIntent.PROJECT_DELETE: {
+			const projectId = formData.get('projectId')
+			invariantResponse(typeof projectId === 'string', 'Project ID is required')
 
-			const deleted = await prisma.socialLink.delete({
-				where: { id: contactId, userId },
+			const deleted = await prisma.project.delete({
+				where: { id: projectId, userId },
 			})
 			if (!deleted) {
-				return redirectWithToast('/dashboard/contacts', {
-					title: 'Contact not found',
-					description: 'The contact was not found.',
+				return redirectWithToast('/dashboard/projects', {
+					title: 'Project not found',
+					description: 'The project was not found.',
 				})
 			}
 
 			return data(
-				{ type: 'success', entity: 'contact' },
+				{ type: 'success', entity: 'project' },
 				{
 					status: 200,
 					headers: await createToastHeaders({
-						title: `${deleted.text} deleted`,
-						description: 'The contact has been deleted successfully.',
+						title: `${deleted.title} deleted`,
+						description: 'The project has been deleted successfully.',
 						type: 'success',
 					}),
 				},
 			)
 		}
 
-		case DashboardContactIntent.CONTACT_PUBLISH_TOGGLE: {
-			const contactId = formData.get('contactId')
+		case DashboardProjectIntent.PROJECT_PUBLISH_TOGGLE: {
+			const projectId = formData.get('projectId')
 			const isPublished = formData.get('isPublished') === 'true'
-			invariantResponse(typeof contactId === 'string', 'Contact ID is required')
+			invariantResponse(typeof projectId === 'string', 'Project ID is required')
 
-			await prisma.socialLink.updateMany({
-				where: { id: contactId, userId },
+			await prisma.project.updateMany({
+				where: { id: projectId, userId },
 				data: { isPublished },
 			})
 
 			return data({
 				type: 'success',
-				message: 'Publish status updated for contact',
-				entity: 'contact',
+				message: 'Publish status updated for project',
+				entity: 'project',
 			})
 		}
 
@@ -133,30 +138,35 @@ export async function action(args: ActionFunctionArgs) {
 	}
 }
 
-const contactColumns = (): ColumnDef<ContactDataItem>[] => [
-	createDataTableSelectColumn<ContactDataItem>(),
+const projectColumns = (): ColumnDef<ProjectDataItem>[] => [
+	createDataTableSelectColumn<ProjectDataItem>(),
 	{
-		accessorKey: 'text',
-		header: 'Name',
+		accessorKey: 'title',
+		header: 'Title',
 		cell: ({ row }) => (
 			<TooltipDataTableRowLink
 				to={row.original.id}
-				label={row.original.text}
-				description={row.original.label}
+				label={row.original.title}
+				description={row.original.description}
 			/>
 		),
 	},
 	{
-		accessorKey: 'href',
-		id: 'href',
-		header: 'URL',
+		accessorKey: 'description',
+		header: 'Description',
 		cell: ({ row }) => (
-			<div className="flex items-center gap-2">
-				<ExternalIconLink iconLink={row.original} />
-				<span className="text-muted-foreground text-sm">
-					{row.original.href}
-				</span>
-			</div>
+			<span className="text-muted-foreground line-clamp-2 text-sm">
+				{row.original.description}
+			</span>
+		),
+	},
+	{
+		accessorKey: '_count.skills',
+		header: 'Skills',
+		cell: ({ row }) => (
+			<span className="text-muted-foreground text-sm">
+				{row.original._count.skills}
+			</span>
 		),
 	},
 	{
@@ -178,21 +188,21 @@ const contactColumns = (): ColumnDef<ContactDataItem>[] => [
 		header: 'Published',
 		cell: function IsPublishedCell({ row }) {
 			const fetcher = useFetcher()
-			const contact = row.original
+			const project = row.original
 			const isOptimisticPublished = fetcher.formData
 				? fetcher.formData.get('isPublished') === 'true'
-				: contact.isPublished
+				: project.isPublished
 
 			return (
 				<fetcher.Form
 					method="post"
 					className="flex items-center justify-center"
 				>
-					<input type="hidden" name="contactId" value={contact.id} />
+					<input type="hidden" name="projectId" value={project.id} />
 					<input
 						type="hidden"
 						name="intent"
-						value={DashboardContactIntent.CONTACT_PUBLISH_TOGGLE}
+						value={DashboardProjectIntent.PROJECT_PUBLISH_TOGGLE}
 					/>
 					<Switch
 						checked={isOptimisticPublished}
@@ -200,13 +210,13 @@ const contactColumns = (): ColumnDef<ContactDataItem>[] => [
 							const formData = new FormData()
 							formData.set(
 								'intent',
-								DashboardContactIntent.CONTACT_PUBLISH_TOGGLE,
+								DashboardProjectIntent.PROJECT_PUBLISH_TOGGLE,
 							)
-							formData.set('contactId', contact.id)
+							formData.set('projectId', project.id)
 							formData.set('isPublished', String(checked))
 							void fetcher.submit(formData, { method: 'post' })
 						}}
-						aria-label={`Toggle publish status for ${contact.text}`}
+						aria-label={`Toggle publish status for ${project.title}`}
 					/>
 				</fetcher.Form>
 			)
@@ -222,7 +232,7 @@ const contactColumns = (): ColumnDef<ContactDataItem>[] => [
 						className="data-[state=open]:bg-muted flex size-8 p-0"
 					>
 						<Icon name="dots-horizontal" className="size-4" />
-						<span className="sr-only">Open contact menu</span>
+						<span className="sr-only">Open project menu</span>
 					</Button>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align="end" className="w-[160px]">
@@ -234,16 +244,16 @@ const contactColumns = (): ColumnDef<ContactDataItem>[] => [
 						<Form
 							method="post"
 							onSubmit={(e) => {
-								if (!confirm('Are you sure you want to delete this contact?')) {
+								if (!confirm('Are you sure you want to delete this project?')) {
 									e.preventDefault()
 								}
 							}}
 						>
-							<input type="hidden" name="contactId" value={row.original.id} />
+							<input type="hidden" name="projectId" value={row.original.id} />
 							<button
 								type="submit"
 								name="intent"
-								value={DashboardContactIntent.CONTACT_DELETE}
+								value={DashboardProjectIntent.PROJECT_DELETE}
 								className="bg-destructive text-destructive-foreground hover:bg-destructive/90 relative flex w-full cursor-default items-center rounded-sm px-2 py-1.5 text-sm transition-colors outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
 							>
 								Delete
@@ -256,35 +266,35 @@ const contactColumns = (): ColumnDef<ContactDataItem>[] => [
 	},
 ]
 
-export default function DashboardContactIndexRoute({
+export default function DashboardProjectIndexRoute({
 	loaderData,
 }: Route.ComponentProps) {
-	const { contactsData } = loaderData
+	const { projectsData } = loaderData
 
-	const memoizedContactColumns = React.useMemo(() => contactColumns(), [])
+	const memoizedProjectColumns = React.useMemo(() => projectColumns(), [])
 
 	return (
-		<AppContainerContent id="contacts-content" className="container space-y-8">
+		<AppContainerContent id="projects-content" className="container space-y-8">
 			<AppContainerGroup className="px-0">
 				<BackLink label="Back to Dashboard" className="self-start" />
 			</AppContainerGroup>
 
 			<AppContainerGroup className="px-0">
-				<h1 className="text-2xl font-bold">Contacts</h1>
+				<h1 className="text-2xl font-bold">Projects</h1>
 			</AppContainerGroup>
 
-			<AppContainerGroup id="contacts-list" className="px-0">
-				<h1 className="text-xl font-bold">Contacts List</h1>
+			<AppContainerGroup id="projects-list" className="px-0">
+				<h1 className="text-xl font-bold">Projects List</h1>
 				<DataTable
-					columns={memoizedContactColumns}
-					data={contactsData}
+					columns={memoizedProjectColumns}
+					data={projectsData}
 					getRowId={(row) => row.id}
 					toolbarActions={<NewLink />}
 					filterFields={[
-						{ accessorKey: 'text', placeholder: 'Filter name...' },
+						{ accessorKey: 'title', placeholder: 'Filter title...' },
 						{
-							accessorKey: 'href',
-							placeholder: 'Filter URL...',
+							accessorKey: 'description',
+							placeholder: 'Filter description...',
 						},
 					]}
 				/>
@@ -295,10 +305,10 @@ export default function DashboardContactIndexRoute({
 
 export const meta = () => {
 	return [
-		{ title: `Contacts Info | Dashboard | ${APP_NAME}` },
+		{ title: `Projects | Dashboard | ${APP_NAME}` },
 		{
 			name: 'description',
-			content: `Manage contacts in the ${APP_NAME} dashboard.`,
+			content: `Manage projects in the ${APP_NAME} dashboard.`,
 		},
 	]
 }
@@ -307,7 +317,7 @@ export function ErrorBoundary() {
 	return (
 		<GeneralErrorBoundary
 			statusHandlers={{
-				404: () => <p>No contacts found.</p>,
+				404: () => <p>No projects found.</p>,
 			}}
 		/>
 	)
