@@ -11,7 +11,7 @@ import { type Route } from './+types/contacts.new.ts'
 import { type action as contactEditorAction } from './__contact-editor.server.tsx'
 import { ContactEditor } from './__contact-editor.tsx'
 
-export { action } from './__skill-editor.server.tsx'
+export { action } from './__contact-editor.server.tsx'
 
 export const handle: SEOHandle = {
 	getSitemapEntries: () => null,
@@ -27,13 +27,13 @@ export default function DashboardContactsNewRoute({}: Route.ComponentProps) {
 	const actionData = useActionData<typeof contactEditorAction>()
 
 	return (
-		<AppContainerContent id="skill-new-content" className="container py-6">
+		<AppContainerContent id="contact-new-content" className="container py-6">
 			<AppContainerGroup className="px-0">
-				<BackLink label="Back to Skills" className="self-start" />
+				<BackLink label="Back to Contacts" className="self-start" />
 			</AppContainerGroup>
 
 			<AppContainerGroup className="px-0">
-				<h1 className="text-2xl font-bold">Create New Skill</h1>
+				<h1 className="text-2xl font-bold">Create New Contact</h1>
 			</AppContainerGroup>
 
 			<AppContainerGroup className="px-0">
@@ -45,10 +45,10 @@ export default function DashboardContactsNewRoute({}: Route.ComponentProps) {
 
 export const meta: Route.MetaFunction = () => {
 	return [
-		{ title: 'Create Skill | Dashboard' },
+		{ title: 'Create Contact | Dashboard' },
 		{
 			name: 'description',
-			content: 'Create a new skill',
+			content: 'Create a new contact',
 		},
 	]
 }

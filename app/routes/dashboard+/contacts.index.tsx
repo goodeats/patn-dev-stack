@@ -262,7 +262,7 @@ export default function DashboardContactIndexRoute({
 	const memoizedContactColumns = React.useMemo(() => contactColumns(), [])
 
 	return (
-		<AppContainerContent id="skills-content" className="container space-y-8">
+		<AppContainerContent id="contacts-content" className="container space-y-8">
 			<AppContainerGroup className="px-0">
 				<BackLink label="Back to Dashboard" className="self-start" />
 			</AppContainerGroup>
@@ -271,7 +271,7 @@ export default function DashboardContactIndexRoute({
 				<h1 className="text-2xl font-bold">Contacts</h1>
 			</AppContainerGroup>
 
-			<AppContainerGroup id="skills-list" className="px-0">
+			<AppContainerGroup id="contacts-list" className="px-0">
 				<h1 className="text-xl font-bold">Contacts List</h1>
 				<DataTable
 					columns={memoizedContactColumns}

@@ -11,6 +11,7 @@ import {
 } from '#app/components/entity-details.tsx'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { CardDetailsValue, CardDetailsItem } from '#app/components/ui/card.tsx'
+import { Icon, type IconName } from '#app/components/ui/icon.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { type Route } from './+types/contacts.$contactId.ts'
@@ -70,7 +71,9 @@ export default function DashboardContactDetailsRoute({
 					</CardDetailsItem>
 
 					<CardDetailsItem label="Icon">
-						<CardDetailsValue>{contact.icon}</CardDetailsValue>
+						<CardDetailsValue>
+							<Icon name={contact.icon as IconName} size="lg" /> {contact.icon}
+						</CardDetailsValue>
 					</CardDetailsItem>
 
 					<CardDetailsItem label="Label">
