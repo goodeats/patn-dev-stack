@@ -3,6 +3,7 @@ import {
 	getFormProps,
 	getInputProps,
 	FormProvider,
+	getTextareaProps,
 } from '@conform-to/react'
 import { getZodConstraint, parseWithZod } from '@conform-to/zod'
 import { Form } from 'react-router'
@@ -10,7 +11,12 @@ import z from 'zod'
 import { AppContainerContent } from '#app/components/app-container.tsx'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { nonFloatingToolbarClassName } from '#app/components/floating-toolbar.tsx'
-import { ErrorList, Field, ToggleField } from '#app/components/forms.tsx'
+import {
+	ErrorList,
+	Field,
+	TextareaField,
+	ToggleField,
+} from '#app/components/forms.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
 import { cn, useIsPending } from '#app/utils/misc.tsx'
@@ -24,10 +30,11 @@ import { DashboardProjectIntent } from './projects.index'
 export const ProjectEditorSchema = z.object({
 	id: z.string().optional(),
 	title: StringMinMaxLengthSchema(1, 100),
-	description: StringMinMaxLengthSchema(1, 1000),
+	description: StringMinMaxLengthSchema(1, 1000).optional().nullable(),
 	liveDemoUrl: z.string().url('Must be a valid URL').optional().nullable(),
 	sourceCodeUrl: z.string().url('Must be a valid URL').optional().nullable(),
 	isPublished: CheckboxFieldSchema.default(true),
+	comments: StringMinMaxLengthSchema(1, 1000).optional().nullable(),
 })
 
 export function ProjectEditor({
@@ -100,6 +107,13 @@ export function ProjectEditor({
 								placeholder: 'Enter source code URL (optional)',
 							}}
 							errors={fields.sourceCodeUrl.errors}
+						/>
+						<TextareaField
+							labelProps={{ children: 'Comments (Optional)' }}
+							textareaProps={{
+								...getTextareaProps(fields.comments),
+							}}
+							errors={fields.comments.errors}
 						/>
 
 						<ToggleField

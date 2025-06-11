@@ -80,36 +80,40 @@ export default function DashboardProjectDetailsRoute({
 						</CardDetailsValue>
 					</CardDetailsItem>
 
-					{project.liveDemoUrl ? (
-						<CardDetailsItem label="Live Demo URL">
-							<CardDetailsValue>
+					<CardDetailsItem label="Live Demo URL">
+						<CardDetailsValue>
+							{project.liveDemoUrl ? (
 								<ExternalLink href={project.liveDemoUrl} ariaLabel="Live Demo">
 									{project.liveDemoUrl}
 								</ExternalLink>
-							</CardDetailsValue>
-						</CardDetailsItem>
-					) : null}
+							) : (
+								<span className="text-muted-foreground">None</span>
+							)}
+						</CardDetailsValue>
+					</CardDetailsItem>
 
-					{project.sourceCodeUrl ? (
-						<CardDetailsItem label="Source Code URL">
-							<CardDetailsValue>
+					<CardDetailsItem label="Source Code URL">
+						<CardDetailsValue>
+							{project.sourceCodeUrl ? (
 								<ExternalLink
 									href={project.sourceCodeUrl}
 									ariaLabel="Source Code"
 								>
 									{project.sourceCodeUrl}
 								</ExternalLink>
-							</CardDetailsValue>
-						</CardDetailsItem>
-					) : null}
+							) : (
+								<span className="text-muted-foreground">None</span>
+							)}
+						</CardDetailsValue>
+					</CardDetailsItem>
 
-					{project.comments ? (
-						<CardDetailsItem label="Comments">
-							<CardDetailsValue variant="prose">
-								{project.comments}
-							</CardDetailsValue>
-						</CardDetailsItem>
-					) : null}
+					<CardDetailsItem label="Comments">
+						<CardDetailsValue variant="prose">
+							{project.comments || (
+								<span className="text-muted-foreground">None</span>
+							)}
+						</CardDetailsValue>
+					</CardDetailsItem>
 
 					<CardDetailsItem label="Skills Count">
 						<CardDetailsValue>{project._count.skills}</CardDetailsValue>

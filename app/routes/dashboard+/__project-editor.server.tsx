@@ -72,6 +72,7 @@ export async function action({ request }: ActionFunctionArgs) {
 		description,
 		liveDemoUrl,
 		sourceCodeUrl,
+		comments,
 		isPublished = true,
 	} = submission.value
 
@@ -80,6 +81,7 @@ export async function action({ request }: ActionFunctionArgs) {
 		description,
 		liveDemoUrl,
 		sourceCodeUrl,
+		comments,
 		isPublished,
 	}
 

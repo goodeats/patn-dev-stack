@@ -24,6 +24,11 @@ import {
 	getOrInsertContact,
 } from './models/contact-test-setup.ts'
 import {
+	getOrInsertProject,
+	type CreateProjectOptions,
+	type ProjectPlaywright,
+} from './models/project-test-setup.ts'
+import {
 	type CreateSkillCategoryOptions,
 	type SkillPlaywright,
 	type CreateSkillOptions,
@@ -53,6 +58,7 @@ export const test = base.extend<{
 	): Promise<SkillCategoryPlaywright>
 	insertNewSkill(options: CreateSkillOptions): Promise<SkillPlaywright>
 	insertNewContact(options: CreateContactOptions): Promise<ContactPlaywright>
+	insertNewProject(options: CreateProjectOptions): Promise<ProjectPlaywright>
 }>({
 	insertNewUser: async ({}, use) => {
 		let userId: string | undefined = undefined
@@ -177,6 +183,17 @@ export const test = base.extend<{
 			await prisma.socialLink
 				.delete({ where: { id: contactId } })
 				.catch(() => {})
+		}
+	},
+	insertNewProject: async ({}, use) => {
+		let projectId: string | undefined = undefined
+		await use(async (options) => {
+			const project = await getOrInsertProject(options)
+			projectId = project.id
+			return project
+		})
+		if (projectId) {
+			await prisma.project.delete({ where: { id: projectId } }).catch(() => {})
 		}
 	},
 })
