@@ -91,102 +91,117 @@ export async function loader({ request }: LoaderFunctionArgs) {
 type AboutMeDataItem = Info['loaderData']['aboutMeData'][number]
 type AboutMeCategoryDataItem = Info['loaderData']['aboutMeCategoryData'][number]
 
+export const DashboardAboutIntent = {
+	CATEGORY_CREATE: 'category-create',
+	CATEGORY_UPDATE: 'category-update',
+	CATEGORY_DELETE: 'category-delete',
+	ABOUT_ME_DELETE: 'about-me-delete',
+	ABOUT_ME_PUBLISH_TOGGLE: 'about-me-publish-toggle',
+	CATEGORY_PUBLISH_TOGGLE: 'category-publish-toggle',
+} as const
+
 export async function action(args: ActionFunctionArgs) {
-	console.log('action', args)
 	const { request } = args
 	const userId = await requireUserId(request)
 	const formData = await request.formData()
 	const intent = formData.get('intent')
 
-	// Handle category actions
-	if (
-		intent === 'createCategory' ||
-		intent === 'updateCategory' ||
-		intent === 'deleteCategory'
-	) {
-		return handleCategoryAction(formData)
+	switch (intent) {
+		case DashboardAboutIntent.CATEGORY_CREATE:
+		case DashboardAboutIntent.CATEGORY_UPDATE:
+		case DashboardAboutIntent.CATEGORY_DELETE: {
+			return handleCategoryAction(formData)
+		}
+
+		case DashboardAboutIntent.ABOUT_ME_DELETE: {
+			const aboutId = formData.get('aboutId')
+			invariantResponse(typeof aboutId === 'string', 'About ID is required')
+
+			await prisma.aboutMe.deleteMany({
+				where: {
+					id: aboutId,
+					userId,
+				},
+			})
+
+			return data(
+				{ type: 'success', entity: 'aboutMe' },
+				{
+					status: 200,
+					headers: await createToastHeaders({
+						title: 'About Me Section Deleted',
+						description: 'About Me section deleted successfully!',
+						type: 'success',
+					}),
+				},
+			)
+		}
+
+		case DashboardAboutIntent.ABOUT_ME_PUBLISH_TOGGLE: {
+			const aboutId = formData.get('aboutId')
+			const isPublished = formData.get('isPublished') === 'true'
+
+			invariantResponse(typeof aboutId === 'string', 'About ID is required')
+
+			await prisma.aboutMe.updateMany({
+				where: {
+					id: aboutId,
+					userId,
+				},
+				data: {
+					isPublished,
+				},
+			})
+
+			return {
+				type: 'success',
+				message: 'Publish status updated for About Me section',
+				entity: 'aboutMe',
+			} as const
+		}
+
+		case DashboardAboutIntent.CATEGORY_DELETE: {
+			const categoryId = formData.get('categoryId')
+			invariantResponse(
+				typeof categoryId === 'string',
+				'Category ID is required',
+			)
+
+			await prisma.aboutMeCategory.delete({
+				where: {
+					id: categoryId,
+				},
+			})
+			return { type: 'success', entity: 'aboutMeCategory' } as const
+		}
+
+		case DashboardAboutIntent.CATEGORY_PUBLISH_TOGGLE: {
+			const categoryId = formData.get('categoryId')
+			const isPublished = formData.get('isPublished') === 'true'
+			invariantResponse(
+				typeof categoryId === 'string',
+				'Category ID is required',
+			)
+
+			await prisma.aboutMeCategory.update({
+				where: {
+					id: categoryId,
+				},
+				data: {
+					isPublished,
+				},
+			})
+			return {
+				type: 'success',
+				message: 'Publish status updated for category',
+				entity: 'aboutMeCategory',
+			} as const
+		}
+
+		default: {
+			throw new Error(`Invalid intent: ${intent}`)
+		}
 	}
-
-	if (intent === 'deleteAboutMe') {
-		const aboutId = formData.get('aboutId')
-		invariantResponse(typeof aboutId === 'string', 'About ID is required')
-
-		await prisma.aboutMe.deleteMany({
-			where: {
-				id: aboutId,
-				userId,
-			},
-		})
-
-		return data(
-			{ type: 'success', entity: 'aboutMe' },
-			{
-				status: 200,
-				headers: await createToastHeaders({
-					title: 'About Me Section Deleted',
-					description: 'About Me section deleted successfully!',
-					type: 'success',
-				}),
-			},
-		)
-	}
-
-	if (intent === 'toggleAboutMeIsPublished') {
-		const aboutId = formData.get('aboutId')
-		const isPublished = formData.get('isPublished') === 'true'
-
-		invariantResponse(typeof aboutId === 'string', 'About ID is required')
-
-		await prisma.aboutMe.updateMany({
-			where: {
-				id: aboutId,
-				userId,
-			},
-			data: {
-				isPublished,
-			},
-		})
-
-		return {
-			type: 'success',
-			message: 'Publish status updated for About Me section',
-			entity: 'aboutMe',
-		} as const
-	}
-
-	if (intent === 'deleteAboutMeCategory') {
-		const categoryId = formData.get('categoryId')
-		invariantResponse(typeof categoryId === 'string', 'Category ID is required')
-
-		await prisma.aboutMeCategory.delete({
-			where: {
-				id: categoryId,
-			},
-		})
-		return { type: 'success', entity: 'aboutMeCategory' } as const
-	}
-
-	if (intent === 'toggleAboutMeCategoryIsPublished') {
-		const categoryId = formData.get('categoryId')
-		const isPublished = formData.get('isPublished') === 'true'
-		invariantResponse(typeof categoryId === 'string', 'Category ID is required')
-
-		await prisma.aboutMeCategory.update({
-			where: {
-				id: categoryId,
-			},
-			data: {
-				isPublished,
-			},
-		})
-		return {
-			type: 'success',
-			message: 'Publish status updated for category',
-			entity: 'aboutMeCategory',
-		} as const
-	}
-
-	throw new Error(`Invalid intent: ${intent}`)
 }
 
 const aboutMeColumns = (): ColumnDef<AboutMeDataItem>[] => [
@@ -245,12 +260,19 @@ const aboutMeColumns = (): ColumnDef<AboutMeDataItem>[] => [
 					className="flex items-center justify-center"
 				>
 					<input type="hidden" name="aboutId" value={aboutMe.id} />
-					<input type="hidden" name="intent" value="toggleAboutMeIsPublished" />
+					<input
+						type="hidden"
+						name="intent"
+						value={DashboardAboutIntent.ABOUT_ME_PUBLISH_TOGGLE}
+					/>
 					<Switch
 						checked={isOptimisticPublished}
 						onCheckedChange={(checked) => {
 							const formData = new FormData()
-							formData.set('intent', 'toggleAboutMeIsPublished')
+							formData.set(
+								'intent',
+								DashboardAboutIntent.ABOUT_ME_PUBLISH_TOGGLE,
+							)
 							formData.set('aboutId', aboutMe.id)
 							formData.set('isPublished', String(checked))
 							void fetcher.submit(formData, { method: 'post' })
@@ -296,7 +318,7 @@ const aboutMeColumns = (): ColumnDef<AboutMeDataItem>[] => [
 							<button
 								type="submit"
 								name="intent"
-								value="deleteAboutMe"
+								value={DashboardAboutIntent.ABOUT_ME_DELETE}
 								className="bg-destructive text-destructive-foreground hover:bg-destructive/90 relative flex w-full cursor-default items-center rounded-sm px-2 py-1.5 text-sm transition-colors outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
 							>
 								Delete
@@ -366,13 +388,16 @@ const aboutMeCategoryColumns = (
 					<input
 						type="hidden"
 						name="intent"
-						value="toggleAboutMeCategoryIsPublished"
+						value={DashboardAboutIntent.CATEGORY_PUBLISH_TOGGLE}
 					/>
 					<Switch
 						checked={isOptimisticPublished}
 						onCheckedChange={(checked) => {
 							const formData = new FormData()
-							formData.set('intent', 'toggleAboutMeCategoryIsPublished')
+							formData.set(
+								'intent',
+								DashboardAboutIntent.CATEGORY_PUBLISH_TOGGLE,
+							)
 							formData.set('categoryId', category.id)
 							formData.set('isPublished', String(checked))
 							void fetcher.submit(formData, { method: 'post' })
@@ -424,7 +449,7 @@ const aboutMeCategoryColumns = (
 							<button
 								type="submit"
 								name="intent"
-								value="deleteAboutMeCategory"
+								value={DashboardAboutIntent.CATEGORY_DELETE}
 								className="bg-destructive text-destructive-foreground hover:bg-destructive/90 relative flex w-full cursor-default items-center rounded-sm px-2 py-1.5 text-sm transition-colors outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
 							>
 								Delete
