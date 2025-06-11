@@ -82,12 +82,14 @@ The `about.index.tsx` file defines a `DashboardAboutIntent` constant object to s
 
 ```ts
 export const DashboardAboutIntent = {
-  CATEGORY_CREATE: 'category-create',
-  CATEGORY_UPDATE: 'category-update',
-  CATEGORY_DELETE: 'category-delete',
-  ABOUT_ME_DELETE: 'about-me-delete',
-  ABOUT_ME_PUBLISH_TOGGLE: 'about-me-publish-toggle',
-  CATEGORY_PUBLISH_TOGGLE: 'category-publish-toggle',
+ ABOUT_ME_DELETE: 'about-me-delete',
+ ABOUT_ME_CREATE: 'about-me-create',
+ ABOUT_ME_UPDATE: 'about-me-update',
+ ABOUT_ME_PUBLISH_TOGGLE: 'about-me-publish-toggle',
+ CATEGORY_CREATE: 'category-create',
+ CATEGORY_UPDATE: 'category-update',
+ CATEGORY_DELETE: 'category-delete',
+ CATEGORY_PUBLISH_TOGGLE: 'category-publish-toggle',
 } as const
 ```
 
@@ -130,8 +132,46 @@ switch (intent) {
 ### 3. Details Page: `about.$aboutId.tsx`
 
 - **Purpose:** Read-only details for a single About Me section.
-- **Features:** Displays all fields for the section, including category and status.
+- **Features:**
+  - Displays all fields for the section, including category and status.
+  - Uses `EntityDetailsLinks` to provide both a Back link (to the About Me list) and an Edit link (to the edit page for the current section).
+  - The section name is rendered as an `<h1>` for semantic structure and accessibility.
+  - Details are shown in an `EntityDetailsCard`, with each field as a labeled value:
+    - **Content**: The main content of the About Me section.
+    - **Description**: The description, or "No description" if not present.
+    - **Category**: The name of the associated category.
+    - **Status**: Whether the section is "Published" or "Draft".
 - **Data Loading:** Loader fetches the section by ID for the current user.
+
+#### Example Structure
+
+```tsx
+<EntityDetailsLinks backLabel="Back to Abouts" />
+<h1 className="text-2xl font-bold">{aboutMe.name}</h1>
+<EntityDetailsCard id="about-details-card">
+  <CardDetailsItem label="Content">
+    <CardDetailsValue variant="prose">{aboutMe.content}</CardDetailsValue>
+  </CardDetailsItem>
+  <CardDetailsItem label="Description">
+    <CardDetailsValue variant="prose">{aboutMe.description ?? 'No description'}</CardDetailsValue>
+  </CardDetailsItem>
+  <CardDetailsItem label="Category">
+    <CardDetailsValue>{aboutMe.aboutMeCategory.name}</CardDetailsValue>
+  </CardDetailsItem>
+  <CardDetailsItem label="Status">
+    <CardDetailsValue>{aboutMe.isPublished ? 'Published' : 'Draft'}</CardDetailsValue>
+  </CardDetailsItem>
+</EntityDetailsCard>
+```
+
+#### Summary Table
+
+| Component              | Purpose/Usage                                                                 |
+|------------------------|-------------------------------------------------------------------------------|
+| EntityDetailsLinks     | Renders "Back" and "Edit" links for navigation.                               |
+| h1                     | Displays the About Me section's name as the main heading.                     |
+| EntityDetailsCard      | Container for the details list.                                               |
+| CardDetailsItem/Value  | Renders each field (Content, Description, Category, Status) as label/value.   |
 
 ---
 
