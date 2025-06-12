@@ -35,6 +35,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 			liveDemoUrl: true,
 			sourceCodeUrl: true,
 			isPublished: true,
+			comments: true,
 		},
 	})
 	invariantResponse(project, 'Project not found', { status: 404 })
