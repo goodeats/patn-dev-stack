@@ -280,6 +280,9 @@ function ProjectCard({
 						<SkillBadge key={skill.name} skill={skill} />
 					))}
 				</div>
+				{comments && (
+					<p className="text-muted-foreground mt-4 text-sm">{comments}</p>
+				)}
 			</CardContent>
 			<CardFooter className="gap-4">
 				{liveDemoUrl && (
@@ -297,9 +300,6 @@ function ProjectCard({
 					>
 						GitHub
 					</ExternalLinkButton>
-				)}
-				{comments && (
-					<p className="text-muted-foreground mt-4 text-sm">{comments}</p>
 				)}
 			</CardFooter>
 		</MarketingCard>
