@@ -1,6 +1,6 @@
 import { invariantResponse } from '@epic-web/invariant'
 import { type SEOHandle } from '@nasa-gcn/remix-seo'
-import { type LoaderFunctionArgs } from 'react-router'
+import { type LoaderFunctionArgs, data } from 'react-router'
 import {
 	AppContainerContent,
 	AppContainerGroup,
@@ -15,6 +15,9 @@ import { CardDetailsValue, CardDetailsItem } from '#app/components/ui/card.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { type Route } from './+types/projects.$projectId.ts'
+import { ProjectSkillsEditor } from './__project-skills-editor.tsx'
+
+export { action } from './__project-skills-editor.server.tsx'
 
 export const handle: SEOHandle = {
 	getSitemapEntries: () => null,
@@ -41,6 +44,13 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 			comments: true,
 			createdAt: true,
 			updatedAt: true,
+			skills: {
+				select: {
+					id: true,
+					name: true,
+					description: true,
+				},
+			},
 			_count: {
 				select: {
 					skills: true,
@@ -51,13 +61,19 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
 	invariantResponse(project, 'Project not found', { status: 404 })
 
-	return { project }
+	const userSkills = await prisma.skill.findMany({
+		where: { userId },
+		select: { id: true, name: true },
+		orderBy: { name: 'asc' },
+	})
+
+	return data({ project, userSkills })
 }
 
 export default function DashboardProjectDetailsRoute({
 	loaderData,
 }: Route.ComponentProps) {
-	const { project } = loaderData
+	const { project, userSkills } = loaderData
 
 	return (
 		<AppContainerContent
@@ -137,6 +153,10 @@ export default function DashboardProjectDetailsRoute({
 						</CardDetailsValue>
 					</CardDetailsItem>
 				</EntityDetailsCard>
+			</AppContainerGroup>
+
+			<AppContainerGroup className="px-0">
+				<ProjectSkillsEditor project={project} userSkills={userSkills} />
 			</AppContainerGroup>
 		</AppContainerContent>
 	)

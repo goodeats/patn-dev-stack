@@ -1,9 +1,5 @@
 import { type SEOHandle } from '@nasa-gcn/remix-seo'
-import {
-	type LoaderFunctionArgs,
-	useLoaderData,
-	useActionData,
-} from 'react-router'
+import { type LoaderFunctionArgs, useActionData } from 'react-router'
 import {
 	AppContainerContent,
 	AppContainerGroup,

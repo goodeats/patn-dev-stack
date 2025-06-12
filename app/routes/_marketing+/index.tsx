@@ -1,4 +1,4 @@
-import { type Skill, type SocialLink } from '@prisma/client'
+import { type SocialLink } from '@prisma/client'
 import { ExternalIconLink } from '#app/components/external-icon-link.tsx'
 import { ExternalLinkButton } from '#app/components/external-link.tsx'
 import { FloatingShapes } from '#app/components/floating-shapes.tsx'
@@ -12,14 +12,8 @@ import {
 	MarketingSectionParagraph,
 } from '#app/components/marketing.tsx'
 import { ScrollNavLinks } from '#app/components/scroll-nav-links.tsx'
-import { Badge } from '#app/components/ui/badge.tsx'
+import { SkillBadge } from '#app/components/skill-badge.tsx'
 import { CardContent, CardFooter } from '#app/components/ui/card.tsx'
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from '#app/components/ui/tooltip.tsx'
 import { useFadeInOnScroll } from '#app/hooks/use-fade-in-on-scroll.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { type Info, type Route } from './+types/index.ts'
@@ -62,7 +56,13 @@ export async function loader({}: Route.LoaderArgs) {
 					name: true,
 					description: true,
 				},
+				orderBy: {
+					name: 'asc',
+				},
 			},
+		},
+		orderBy: {
+			name: 'asc',
 		},
 	})
 
@@ -81,7 +81,13 @@ export async function loader({}: Route.LoaderArgs) {
 					name: true,
 					description: true,
 				},
+				orderBy: {
+					name: 'asc',
+				},
 			},
+		},
+		orderBy: {
+			createdAt: 'desc',
 		},
 	})
 
@@ -94,6 +100,9 @@ export async function loader({}: Route.LoaderArgs) {
 			icon: true,
 			label: true,
 			text: true,
+		},
+		orderBy: {
+			createdAt: 'asc',
 		},
 	})
 
@@ -125,14 +134,19 @@ function HeroSection() {
 					data-paragraph
 					className="text-muted-foreground mt-6 text-xl md:text-2xl lg:text-3xl"
 				>
-					A Modern Full-Stack Web Developer
+					A Full-Stack Web Developer
 				</p>
 				<p
 					data-paragraph
 					className="text-muted-foreground mt-4 max-w-2xl text-lg md:text-xl"
 				>
-					I craft intuitive user experiences, interactive layouts, and APIs to
-					transform ideas into web applications.
+					I design and engineer web applications that deliver real value.
+				</p>
+				<p
+					data-paragraph
+					className="text-muted-foreground mt-4 max-w-2xl text-lg md:text-xl"
+				>
+					Fast. Scalable. Built to grow.
 				</p>
 				<div className="mt-10 flex flex-wrap items-center justify-center gap-4">
 					<ScrollNavLinks
@@ -178,25 +192,6 @@ function AboutSection({
 	)
 }
 
-function SkillBadge({ skill }: { skill: Pick<Skill, 'name' | 'description'> }) {
-	return (
-		<TooltipProvider>
-			<Tooltip>
-				<TooltipTrigger asChild>
-					<Badge variant="secondary" className="cursor-pointer">
-						{skill.name}
-					</Badge>
-				</TooltipTrigger>
-				{skill.description && (
-					<TooltipContent>
-						<p>{skill.description}</p>
-					</TooltipContent>
-				)}
-			</Tooltip>
-		</TooltipProvider>
-	)
-}
-
 function SkillCard({
 	category,
 }: {
@@ -229,7 +224,12 @@ function SkillsSection({
 
 			<MarketingSectionContent className="mt-8">
 				<MarketingSectionParagraph>
-					I am continuously learning and growing my skillset!
+					Not seeing a specific technology listed? I pick things up fast,
+					especially when they help build better and smarter products.
+				</MarketingSectionParagraph>
+				<MarketingSectionParagraph>
+					I'm always sharpening my stack and recently diving deep into AI and
+					LLM-driven workflows, with a constant focus on solving real problems.
 				</MarketingSectionParagraph>
 			</MarketingSectionContent>
 		</MarketingSection>
@@ -258,6 +258,9 @@ function ProjectCard({
 						<SkillBadge key={skill.name} skill={skill} />
 					))}
 				</div>
+				{comments && (
+					<p className="text-muted-foreground mt-4 text-sm">{comments}</p>
+				)}
 			</CardContent>
 			<CardFooter className="gap-4">
 				{liveDemoUrl && (
@@ -275,9 +278,6 @@ function ProjectCard({
 					>
 						GitHub
 					</ExternalLinkButton>
-				)}
-				{comments && (
-					<p className="text-muted-foreground mt-4 text-sm">{comments}</p>
 				)}
 			</CardFooter>
 		</MarketingCard>
@@ -311,15 +311,11 @@ function ContactSection({
 			sectionId="contact"
 			className="bg-background text-foreground"
 		>
-			<MarketingSectionHeader>
-				Let's Build Something Amazing Together!
-			</MarketingSectionHeader>
+			<MarketingSectionHeader>Let's talk!</MarketingSectionHeader>
 			<MarketingSectionContent className="gap-2">
 				<MarketingSectionParagraph>
-					Have a project in mind, a question, or just want to connect?
-				</MarketingSectionParagraph>
-				<MarketingSectionParagraph>
-					I'd love to hear from you!
+					I'm open to projects, collaboration, or just a quick hello. Reach out
+					by email or message me on the platform that works best for you.
 				</MarketingSectionParagraph>
 			</MarketingSectionContent>
 
