@@ -246,7 +246,12 @@ function SkillsSection({
 
 			<MarketingSectionContent className="mt-8">
 				<MarketingSectionParagraph>
-					I am continuously learning and growing my skillset!
+					Not seeing a specific technology listed? I pick things up fast,
+					especially when they help build better and smarter products.
+				</MarketingSectionParagraph>
+				<MarketingSectionParagraph>
+					I'm always sharpening my stack and recently diving deep into AI and
+					LLM-driven workflows, with a constant focus on solving real problems.
 				</MarketingSectionParagraph>
 			</MarketingSectionContent>
 		</MarketingSection>
@@ -328,15 +333,11 @@ function ContactSection({
 			sectionId="contact"
 			className="bg-background text-foreground"
 		>
-			<MarketingSectionHeader>
-				Let's Build Something Amazing Together!
-			</MarketingSectionHeader>
+			<MarketingSectionHeader>Let's talk!</MarketingSectionHeader>
 			<MarketingSectionContent className="gap-2">
 				<MarketingSectionParagraph>
-					Have a project in mind, a question, or just want to connect?
-				</MarketingSectionParagraph>
-				<MarketingSectionParagraph>
-					I'd love to hear from you!
+					I’m open to projects, collaboration, or just a quick hello. Reach out
+					by email or message me on the platform that works best for you.
 				</MarketingSectionParagraph>
 			</MarketingSectionContent>
 
