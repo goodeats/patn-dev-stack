@@ -1,4 +1,4 @@
-import { type Skill, type SocialLink } from '@prisma/client'
+import { type SocialLink } from '@prisma/client'
 import { ExternalIconLink } from '#app/components/external-icon-link.tsx'
 import { ExternalLinkButton } from '#app/components/external-link.tsx'
 import { FloatingShapes } from '#app/components/floating-shapes.tsx'
@@ -12,14 +12,8 @@ import {
 	MarketingSectionParagraph,
 } from '#app/components/marketing.tsx'
 import { ScrollNavLinks } from '#app/components/scroll-nav-links.tsx'
-import { Badge } from '#app/components/ui/badge.tsx'
+import { SkillBadge } from '#app/components/skill-badge.tsx'
 import { CardContent, CardFooter } from '#app/components/ui/card.tsx'
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from '#app/components/ui/tooltip.tsx'
 import { useFadeInOnScroll } from '#app/hooks/use-fade-in-on-scroll.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { type Info, type Route } from './+types/index.ts'
@@ -86,6 +80,9 @@ export async function loader({}: Route.LoaderArgs) {
 				select: {
 					name: true,
 					description: true,
+				},
+				orderBy: {
+					name: 'asc',
 				},
 			},
 		},
@@ -195,25 +192,6 @@ function AboutSection({
 	)
 }
 
-function SkillBadge({ skill }: { skill: Pick<Skill, 'name' | 'description'> }) {
-	return (
-		<TooltipProvider>
-			<Tooltip>
-				<TooltipTrigger asChild>
-					<Badge variant="secondary" className="cursor-pointer">
-						{skill.name}
-					</Badge>
-				</TooltipTrigger>
-				{skill.description && (
-					<TooltipContent>
-						<p>{skill.description}</p>
-					</TooltipContent>
-				)}
-			</Tooltip>
-		</TooltipProvider>
-	)
-}
-
 function SkillCard({
 	category,
 }: {
@@ -280,6 +258,9 @@ function ProjectCard({
 						<SkillBadge key={skill.name} skill={skill} />
 					))}
 				</div>
+				{comments && (
+					<p className="text-muted-foreground mt-4 text-sm">{comments}</p>
+				)}
 			</CardContent>
 			<CardFooter className="gap-4">
 				{liveDemoUrl && (
@@ -297,9 +278,6 @@ function ProjectCard({
 					>
 						GitHub
 					</ExternalLinkButton>
-				)}
-				{comments && (
-					<p className="text-muted-foreground mt-4 text-sm">{comments}</p>
 				)}
 			</CardFooter>
 		</MarketingCard>
@@ -336,7 +314,7 @@ function ContactSection({
 			<MarketingSectionHeader>Let's talk!</MarketingSectionHeader>
 			<MarketingSectionContent className="gap-2">
 				<MarketingSectionParagraph>
-					I’m open to projects, collaboration, or just a quick hello. Reach out
+					I'm open to projects, collaboration, or just a quick hello. Reach out
 					by email or message me on the platform that works best for you.
 				</MarketingSectionParagraph>
 			</MarketingSectionContent>
