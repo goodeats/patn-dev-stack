@@ -9,6 +9,8 @@ import { envOnlyMacros } from 'vite-env-only'
 import { iconsSpritesheet } from 'vite-plugin-icons-spritesheet'
 
 const MODE = process.env.NODE_ENV
+const LOCALTUNNEL_SUBDOMAIN = process.env.LOCAL_TUNNEL_SUBDOMAIN
+const LOCAL_TUNNEL_DOMAIN = `${LOCALTUNNEL_SUBDOMAIN}.loca.lt`
 
 export default defineConfig((config) => ({
 	build: {
@@ -34,6 +36,7 @@ export default defineConfig((config) => ({
 		watch: {
 			ignored: ['**/playwright-report/**'],
 		},
+		allowedHosts: MODE === 'development' ? [LOCAL_TUNNEL_DOMAIN] : [],
 	},
 	sentryConfig,
 	plugins: [
