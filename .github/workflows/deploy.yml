@@ -172,6 +172,10 @@ jobs:
             --push \
             --image-label ${{ github.sha }} \
             --build-arg COMMIT_SHA=${{ github.sha }} \
+            --build-secret SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }} \
+            --build-secret SENTRY_ORG=${{ secrets.SENTRY_ORG }} \
+            --build-secret SENTRY_PROJECT=${{ secrets.SENTRY_PROJECT }} \
+            --build-secret SENTRY_DSN=${{ secrets.SENTRY_DSN_PRODUCTION }} \
             --app ${{ steps.app_name.outputs.value }}-staging
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
@@ -184,6 +188,10 @@ jobs:
             --push \
             --image-label ${{ github.sha }} \
             --build-arg COMMIT_SHA=${{ github.sha }} \
+            --build-secret SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }} \
+            --build-secret SENTRY_ORG=${{ secrets.SENTRY_ORG }} \
+            --build-secret SENTRY_PROJECT=${{ secrets.SENTRY_PROJECT }} \
+            --build-secret SENTRY_DSN=${{ secrets.SENTRY_DSN_PRODUCTION }} \
             --app ${{ steps.app_name.outputs.value }}
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
