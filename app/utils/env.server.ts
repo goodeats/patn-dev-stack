@@ -9,9 +9,9 @@ const schema = z.object({
 	HONEYPOT_SECRET: z.string(),
 	CACHE_DATABASE_PATH: z.string(),
 	// If you plan on using Sentry, remove the .optional()
-	SENTRY_DSN: z.string().optional(),
+	SENTRY_DSN: z.string(),
 	// If you plan to use Resend, remove the .optional()
-	RESEND_API_KEY: z.string().optional(),
+	RESEND_API_KEY: z.string(),
 	// If you plan to use GitHub auth, remove the .optional()
 	GITHUB_CLIENT_ID: z.string().optional(),
 	GITHUB_CLIENT_SECRET: z.string().optional(),

@@ -32,11 +32,6 @@ FROM base as build
 ARG COMMIT_SHA
 ENV COMMIT_SHA=$COMMIT_SHA
 
-# Use the following environment variables to configure Sentry
-# ENV SENTRY_ORG=
-# ENV SENTRY_PROJECT=
-
-
 WORKDIR /myapp
 
 COPY --from=deps /myapp/node_modules /myapp/node_modules
@@ -46,10 +41,17 @@ RUN npx prisma generate
 
 ADD . .
 
+# Use the following environment variables to configure Sentry
 # Mount the secret and set it as an environment variable and run the build
-RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
-  export SENTRY_AUTH_TOKEN=$(cat /run/secrets/SENTRY_AUTH_TOKEN) && \
-  npm run build
+RUN --mount=type=secret,id=SENTRY_ORG \
+    --mount=type=secret,id=SENTRY_PROJECT \
+    --mount=type=secret,id=SENTRY_AUTH_TOKEN \
+    --mount=type=secret,id=SENTRY_DSN \
+    export SENTRY_ORG=$(cat /run/secrets/SENTRY_ORG) && \
+    export SENTRY_PROJECT=$(cat /run/secrets/SENTRY_PROJECT) && \
+    export SENTRY_AUTH_TOKEN=$(cat /run/secrets/SENTRY_AUTH_TOKEN) && \
+    export SENTRY_DSN=$(cat /run/secrets/SENTRY_DSN) && \
+    npm run build
 
 # Finally, build the production image with minimal footprint
 FROM base
@@ -65,7 +67,7 @@ ENV INTERNAL_PORT="8080"
 ENV PORT="8081"
 ENV NODE_ENV="production"
 # For WAL support: https://github.com/prisma/prisma-engines/issues/4675#issuecomment-1914383246
-ENV PRISMA_SCHEMA_DISABLE_ADVISORY_LOCK = "1"
+ENV PRISMA_SCHEMA_DISABLE_ADVISORY_LOCK="1"
 
 # add shortcut for connecting to database CLI
 RUN echo "#!/bin/sh\nset -x\nsqlite3 \$DATABASE_URL" > /usr/local/bin/database-cli && chmod +x /usr/local/bin/database-cli
