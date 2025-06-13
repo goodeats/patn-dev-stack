@@ -31,6 +31,7 @@ import { prisma } from './utils/db.server.ts'
 import { getEnv } from './utils/env.server.ts'
 import { pipeHeaders } from './utils/headers.server.ts'
 import { honeypot } from './utils/honeypot.server.ts'
+import { getManifestPath, getThemeColor } from './utils/manifest.ts'
 import { combineHeaders, getDomainUrl, getImgSrc } from './utils/misc.tsx'
 import { useNonce } from './utils/nonce-provider.ts'
 import { getSidebar } from './utils/sidebar.server.ts'
@@ -49,11 +50,6 @@ export const links: Route.LinksFunction = () => {
 		},
 		{ rel: 'icon', type: 'image/svg+xml', href: faviconAssetUrl },
 		{ rel: 'apple-touch-icon', href: appleTouchIconAssetUrl },
-		{
-			rel: 'manifest',
-			href: '/site.webmanifest',
-			crossOrigin: 'use-credentials',
-		} as const, // necessary to make typescript happy
 		{ rel: 'stylesheet', href: tailwindStyleSheetUrl },
 	].filter(Boolean)
 }
@@ -150,7 +146,9 @@ function Document({
 	theme?: Theme
 	env?: Record<string, string | undefined>
 }) {
-	const allowIndexing = ENV.ALLOW_INDEXING !== 'false'
+	const allowIndexing = env.ALLOW_INDEXING !== 'false'
+	const themedManifestPath = getManifestPath(theme)
+
 	return (
 		<html lang="en" className={`${theme} h-full overflow-x-hidden`}>
 			<head>
@@ -161,6 +159,11 @@ function Document({
 				{allowIndexing ? null : (
 					<meta name="robots" content="noindex, nofollow" />
 				)}
+				<link
+					rel="manifest"
+					href={themedManifestPath}
+					crossOrigin="use-credentials"
+				/>
 				<Links />
 			</head>
 			<body className="bg-background text-foreground">
