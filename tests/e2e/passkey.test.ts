@@ -1,11 +1,12 @@
 import { faker } from '@faker-js/faker'
 import { logout } from '#tests/actions/auth.ts'
+import { type Page } from '@playwright/test'
 import { expect, test } from '#tests/playwright-utils.ts'
 
-async function setupWebAuthn(page: any) {
+async function setupWebAuthn(page: Page) {
 	const client = await page.context().newCDPSession(page)
 	// https://chromedevtools.github.io/devtools-protocol/tot/WebAuthn/
-	await client.send('WebAuthn.enable', { options: { enableUI: true } })
+	await client.send('WebAuthn.enable', { enableUI: true })
 	const result = await client.send('WebAuthn.addVirtualAuthenticator', {
 		options: {
 			protocol: 'ctap2',
@@ -62,7 +63,7 @@ test('Users can register and use passkeys', async ({
 
 	// Try logging in with passkey
 	await navigate('/login')
-	const signCount1 = afterRegistrationCredentials.credentials[0].signCount
+	const signCount1 = afterRegistrationCredentials.credentials[0]!.signCount
 
 	const passkeyAssertedPromise = new Promise<void>((resolve) => {
 		client.once('WebAuthn.credentialAsserted', () => resolve())
@@ -88,7 +89,7 @@ test('Users can register and use passkeys', async ({
 		authenticatorId,
 	})
 	expect(afterLoginCredentials.credentials).toHaveLength(1)
-	expect(afterLoginCredentials.credentials[0].signCount).toBeGreaterThan(
+	expect(afterLoginCredentials.credentials[0]?.signCount).toBeGreaterThan(
 		signCount1,
 	)
 

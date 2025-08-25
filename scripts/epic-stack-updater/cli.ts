@@ -240,9 +240,8 @@ EXAMPLES:
 			console.log(details.diff)
 		}
 
-		console.log(
-			`\n💡 Apply this commit: npm run epic-stack-updater -- apply ${commit.hash}`,
-		)
+		console.log(`\n💡 Apply this commit:`)
+		console.log(`npm run epic-stack-updater -- apply ${commit.hash}`)
 	}
 
 	/**
