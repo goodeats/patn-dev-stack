@@ -25,7 +25,7 @@ test('Users can register and use passkeys', async ({
 	login,
 	navigate,
 }) => {
-	const user = await login()
+	await login()
 
 	const { client, authenticatorId } = await setupWebAuthn(page)
 
