@@ -4,6 +4,7 @@ A modular TypeScript library for systematically reviewing and applying commits f
 
 ## 🎯 Features
 
+- **Flexible CLI**: Idempotent commands that work great for both humans and LLMs
 - **Interactive Review**: Review each commit individually with full details
 - **Smart Conflict Resolution**: Automatic package-lock.json conflict resolution
 - **Pull Request Filtering**: Focus on meaningful changes by filtering to PRs only
@@ -15,18 +16,46 @@ A modular TypeScript library for systematically reviewing and applying commits f
 
 ```bash
 scripts/epic-stack-updater/
-├── index.ts                    # Main CLI entry point
+├── cli.ts                      # New flexible CLI interface
+├── index.ts                    # Original interactive flow
 ├── lib/
 │   ├── types.ts               # TypeScript interfaces and types
 │   ├── config-manager.ts      # Package.json configuration management
 │   ├── commit-parser.ts       # Git log parsing and commit analysis
-│   └── git-operations.ts      # Git commands and conflict resolution
+│   ├── git-operations.ts      # Git commands and conflict resolution
+│   ├── ui-display.ts          # UI formatting and display
+│   ├── user-interaction.ts    # User input handling
+│   └── commit-reviewer.ts     # Commit review logic
 └── README.md                  # This documentation
 ```
 
 ## 🚀 Usage
 
-### As a CLI Tool
+### New Flexible CLI (Recommended)
+
+The new CLI provides discrete, idempotent commands that are perfect for automation and LLM interactions:
+
+```bash
+# List available PRs
+npm run epic-stack list --prs-only
+
+# Show details about a specific commit
+npm run epic-stack show ec0efe56
+
+# Apply a specific commit
+npm run epic-stack apply ec0efe56
+
+# Check current status
+npm run epic-stack status
+
+# Sync with upstream
+npm run epic-stack sync
+
+# Get help
+npm run epic-stack help
+```
+
+### Original Interactive Flow
 
 ```bash
 npm run update:epic-stack
@@ -60,15 +89,148 @@ The library uses configuration stored in your `package.json`:
 }
 ```
 
-## 🎮 Interactive Commands
+## 📖 CLI Command Reference
 
-During the review process, you can use these commands:
+### `list` - List Available Commits
+
+List commits/PRs since your last update:
+
+```bash
+# List all commits
+npm run epic-stack list
+
+# List only PRs
+npm run epic-stack list --prs-only
+
+# Limit results
+npm run epic-stack list --prs-only --limit 5
+
+# Show all commits (ignore tracking)
+npm run epic-stack list --all
+```
+
+**Options:**
+
+- `--prs-only` - Show only Pull Request commits
+- `--limit <N>` - Limit results to N commits
+- `--all` - Show all commits, ignoring current tracking
+
+### `show` - Show Commit Details
+
+Display detailed information about a specific commit:
+
+```bash
+# Basic info
+npm run epic-stack show ec0efe56
+
+# Include file list
+npm run epic-stack show ec0efe56 --files
+
+# Include diff statistics
+npm run epic-stack show ec0efe56 --diff
+```
+
+**Options:**
+
+- `--files` - Include list of changed files
+- `--diff` - Include diff statistics
+
+### `apply` - Apply a Commit
+
+Apply a specific commit by its hash:
+
+```bash
+# Apply a commit
+npm run epic-stack apply ec0efe56
+
+# Auto-resolve package-lock conflicts
+npm run epic-stack apply ec0efe56 --auto-resolve
+
+# Apply without updating tracking
+npm run epic-stack apply ec0efe56 --no-track
+```
+
+**Options:**
+
+- `--auto-resolve` - Automatically resolve package-lock.json conflicts
+- `--no-track` - Don't update tracking after applying
+
+### `status` - Check Status
+
+Show your current Epic Stack tracking status and available updates:
+
+```bash
+npm run epic-stack status
+```
+
+### `sync` - Sync with Upstream
+
+Fetch the latest changes from the Epic Stack repository:
+
+```bash
+npm run epic-stack sync
+```
+
+### `interactive` - Interactive Mode
+
+Run the original interactive review flow:
+
+```bash
+npm run epic-stack interactive
+```
+
+## 🎮 Interactive Mode Commands
+
+During the interactive review process, you can use these commands:
 
 - **`y`** - Apply this commit
 - **`n`** - Skip this commit
 - **`s`** - Skip remaining commits
 - **`q`** - Quit the review process
 - **`o`** - Open PR in browser
+
+## 💡 Workflow Examples
+
+### For Humans
+
+**Typical workflow:**
+
+```bash
+# 1. Check what's available
+npm run epic-stack status
+
+# 2. List PRs
+npm run epic-stack list --prs-only
+
+# 3. Review a specific commit
+npm run epic-stack show ec0efe56
+
+# 4. Apply it
+npm run epic-stack apply ec0efe56
+```
+
+**Or use interactive mode:**
+
+```bash
+npm run epic-stack interactive
+```
+
+### For LLMs
+
+The new CLI is designed to be LLM-friendly with discrete, idempotent commands:
+
+```bash
+# LLM can run this without getting stuck in interactive prompts
+npm run epic-stack list --prs-only --limit 10
+
+# LLM can get details about a specific commit
+npm run epic-stack show ec0efe56
+
+# LLM can apply a specific commit (with auto-resolve for package-lock)
+npm run epic-stack apply ec0efe56 --auto-resolve
+```
+
+Each command completes and returns, making it easy to chain operations or handle them programmatically.
 
 ## 🔄 Conflict Resolution
 

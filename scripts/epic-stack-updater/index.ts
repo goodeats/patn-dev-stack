@@ -174,5 +174,8 @@ export class EpicStackUpdater {
  * npm run update:epic-stack
  * ```
  */
-const updater = new EpicStackUpdater()
-updater.run().catch(console.error)
+// Only run if this file is being executed directly (not imported)
+if (import.meta.url === `file://${process.argv[1]}`) {
+	const updater = new EpicStackUpdater()
+	updater.run().catch(console.error)
+}

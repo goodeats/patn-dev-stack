@@ -26,11 +26,13 @@ export class CommitParser {
 	 *
 	 * @param lastCommit - The hash of the last processed commit, or empty string if none
 	 * @param pullRequestsOnly - If true, only return commits with associated PRs
+	 * @param limit - Optional limit on number of commits to return
 	 * @returns Array of commit information objects in chronological order
 	 */
 	getCommitsSince(
 		lastCommit: string,
 		pullRequestsOnly: boolean = false,
+		limit?: number,
 	): CommitInfo[] {
 		if (!lastCommit) {
 			console.log('⚠️  No previous commit found. Showing last 20 commits.')
@@ -39,7 +41,8 @@ export class CommitParser {
 				{ encoding: 'utf8' },
 			)
 			const commits = this.parseCommits(output)
-			return this.processCommits(commits, pullRequestsOnly)
+			const processed = this.processCommits(commits, pullRequestsOnly)
+			return limit ? processed.slice(0, limit) : processed
 		}
 
 		// Get commits after the last processed commit in chronological order
@@ -48,7 +51,28 @@ export class CommitParser {
 			{ encoding: 'utf8' },
 		)
 		const commits = this.parseCommits(output)
-		return this.processCommits(commits, pullRequestsOnly, lastCommit)
+		const processed = this.processCommits(commits, pullRequestsOnly, lastCommit)
+		return limit ? processed.slice(0, limit) : processed
+	}
+
+	/**
+	 * Retrieves all commits from the upstream repository.
+	 * Useful for browsing the full commit history.
+	 *
+	 * @param pullRequestsOnly - If true, only return commits with associated PRs
+	 * @param limit - Optional limit on number of commits to return (default: 100)
+	 * @returns Array of commit information objects in chronological order
+	 */
+	getAllCommits(
+		pullRequestsOnly: boolean = false,
+		limit: number = 100,
+	): CommitInfo[] {
+		const output = execSync(
+			`git log ${this.upstreamRemote}/main --oneline -${limit} --format="%H|%s|%an|%ad" --date=short --reverse`,
+			{ encoding: 'utf8' },
+		)
+		const commits = this.parseCommits(output)
+		return this.processCommits(commits, pullRequestsOnly)
 	}
 
 	/**
