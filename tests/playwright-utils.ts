@@ -1,4 +1,4 @@
-import { test as base } from '@playwright/test'
+import { test as base, type Response } from '@playwright/test'
 import { href, type Register } from 'react-router'
 import * as setCookieParser from 'set-cookie-parser'
 import { getSessionExpirationDate, sessionKey } from '#app/utils/auth.server.ts'
@@ -49,6 +49,9 @@ export * from './db-utils.ts'
 export type AppPages = keyof Register['pages']
 
 export const test = base.extend<{
+	navigate: <Path extends AppPages>(
+		...args: Parameters<typeof href<Path>>
+	) => Promise<null | Response>
 	insertNewUser(options?: GetOrInsertUserOptions): Promise<UserPlaywright>
 	login(options?: GetOrInsertUserOptions): Promise<UserPlaywright>
 	prepareGitHubUser(): Promise<GitHubUser>
@@ -62,10 +65,12 @@ export const test = base.extend<{
 	insertNewSkill(options: CreateSkillOptions): Promise<SkillPlaywright>
 	insertNewContact(options: CreateContactOptions): Promise<ContactPlaywright>
 	insertNewProject(options: CreateProjectOptions): Promise<ProjectPlaywright>
-	navigate: <Path extends AppPages>(
-		...args: Parameters<typeof href<Path>>
-	) => Promise<null | Response>
 }>({
+	navigate: async ({ page }, use) => {
+		await use((...args) => {
+			return page.goto(href(...args))
+		})
+	},
 	insertNewUser: async ({}, use) => {
 		let userId: string | undefined = undefined
 		await use(async (options) => {
@@ -201,11 +206,6 @@ export const test = base.extend<{
 		if (projectId) {
 			await prisma.project.delete({ where: { id: projectId } }).catch(() => {})
 		}
-	},
-	navigate: async ({ page }, use) => {
-		await use(async (...args) => {
-			return page.goto(href(...args))
-		})
 	},
 })
 export const { expect } = test
