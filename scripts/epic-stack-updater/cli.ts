@@ -15,10 +15,10 @@
  *   interactive                       Run the original interactive flow
  *
  * Examples:
- *   npm run epic-stack list --prs-only
- *   npm run epic-stack show ec0efe56
- *   npm run epic-stack apply ec0efe56
- *   npm run epic-stack status
+ *   npm run epic-stack-updater list --prs-only
+ *   npm run epic-stack-updater show ec0efe56
+ *   npm run epic-stack-updater apply ec0efe56
+ *   npm run epic-stack-updater status
  */
 
 import { parseArgs } from 'node:util'
@@ -60,7 +60,7 @@ class EpicStackCLI {
 🚀 Epic Stack Updater CLI
 
 USAGE:
-  npm run epic-stack <command> [options]
+  npm run epic-stack-updater <command> [options]
 
 COMMANDS:
   list [options]              List available commits/PRs since last update
@@ -86,19 +86,19 @@ COMMANDS:
 
 EXAMPLES:
   # List all PRs since last update
-  npm run epic-stack list --prs-only
+  npm run epic-stack-updater list --prs-only
 
   # Show details about a specific commit
-  npm run epic-stack show ec0efe56
+  npm run epic-stack-updater show ec0efe56
 
   # Apply a specific commit
-  npm run epic-stack apply ec0efe56
+  npm run epic-stack-updater apply ec0efe56
 
   # Check current status
-  npm run epic-stack status
+  npm run epic-stack-updater status
 
   # Sync with upstream
-  npm run epic-stack sync
+  npm run epic-stack-updater sync
 `)
 		process.exit(0)
 	}
@@ -153,8 +153,10 @@ EXAMPLES:
 			this.commitParser.getCommitDetails(hash),
 		)
 
-		console.log('\n💡 Use "npm run epic-stack show <hash>" for details')
-		console.log('💡 Use "npm run epic-stack apply <hash>" to apply a commit')
+		console.log('\n💡 Use "npm run epic-stack-updater show <hash>" for details')
+		console.log(
+			'💡 Use "npm run epic-stack-updater apply <hash>" to apply a commit',
+		)
 	}
 
 	/**
@@ -173,7 +175,7 @@ EXAMPLES:
 		const hash = positionals[0]
 		if (!hash) {
 			console.error('❌ Error: Commit hash is required')
-			console.log('Usage: npm run epic-stack show <hash>')
+			console.log('Usage: npm run epic-stack-updater show <hash>')
 			process.exit(1)
 		}
 
@@ -237,7 +239,7 @@ EXAMPLES:
 		}
 
 		console.log(
-			`\n💡 Apply this commit: npm run epic-stack apply ${commit.hash}`,
+			`\n💡 Apply this commit: npm run epic-stack-updater apply ${commit.hash}`,
 		)
 	}
 
@@ -257,7 +259,7 @@ EXAMPLES:
 		const hash = positionals[0]
 		if (!hash) {
 			console.error('❌ Error: Commit hash is required')
-			console.log('Usage: npm run epic-stack apply <hash>')
+			console.log('Usage: npm run epic-stack-updater apply <hash>')
 			process.exit(1)
 		}
 
@@ -350,7 +352,9 @@ EXAMPLES:
 
 		if (!config.head) {
 			console.log('⚠️  No tracking information found')
-			console.log('   Run "npm run epic-stack sync" to fetch upstream changes')
+			console.log(
+				'   Run "npm run epic-stack-updater sync" to fetch upstream changes',
+			)
 			return
 		}
 
@@ -372,8 +376,12 @@ EXAMPLES:
 		)
 
 		if (commits.length > 0) {
-			console.log('\n💡 Run "npm run epic-stack list" to see available updates')
-			console.log('💡 Run "npm run epic-stack list --prs-only" to see only PRs')
+			console.log(
+				'\n💡 Run "npm run epic-stack-updater list" to see available updates',
+			)
+			console.log(
+				'💡 Run "npm run epic-stack-updater list --prs-only" to see only PRs',
+			)
 		} else {
 			console.log('\n✅ You are up to date!')
 		}
@@ -389,7 +397,9 @@ EXAMPLES:
 		this.gitOperations.fetchLatest()
 
 		console.log('✅ Sync complete!')
-		console.log('\n💡 Run "npm run epic-stack status" to see available updates')
+		console.log(
+			'\n💡 Run "npm run epic-stack-updater status" to see available updates',
+		)
 	}
 
 	/**
@@ -437,7 +447,9 @@ EXAMPLES:
 					break
 				default:
 					console.error(`❌ Unknown command: ${command}`)
-					console.log('Run "npm run epic-stack help" for usage information')
+					console.log(
+						'Run "npm run epic-stack-updater help" for usage information',
+					)
 					process.exit(1)
 			}
 		} catch (error) {
