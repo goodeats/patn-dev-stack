@@ -33,6 +33,7 @@
     "test:e2e:run": "cross-env CI=true playwright test",
     "test:e2e:install": "npx playwright install --with-deps chromium",
     "typecheck": "react-router typegen && tsc",
+    "typecheck:watch": "react-router typegen && tsc --watch",
     "epic-stack-updater": "tsx ./scripts/epic-stack-updater/cli.ts",
     "epic-stack-updater:list:prs": "npm run epic-stack-updater -- list --prs-only",
     "epic-stack-updater:show": "npm run epic-stack-updater -- show",

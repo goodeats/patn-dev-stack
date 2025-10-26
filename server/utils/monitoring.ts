@@ -12,7 +12,9 @@ export function init() {
 
 	// Skip Sentry initialization in test environment
 	if (process.env.NODE_ENV === 'test') {
-		console.log('DEBUG PAT: Skipping server Sentry initialization in test environment')
+		console.log(
+			'DEBUG PAT: Skipping server Sentry initialization in test environment',
+		)
 		return
 	}
 

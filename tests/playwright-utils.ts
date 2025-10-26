@@ -136,7 +136,7 @@ export const test = base.extend<{
 			return newGitHubUser
 		})
 
-		console.log('DEBUG PAT: Cleaning up GitHub user:', ghUser?.primaryEmail)
+		console.log('DEBUG PAT: Cleaning up GitHub user:', ghUser!.primaryEmail)
 		const user = await prisma.user.findUnique({
 			select: { id: true, name: true },
 			where: { email: normalizeEmail(ghUser!.primaryEmail) },

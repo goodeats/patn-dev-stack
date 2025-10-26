@@ -19,8 +19,6 @@ export const handle: SEOHandle = {
 	getSitemapEntries: () => null,
 }
 
-type LoaderData = Route.ComponentProps['loaderData']
-
 export async function loader({ request, params }: LoaderFunctionArgs) {
 	const userId = await requireUserId(request)
 	const { skillId } = params
