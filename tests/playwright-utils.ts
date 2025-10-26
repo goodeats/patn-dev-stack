@@ -203,7 +203,7 @@ export const test = base.extend<{
 		}
 	},
 	navigate: async ({ page }, use) => {
-		await use((...args) => {
+		await use(async (...args) => {
 			return page.goto(href(...args))
 		})
 	},
