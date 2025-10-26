@@ -3,11 +3,6 @@ import 'dotenv/config'
 
 const PORT = process.env.PORT || '3000'
 
-console.log('DEBUG PAT: Playwright config loading...')
-console.log('DEBUG PAT: PORT =', PORT)
-console.log('DEBUG PAT: NODE_ENV =', process.env.NODE_ENV)
-console.log('DEBUG PAT: CI =', process.env.CI)
-
 export default defineConfig({
 	testDir: './tests/e2e',
 	timeout: 30 * 1000, // Increased from 15s to 30s for CI
