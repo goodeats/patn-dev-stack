@@ -3,18 +3,8 @@ import { nodeProfilingIntegration } from '@sentry/profiling-node'
 import * as Sentry from '@sentry/react-router'
 
 export function init() {
-	console.log('DEBUG PAT: Server monitoring initialization starting...')
-	console.log('DEBUG PAT: NODE_ENV =', process.env.NODE_ENV)
-	console.log(
-		'DEBUG PAT: SENTRY_DSN =',
-		process.env.SENTRY_DSN ? 'SET' : 'NOT SET',
-	)
-
 	// Skip Sentry initialization in test environment or when DSN is invalid
 	if (process.env.NODE_ENV === 'test' || !process.env.SENTRY_DSN || process.env.SENTRY_DSN === 'your-dsn') {
-		console.log(
-			'DEBUG PAT: Skipping server Sentry initialization - NODE_ENV:', process.env.NODE_ENV, 'DSN valid:', process.env.SENTRY_DSN !== 'your-dsn' && !!process.env.SENTRY_DSN,
-		)
 		return
 	}
 
@@ -56,11 +46,8 @@ export function init() {
 				return event
 			},
 		})
-		console.log(
-			'DEBUG PAT: Server Sentry initialization completed successfully',
-		)
 	} catch (error) {
-		console.error('DEBUG PAT: Server Sentry initialization failed:', error)
+		console.error('Server Sentry initialization failed:', error)
 		throw error
 	}
 }
