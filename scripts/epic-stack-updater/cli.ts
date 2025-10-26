@@ -86,19 +86,19 @@ COMMANDS:
 
 EXAMPLES:
   # List all PRs since last update
-  npm run epic-stack-updater list --prs-only
+  npm run epic-stack-updater -- list --prs-only
 
   # Show details about a specific commit
-  npm run epic-stack-updater show ec0efe56
+  npm run epic-stack-updater -- show ec0efe56
 
   # Apply a specific commit
-  npm run epic-stack-updater apply ec0efe56
+  npm run epic-stack-updater -- apply ec0efe56
 
   # Check current status
-  npm run epic-stack-updater status
+  npm run epic-stack-updater -- status
 
   # Sync with upstream
-  npm run epic-stack-updater sync
+  npm run epic-stack-updater -- sync
 `)
 		process.exit(0)
 	}
@@ -114,7 +114,7 @@ EXAMPLES:
 				limit: { type: 'string' },
 				all: { type: 'boolean', default: false },
 			},
-			allowPositionals: false,
+			allowPositionals: true,
 		})
 
 		const prsOnly = values['prs-only'] as boolean
