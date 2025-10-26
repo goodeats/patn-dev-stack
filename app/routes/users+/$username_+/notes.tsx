@@ -64,20 +64,24 @@ export default function NotesRoute({ loaderData }: Route.ComponentProps) {
 									</NavLink>
 								</li>
 							) : null}
-							{loaderData.owner.notes.map((note) => (
-								<li key={note.id} className="p-1 pr-0">
-									<NavLink
-										to={note.id}
-										preventScrollReset
-										prefetch="intent"
-										className={({ isActive }) =>
-											cn(navLinkDefaultClassName, isActive && 'bg-accent')
-										}
-									>
-										{note.title}
-									</NavLink>
-								</li>
-							))}
+							{loaderData.owner.notes.map(
+								(
+									note: Route.ComponentProps['loaderData']['owner']['notes'][number],
+								) => (
+									<li key={note.id} className="p-1 pr-0">
+										<NavLink
+											to={note.id}
+											preventScrollReset
+											prefetch="intent"
+											className={({ isActive }) =>
+												cn(navLinkDefaultClassName, isActive && 'bg-accent')
+											}
+										>
+											{note.title}
+										</NavLink>
+									</li>
+								),
+							)}
 						</ul>
 					</div>
 				</div>

@@ -20,6 +20,8 @@ import { type Route } from './+types/index.ts'
 
 export const meta: Route.MetaFunction = () => [{ title: 'Pat N | Web Dev' }]
 
+type LoaderData = Route.ComponentProps['loaderData']
+
 export async function loader({}: Route.LoaderArgs) {
 	const professionalAboutMe = await prisma.aboutMe.findFirst({
 		where: {
@@ -167,8 +169,8 @@ function AboutSection({
 	professionalAboutMe,
 	personalAboutMe,
 }: {
-	professionalAboutMe: Route.ComponentProps['loaderData']['professionalAboutMe']
-	personalAboutMe: Route.ComponentProps['loaderData']['personalAboutMe']
+	professionalAboutMe: LoaderData['professionalAboutMe']
+	personalAboutMe: LoaderData['personalAboutMe']
 }) {
 	return (
 		<MarketingSection
@@ -195,12 +197,13 @@ function AboutSection({
 function SkillCard({
 	category,
 }: {
-	category: Route.ComponentProps['loaderData']['skillCategories'][number]
+	category: LoaderData['skillCategories'][number]
 }) {
+	const { name, skills } = category
 	return (
-		<MarketingCard title={category.name} className="text-left">
+		<MarketingCard title={name} className="text-left">
 			<CardContent className="flex flex-wrap gap-2">
-				{category.skills.map((skill) => (
+				{skills.map((skill) => (
 					<SkillBadge key={skill.name} skill={skill} />
 				))}
 			</CardContent>
@@ -211,15 +214,17 @@ function SkillCard({
 function SkillsSection({
 	skillCategories,
 }: {
-	skillCategories: Route.ComponentProps['loaderData']['skillCategories']
+	skillCategories: LoaderData['skillCategories']
 }) {
 	return (
 		<MarketingSection sectionId="skills">
 			<MarketingSectionHeader>My Skillset</MarketingSectionHeader>
 			<div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
-				{skillCategories.map((skillCategory) => (
-					<SkillCard key={skillCategory.name} category={skillCategory} />
-				))}
+				{skillCategories.map(
+					(skillCategory: LoaderData['skillCategories'][number]) => (
+						<SkillCard key={skillCategory.name} category={skillCategory} />
+					),
+				)}
 			</div>
 
 			<MarketingSectionContent className="mt-8">
@@ -236,11 +241,7 @@ function SkillsSection({
 	)
 }
 
-function ProjectCard({
-	project,
-}: {
-	project: Route.ComponentProps['loaderData']['projects'][number]
-}) {
+function ProjectCard({ project }: { project: LoaderData['projects'][number] }) {
 	const { title, description, skills, liveDemoUrl, sourceCodeUrl, comments } =
 		project
 	return (
@@ -284,16 +285,12 @@ function ProjectCard({
 	)
 }
 
-function ProjectsSection({
-	projects,
-}: {
-	projects: Route.ComponentProps['loaderData']['projects']
-}) {
+function ProjectsSection({ projects }: { projects: LoaderData['projects'] }) {
 	return (
 		<MarketingSection sectionId="projects">
 			<MarketingSectionHeader>Featured Projects</MarketingSectionHeader>
 			<div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-				{projects.map((project) => (
+				{projects.map((project: LoaderData['projects'][number]) => (
 					<ProjectCard key={project.title} project={project} />
 				))}
 			</div>

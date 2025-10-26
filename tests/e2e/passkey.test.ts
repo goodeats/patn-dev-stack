@@ -80,9 +80,7 @@ test('Users can register and use passkeys', async ({
 	await Promise.race([passkeyAssertedPromise, errorPromise])
 
 	// Verify successful login
-	await expect(
-		page.getByRole('link', { name: user.name ?? user.username }),
-	).toBeVisible()
+	await expect(page.getByRole('link', { name: 'User menu' })).toBeVisible()
 
 	// Verify the sign count increased
 	const afterLoginCredentials = await client.send('WebAuthn.getCredentials', {

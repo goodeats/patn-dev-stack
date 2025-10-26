@@ -22,6 +22,8 @@ import { userHasPermission, useOptionalUser } from '#app/utils/user.ts'
 import { type Route } from './+types/notes.$noteId.ts'
 import { type Route as NotesRoute } from './+types/notes.ts'
 
+type LoaderData = Route.ComponentProps['loaderData']
+
 export async function loader({ params }: Route.LoaderArgs) {
 	const note = await prisma.note.findUnique({
 		where: { id: params.noteId },
@@ -124,19 +126,21 @@ export default function NoteRoute({
 			</h2>
 			<div className={`${displayBar ? 'pb-24' : 'pb-12'} overflow-y-auto`}>
 				<ul className="flex flex-wrap gap-5 py-5">
-					{loaderData.note.images.map((image) => (
-						<li key={image.id}>
-							<a href={getNoteImgSrc(image.objectKey)}>
-								<Img
-									src={getNoteImgSrc(image.objectKey)}
-									alt={image.altText ?? ''}
-									className="size-32 rounded-lg object-cover"
-									width={512}
-									height={512}
-								/>
-							</a>
-						</li>
-					))}
+					{loaderData.note.images.map(
+						(image: LoaderData['note']['images'][number]) => (
+							<li key={image.id}>
+								<a href={getNoteImgSrc(image.objectKey)}>
+									<Img
+										src={getNoteImgSrc(image.objectKey)}
+										alt={image.altText ?? ''}
+										className="size-32 rounded-lg object-cover"
+										width={512}
+										height={512}
+									/>
+								</a>
+							</li>
+						),
+					)}
 				</ul>
 				<p className="text-sm whitespace-break-spaces md:text-lg">
 					{loaderData.note.content}
@@ -175,7 +179,7 @@ export function DeleteNote({
 	actionData,
 }: {
 	id: string
-	actionData: Route.ComponentProps['actionData'] | undefined
+	actionData?: Route.ComponentProps['actionData']
 }) {
 	const isPending = useIsPending()
 	const [form] = useForm({
