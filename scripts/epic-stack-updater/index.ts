@@ -11,7 +11,10 @@
 import { ConfigManager } from './lib/config-manager.js'
 import { CommitParser } from './lib/commit-parser.js'
 import { GitOperations } from './lib/git-operations.js'
-import type { CommitInfo, UpdateSummary, UpdaterOptions } from './lib/types.js'
+import { UIDisplay } from './lib/ui-display.js'
+import { UserInteraction } from './lib/user-interaction.js'
+import { CommitReviewer } from './lib/commit-reviewer.js'
+import type { UpdateSummary, UpdaterOptions } from './lib/types.js'
 
 /**
  * Epic Stack Updater - A tool for systematically reviewing and applying
@@ -27,6 +30,9 @@ export class EpicStackUpdater {
 	private configManager: ConfigManager
 	private commitParser: CommitParser
 	private gitOperations: GitOperations
+	private uiDisplay: UIDisplay
+	private userInteraction: UserInteraction
+	private commitReviewer: CommitReviewer
 
 	/**
 	 * Creates a new EpicStackUpdater instance
@@ -39,6 +45,13 @@ export class EpicStackUpdater {
 		this.gitOperations = new GitOperations(
 			options.upstreamRemote,
 			options.upstreamUrl,
+		)
+		this.uiDisplay = new UIDisplay()
+		this.userInteraction = new UserInteraction()
+		this.commitReviewer = new CommitReviewer(
+			(hash) => this.commitParser.getCommitDetails(hash),
+			(hash) => this.commitParser.hasDependencyConflicts(hash),
+			(hash) => this.commitParser.isPackageLockOnlyCommit(hash),
 		)
 	}
 
@@ -56,8 +69,7 @@ export class EpicStackUpdater {
 	 * @returns Promise resolving when the update process is complete
 	 */
 	async run(): Promise<UpdateSummary> {
-		console.log('🚀 Epic Stack Updater')
-		console.log('==================')
+		this.uiDisplay.displayHeader()
 
 		// Ensure upstream remote is configured
 		this.gitOperations.ensureUpstreamRemote()
@@ -67,22 +79,16 @@ export class EpicStackUpdater {
 
 		// Get current tracking info
 		const config = this.configManager.getEpicStackConfig()
-		console.log(`📍 Last tracked commit: ${config.head || 'none'}`)
-		console.log(`📅 Last update: ${config.date || 'never'}`)
+		this.uiDisplay.displayTrackingInfo(config)
 
 		// Ask user if they want to filter to only Pull Requests
-		const filterPRs = await this.promptUser(
-			'❓ Show only Pull Requests? (y/n): ',
-		)
+		const filterPRs = await this.userInteraction.promptForPRFilter()
 
 		// Get commits since last update
-		const commits = this.commitParser.getCommitsSince(
-			config.head,
-			filterPRs.toLowerCase() === 'y' || filterPRs.toLowerCase() === 'yes',
-		)
+		const commits = this.commitParser.getCommitsSince(config.head, filterPRs)
 
 		if (commits.length === 0) {
-			console.log('✅ No new commits to review!')
+			this.uiDisplay.displayNoCommitsFound()
 			return {
 				appliedCount: 0,
 				skippedCount: 0,
@@ -91,24 +97,17 @@ export class EpicStackUpdater {
 			}
 		}
 
-		const filterText =
-			filterPRs.toLowerCase() === 'y' || filterPRs.toLowerCase() === 'yes'
-				? ' Pull Request commits'
-				: ' commits'
-		console.log(`📊 Found ${commits.length} new${filterText} to review`)
+		this.uiDisplay.displayCommitsCount(commits.length, filterPRs)
 
 		// Display commits table for overview
-		this.displayCommitsTable(
-			commits,
-			filterPRs.toLowerCase() === 'y' || filterPRs.toLowerCase() === 'yes',
+		this.uiDisplay.displayCommitsTable(commits, filterPRs, (hash) =>
+			this.commitParser.getCommitDetails(hash),
 		)
 
 		// Ask user if they want to proceed with interactive review
-		const proceed = await this.promptUser(
-			'\n❓ Proceed with interactive review? (y/n): ',
-		)
-		if (proceed.toLowerCase() !== 'y' && proceed.toLowerCase() !== 'yes') {
-			console.log('👋 Exiting without reviewing commits')
+		const proceed = await this.userInteraction.promptForInteractiveReview()
+		if (!proceed) {
+			this.uiDisplay.displayExitingWithoutReview()
 			return {
 				appliedCount: 0,
 				skippedCount: 0,
@@ -126,32 +125,30 @@ export class EpicStackUpdater {
 
 			const sequence = i + 1
 			const total = commits.length
-			const decision = await this.reviewCommit(commit, sequence, total)
+			const reviewResult = await this.commitReviewer.reviewCommit(
+				commit,
+				sequence,
+				total,
+			)
 
-			if (decision === 'quit') {
-				console.log('👋 Stopping review process')
+			if (!reviewResult.shouldContinue) {
 				break
 			}
 
-			if (decision === 'skip') {
-				console.log('⏭️  Skipping remaining commits')
-				break
-			}
-
-			if (decision === true) {
+			if (CommitReviewer.shouldApplyCommit(reviewResult.decision)) {
 				const result = await this.gitOperations.applyCommit(
 					commit.hash,
-					this.promptUser.bind(this),
+					this.userInteraction.promptUser.bind(this.userInteraction),
 				)
 				if (result.success) {
 					appliedCount++
 					// Update tracking to this commit
 					this.configManager.updateEpicStackConfig(commit.hash, commit.date)
-					console.log(`📝 Updated tracking to commit ${commit.hash}`)
+					this.uiDisplay.displayTrackingUpdate(commit.hash)
 				} else if (result.skipped) {
 					skippedCount++
 				}
-			} else {
+			} else if (CommitReviewer.shouldSkipCommit(reviewResult.decision)) {
 				skippedCount++
 			}
 		}
@@ -163,194 +160,8 @@ export class EpicStackUpdater {
 			hasChanges: appliedCount > 0,
 		}
 
-		this.displaySummary(summary)
+		this.uiDisplay.displaySummary(summary)
 		return summary
-	}
-
-	/**
-	 * Displays commits in a formatted table before starting the review process.
-	 * Shows commits in chronological order (oldest first) with sequence numbers.
-	 * Shows commit hash, message, author, date, PR number, file count, and PR link.
-	 *
-	 * @param commits - Array of commits to display in chronological order
-	 * @param pullRequestsOnly - Whether only PR commits are being shown
-	 */
-	private displayCommitsTable(
-		commits: CommitInfo[],
-		pullRequestsOnly: boolean = false,
-	): void {
-		const filterText = pullRequestsOnly ? ' Pull Requests' : ''
-		console.log(`\n📋 Commits to Review${filterText} (in chronological order):`)
-		console.log('='.repeat(190))
-
-		// Table header
-		console.log(
-			`${'#'.padEnd(3)} ${'Hash'.padEnd(10)} ${'PR'.padEnd(6)} ${'Author'.padEnd(20)} ${'Date'.padEnd(12)} ${'Files'.padEnd(6)} ${'Message'.padEnd(40)} ${'PR Link'}`,
-		)
-		console.log('-'.repeat(190))
-
-		// Display each commit with sequence number
-		for (let i = 0; i < commits.length; i++) {
-			const commit = commits[i]
-			if (!commit) continue
-
-			const details = this.commitParser.getCommitDetails(commit.hash)
-			const fileCount = details.files.length
-
-			const seq = (i + 1).toString().padEnd(3)
-			const hash = commit.hash.padEnd(10)
-			const pr = (commit.pr || 'N/A').padEnd(6)
-			const author = commit.author.substring(0, 20).padEnd(20)
-			const date = commit.date.padEnd(12)
-			const files = fileCount.toString().padEnd(6)
-			const message = commit.message.substring(0, 40).padEnd(40)
-			const prLink = commit.pr
-				? `https://github.com/epicweb-dev/epic-stack/pull/${commit.pr}`
-				: 'N/A'
-
-			console.log(
-				`${seq} ${hash} ${pr} ${author} ${date} ${files} ${message} ${prLink}`,
-			)
-		}
-
-		console.log('-'.repeat(190))
-		const summaryText = pullRequestsOnly ? 'Pull Request commits' : 'commits'
-		console.log(`Total: ${commits.length} ${summaryText} (oldest to newest)`)
-	}
-
-	/**
-	 * Presents commit information to the user and prompts for a decision.
-	 * Shows commit details including sequence number, hash, message, author, date, PR link, and file changes.
-	 *
-	 * @param commit - The commit information to review
-	 * @param sequence - The sequence number of this commit in chronological order
-	 * @param total - The total number of commits to review
-	 * @returns Promise resolving to user's decision: true (apply), false (skip), 'skip' (skip remaining), or 'quit'
-	 */
-	private async reviewCommit(
-		commit: CommitInfo,
-		sequence: number,
-		total: number,
-	): Promise<boolean | string> {
-		console.log('\n' + '='.repeat(80))
-		console.log(`📋 Commit ${sequence}/${total}: ${commit.hash}`)
-		console.log(`📝 Message: ${commit.message}`)
-		console.log(`👤 Author: ${commit.author}`)
-		console.log(`📅 Date: ${commit.date}`)
-		if (commit.pr) {
-			console.log(
-				`🔗 PR: https://github.com/epicweb-dev/epic-stack/pull/${commit.pr}`,
-			)
-		}
-
-		const details = this.commitParser.getCommitDetails(commit.hash)
-		console.log(`📁 Files changed: ${details.files.length}`)
-
-		// Show dependency conflict warning
-		if (this.commitParser.hasDependencyConflicts(commit.hash)) {
-			console.log(
-				'⚠️  WARNING: This commit modifies dependencies - may cause conflicts!',
-			)
-		}
-
-		// Show package-lock.json only warning
-		if (this.commitParser.isPackageLockOnlyCommit(commit.hash)) {
-			console.log(
-				'📦 This commit only affects package-lock.json - safe to auto-resolve conflicts',
-			)
-		}
-
-		console.log('📊 Changes:')
-		console.log(details.diff)
-
-		const answer = await this.promptUser(
-			'\n❓ Apply this commit? (y/n/s=skip remaining/q=quit/o=open PR): ',
-		)
-
-		switch (answer.toLowerCase()) {
-			case 'y':
-			case 'yes':
-				return true
-			case 'n':
-			case 'no':
-				return false
-			case 's':
-			case 'skip':
-				return 'skip'
-			case 'q':
-			case 'quit':
-				return 'quit'
-			case 'o':
-			case 'open':
-				if (commit.pr) {
-					this.openPRInBrowser(commit.pr)
-					return this.reviewCommit(commit, sequence, total) // Re-prompt after opening PR
-				} else {
-					console.log('❌ No PR associated with this commit')
-					return this.reviewCommit(commit, sequence, total)
-				}
-			default:
-				console.log('Invalid choice. Please enter y/n/s/q/o')
-				return this.reviewCommit(commit, sequence, total)
-		}
-	}
-
-	/**
-	 * Opens a pull request URL in the default web browser.
-	 *
-	 * @param prNumber - The pull request number
-	 */
-	private openPRInBrowser(prNumber: string): void {
-		const url = `https://github.com/epicweb-dev/epic-stack/pull/${prNumber}`
-		try {
-			const { execSync } = require('child_process')
-			execSync(`open "${url}"`, { stdio: 'ignore' })
-			console.log(`🌐 Opened PR #${prNumber} in browser`)
-		} catch (error) {
-			console.log(`🔗 PR #${prNumber}: ${url}`)
-			console.log('   (Copy the URL above to open in your browser)')
-		}
-	}
-
-	/**
-	 * Prompts the user for input using readline interface.
-	 * Used for interactive decision making during the commit review process.
-	 *
-	 * @param question - The question to ask the user
-	 * @returns Promise resolving to the user's trimmed response
-	 */
-	private async promptUser(question: string): Promise<string> {
-		const readline = await import('readline')
-		const rl = readline.createInterface({
-			input: process.stdin,
-			output: process.stdout,
-		})
-
-		return new Promise((resolve) => {
-			rl.question(question, (answer) => {
-				rl.close()
-				resolve(answer.trim())
-			})
-		})
-	}
-
-	/**
-	 * Displays a summary of the update process results
-	 *
-	 * @param summary - The update summary to display
-	 */
-	private displaySummary(summary: UpdateSummary): void {
-		console.log('\n📊 Summary:')
-		console.log(`✅ Applied: ${summary.appliedCount}`)
-		console.log(`⏭️  Skipped: ${summary.skippedCount}`)
-		console.log(`📋 Total reviewed: ${summary.totalReviewed}`)
-
-		if (summary.hasChanges) {
-			console.log("\n🧪 Don't forget to test your changes!")
-			console.log('   npm run build')
-			console.log('   npm run dev')
-			console.log('   npm run test')
-		}
 	}
 }
 
