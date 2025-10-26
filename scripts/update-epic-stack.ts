@@ -133,16 +133,21 @@ class EpicStackUpdater {
 	 * If no previous commit is found, it returns the last 20 commits for initial setup.
 	 *
 	 * @param {string} lastCommit - The hash of the last processed commit, or empty string if none
+	 * @param {boolean} pullRequestsOnly - If true, only return commits with associated PRs
 	 * @returns {CommitInfo[]} Array of commit information objects in chronological order
 	 */
-	private getCommitsSince(lastCommit: string): CommitInfo[] {
+	private getCommitsSince(
+		lastCommit: string,
+		pullRequestsOnly: boolean = false,
+	): CommitInfo[] {
 		if (!lastCommit) {
 			console.log('⚠️  No previous commit found. Showing last 20 commits.')
 			const output = execSync(
 				`git log ${this.upstreamRemote}/main --oneline -20 --format="%H|%s|%an|%ad" --date=short --reverse`,
 				{ encoding: 'utf8' },
 			)
-			return this.parseCommits(output)
+			const commits = this.parseCommits(output)
+			return pullRequestsOnly ? commits.filter((commit) => commit.pr) : commits
 		}
 
 		// Get commits after the last processed commit in chronological order
@@ -150,7 +155,8 @@ class EpicStackUpdater {
 			`git log ${this.upstreamRemote}/main --oneline --reverse --format="%H|%s|%an|%ad" --date=short ${lastCommit}..HEAD`,
 			{ encoding: 'utf8' },
 		)
-		return this.parseCommits(output)
+		const commits = this.parseCommits(output)
+		return pullRequestsOnly ? commits.filter((commit) => commit.pr) : commits
 	}
 
 	/**
@@ -231,14 +237,39 @@ class EpicStackUpdater {
 	}
 
 	/**
+	 * Checks if a commit has already been applied to the current branch.
+	 * This prevents re-applying commits that were manually resolved.
+	 *
+	 * @param {string} hash - The commit hash to check
+	 * @returns {boolean} True if the commit is already applied, false otherwise
+	 */
+	private isCommitAlreadyApplied(hash: string): boolean {
+		try {
+			const fullHash = this.getFullCommitHash(hash)
+			// Check if the commit exists in our current branch history by looking for the full hash
+			const output = execSync(`git log --oneline | grep "${hash}"`, {
+				encoding: 'utf8',
+			})
+			return output.trim().length > 0
+		} catch (error) {
+			// If the command fails, the commit is not in our history
+			return false
+		}
+	}
+
+	/**
 	 * Displays commits in a formatted table before starting the review process.
 	 * Shows commits in chronological order (oldest first) with sequence numbers.
 	 * Shows commit hash, message, author, date, PR number, file count, and PR link.
 	 *
 	 * @param {CommitInfo[]} commits - Array of commits to display in chronological order
 	 */
-	private displayCommitsTable(commits: CommitInfo[]): void {
-		console.log('\n📋 Commits to Review (in chronological order):')
+	private displayCommitsTable(
+		commits: CommitInfo[],
+		pullRequestsOnly: boolean = false,
+	): void {
+		const filterText = pullRequestsOnly ? ' Pull Requests' : ''
+		console.log(`\n📋 Commits to Review${filterText} (in chronological order):`)
 		console.log('='.repeat(190))
 
 		// Table header
@@ -272,7 +303,8 @@ class EpicStackUpdater {
 		}
 
 		console.log('-'.repeat(190))
-		console.log(`Total: ${commits.length} commits (oldest to newest)`)
+		const summaryText = pullRequestsOnly ? 'Pull Request commits' : 'commits'
+		console.log(`Total: ${commits.length} ${summaryText} (oldest to newest)`)
 	}
 
 	/**
@@ -377,48 +409,88 @@ class EpicStackUpdater {
 
 	/**
 	 * Applies a commit from the upstream repository to the current branch using cherry-pick.
-	 * Creates a temporary branch for the operation to ensure clean application.
+	 * Uses a simpler approach that doesn't create temporary branches to avoid getting stuck.
 	 *
 	 * @param {string} hash - The commit hash to apply
 	 * @returns {Promise<boolean>} True if the commit was successfully applied, false otherwise
 	 */
 	private async applyCommit(hash: string): Promise<boolean> {
+		// Check if commit is already applied
+		if (this.isCommitAlreadyApplied(hash)) {
+			console.log(`✅ Commit ${hash} already applied, skipping`)
+			return true
+		}
+
 		try {
 			console.log(`🔄 Applying commit ${hash}...`)
 
 			// Get full commit hash for git operations
 			const fullHash = this.getFullCommitHash(hash)
 
-			// Create a temporary branch for this commit
-			const tempBranch = `temp-${hash}`
-			execSync(`git checkout -b ${tempBranch}`)
-
-			// Cherry-pick the commit
+			// Cherry-pick directly to current branch
 			execSync(`git cherry-pick ${fullHash}`)
-
-			// Merge back to current branch
-			execSync(`git checkout -`)
-			execSync(`git merge ${tempBranch}`)
-
-			// Clean up temp branch
-			execSync(`git branch -d ${tempBranch}`)
 
 			console.log(`✅ Successfully applied commit ${hash}`)
 			return true
 		} catch (error) {
 			console.error(`❌ Failed to apply commit ${hash}:`, error)
 
-			// Clean up temp branch if it exists
+			// Check if we're in a cherry-pick state
 			try {
-				execSync(`git branch -D temp-${hash}`)
-			} catch {}
+				const status = execSync('git status --porcelain', { encoding: 'utf8' })
+				if (status.includes('CHERRY_PICKING')) {
+					console.log('🔄 Currently in cherry-pick state. Options:')
+					console.log(
+						'   1. Resolve conflicts manually and run: git cherry-pick --continue',
+					)
+					console.log('   2. Skip this commit: git cherry-pick --skip')
+					console.log('   3. Abort cherry-pick: git cherry-pick --abort')
 
-			const answer = await this.promptUser(
-				'❓ Resolve conflicts manually and continue? (y/n): ',
-			)
-			if (answer.toLowerCase() === 'y' || answer.toLowerCase() === 'yes') {
-				return true
+					const answer = await this.promptUser(
+						'❓ What would you like to do? (continue/skip/abort): ',
+					)
+
+					switch (answer.toLowerCase()) {
+						case 'continue':
+							try {
+								execSync('git cherry-pick --continue')
+								console.log(`✅ Successfully applied commit ${hash}`)
+								return true
+							} catch (continueError) {
+								console.error('❌ Cherry-pick continue failed:', continueError)
+								return false
+							}
+						case 'skip':
+							try {
+								execSync('git cherry-pick --skip')
+								console.log(`⏭️ Skipped commit ${hash}`)
+								return false
+							} catch (skipError) {
+								console.error('❌ Cherry-pick skip failed:', skipError)
+								return false
+							}
+						case 'abort':
+							try {
+								execSync('git cherry-pick --abort')
+								console.log(`🛑 Aborted cherry-pick for commit ${hash}`)
+								return false
+							} catch (abortError) {
+								console.error('❌ Cherry-pick abort failed:', abortError)
+								return false
+							}
+						default:
+							console.log('Invalid choice. Aborting cherry-pick.')
+							try {
+								execSync('git cherry-pick --abort')
+							} catch {}
+							return false
+					}
+				}
+			} catch (statusError) {
+				// If we can't check status, assume we're not in cherry-pick state
+				console.log('⚠️ Could not check git status, assuming commit failed')
 			}
+
 			return false
 		}
 	}
@@ -448,18 +520,33 @@ class EpicStackUpdater {
 		console.log(`📍 Last tracked commit: ${config.head || 'none'}`)
 		console.log(`📅 Last update: ${config.date || 'never'}`)
 
+		// Ask user if they want to filter to only Pull Requests
+		const filterPRs = await this.promptUser(
+			'❓ Show only Pull Requests? (y/n): ',
+		)
+
 		// Get commits since last update
-		const commits = this.getCommitsSince(config.head)
+		const commits = this.getCommitsSince(
+			config.head,
+			filterPRs.toLowerCase() === 'y' || filterPRs.toLowerCase() === 'yes',
+		)
 
 		if (commits.length === 0) {
 			console.log('✅ No new commits to review!')
 			return
 		}
 
-		console.log(`📊 Found ${commits.length} new commits to review`)
+		const filterText =
+			filterPRs.toLowerCase() === 'y' || filterPRs.toLowerCase() === 'yes'
+				? ' Pull Request commits'
+				: ' commits'
+		console.log(`📊 Found ${commits.length} new${filterText} to review`)
 
 		// Display commits table for overview
-		this.displayCommitsTable(commits)
+		this.displayCommitsTable(
+			commits,
+			filterPRs.toLowerCase() === 'y' || filterPRs.toLowerCase() === 'yes',
+		)
 
 		// Ask user if they want to proceed with interactive review
 		const proceed = await this.promptUser(
@@ -497,6 +584,7 @@ class EpicStackUpdater {
 					appliedCount++
 					// Update tracking to this commit
 					this.updateEpicStackConfig(commit.hash, commit.date)
+					console.log(`📝 Updated tracking to commit ${commit.hash}`)
 				}
 			} else {
 				skippedCount++

@@ -6,8 +6,8 @@
   "author": "Pat N <p@patn.dev> (https://patn.dev/)",
   "type": "module",
   "epic-stack": {
-    "head": "81253c25cd69246adbc1fae68dc65f9866a027fb",
-    "date": "2025-07-27T13:25:49Z"
+    "head": "2d15307a2158055ed556e647a198d0783f31b374",
+    "date": "2025-05-05T16:52:51Z"
   },
   "imports": {
     "#app/*": "./app/*",
