@@ -7,6 +7,7 @@
 
 import { execSync } from 'child_process'
 import type { ApplyResult } from './types.js'
+import { CommitParser } from './commit-parser.js'
 
 /**
  * Handles git operations and conflict resolution for Epic Stack updates
@@ -21,7 +22,11 @@ export class GitOperations {
 	constructor(
 		private upstreamRemote: string = 'upstream',
 		private upstreamUrl: string = 'https://github.com/epicweb-dev/epic-stack.git',
-	) {}
+	) {
+		this.commitParser = new CommitParser(upstreamRemote)
+	}
+
+	private commitParser: CommitParser
 
 	/**
 	 * Ensures the upstream remote is configured for the Epic Stack repository.
@@ -108,32 +113,70 @@ export class GitOperations {
 				if (status.includes('CHERRY_PICKING')) {
 					console.log('🔄 Currently in cherry-pick state. Options:')
 
-					// Check if this is a package-lock.json only commit
-					if (this.isPackageLockOnlyCommit(hash)) {
-						console.log('📦 This commit only affects package-lock.json')
-						const autoResolve = await promptUser(
-							'❓ Auto-resolve by regenerating package-lock.json? (y/n): ',
+					// Check if this commit affects package files
+					if (this.commitParser.affectsPackageFiles(hash)) {
+						console.log(
+							'📦 This commit affects package files (package.json, package-lock.json, etc.)',
 						)
 
-						if (
-							autoResolve.toLowerCase() === 'y' ||
-							autoResolve.toLowerCase() === 'yes'
-						) {
-							const resolved = await this.resolvePackageLockConflict()
-							if (resolved) {
-								try {
-									execSync('git add package-lock.json')
-									execSync('git cherry-pick --continue')
-									console.log(
-										`✅ Successfully applied commit ${hash} with auto-resolved package-lock.json`,
-									)
-									return { success: true }
-								} catch (continueError) {
-									console.error(
-										'❌ Cherry-pick continue failed after auto-resolution:',
-										continueError,
-									)
-									return { success: false, error: String(continueError) }
+						// Check if it's only package-lock.json
+						if (this.commitParser.isPackageLockOnlyCommit(hash)) {
+							console.log('🔍 This commit only affects package-lock.json')
+							const autoResolve = await promptUser(
+								'❓ Auto-resolve by regenerating package-lock.json? (y/n): ',
+							)
+
+							if (
+								autoResolve.toLowerCase() === 'y' ||
+								autoResolve.toLowerCase() === 'yes'
+							) {
+								const resolved = await this.resolvePackageLockConflict()
+								if (resolved) {
+									try {
+										execSync('git add package-lock.json')
+										execSync('git cherry-pick --continue')
+										console.log(
+											`✅ Successfully applied commit ${hash} with auto-resolved package-lock.json`,
+										)
+										return { success: true }
+									} catch (continueError) {
+										console.error(
+											'❌ Cherry-pick continue failed after auto-resolution:',
+											continueError,
+										)
+										return { success: false, error: String(continueError) }
+									}
+								}
+							}
+						} else {
+							// This commit affects package.json or other package files
+							console.log(
+								'⚠️  This commit modifies package.json or other package files',
+							)
+							const autoResolve = await promptUser(
+								'❓ Auto-resolve package conflicts by running npm install? (y/n): ',
+							)
+
+							if (
+								autoResolve.toLowerCase() === 'y' ||
+								autoResolve.toLowerCase() === 'yes'
+							) {
+								const resolved = await this.resolvePackageConflicts()
+								if (resolved) {
+									try {
+										execSync('git add package.json package-lock.json')
+										execSync('git cherry-pick --continue')
+										console.log(
+											`✅ Successfully applied commit ${hash} with auto-resolved package conflicts`,
+										)
+										return { success: true }
+									} catch (continueError) {
+										console.error(
+											'❌ Cherry-pick continue failed after auto-resolution:',
+											continueError,
+										)
+										return { success: false, error: String(continueError) }
+									}
 								}
 							}
 						}
@@ -144,9 +187,7 @@ export class GitOperations {
 					)
 					console.log('   2. Skip this commit: git cherry-pick --skip')
 					console.log('   3. Abort cherry-pick: git cherry-pick --abort')
-					console.log(
-						'   4. Auto-resolve package-lock.json conflicts: npm install --package-lock-only',
-					)
+					console.log('   4. Auto-resolve package conflicts: npm install')
 
 					const answer = await promptUser(
 						'❓ What would you like to do? (continue/skip/abort/auto-resolve): ',
@@ -181,21 +222,42 @@ export class GitOperations {
 								return { success: false, error: String(abortError) }
 							}
 						case 'auto-resolve':
-							const resolved = await this.resolvePackageLockConflict()
-							if (resolved) {
-								try {
-									execSync('git add package-lock.json')
-									execSync('git cherry-pick --continue')
-									console.log(
-										`✅ Successfully applied commit ${hash} with auto-resolved package-lock.json`,
-									)
-									return { success: true }
-								} catch (continueError) {
-									console.error(
-										'❌ Cherry-pick continue failed after auto-resolution:',
-										continueError,
-									)
-									return { success: false, error: String(continueError) }
+							// Determine which type of package conflict resolution to use
+							if (this.commitParser.isPackageLockOnlyCommit(hash)) {
+								const resolved = await this.resolvePackageLockConflict()
+								if (resolved) {
+									try {
+										execSync('git add package-lock.json')
+										execSync('git cherry-pick --continue')
+										console.log(
+											`✅ Successfully applied commit ${hash} with auto-resolved package-lock.json`,
+										)
+										return { success: true }
+									} catch (continueError) {
+										console.error(
+											'❌ Cherry-pick continue failed after auto-resolution:',
+											continueError,
+										)
+										return { success: false, error: String(continueError) }
+									}
+								}
+							} else {
+								const resolved = await this.resolvePackageConflicts()
+								if (resolved) {
+									try {
+										execSync('git add package.json package-lock.json')
+										execSync('git cherry-pick --continue')
+										console.log(
+											`✅ Successfully applied commit ${hash} with auto-resolved package conflicts`,
+										)
+										return { success: true }
+									} catch (continueError) {
+										console.error(
+											'❌ Cherry-pick continue failed after auto-resolution:',
+											continueError,
+										)
+										return { success: false, error: String(continueError) }
+									}
 								}
 							}
 							return { success: false, error: 'Auto-resolution failed' }
@@ -244,6 +306,28 @@ export class GitOperations {
 	}
 
 	/**
+	 * Automatically resolves package conflicts by running npm install.
+	 * This handles conflicts in both package.json and package-lock.json.
+	 *
+	 * @returns Promise resolving to true if resolution was successful, false otherwise
+	 */
+	private async resolvePackageConflicts(): Promise<boolean> {
+		try {
+			console.log('🔧 Detected package conflicts - running npm install...')
+
+			// Run npm install to resolve package conflicts
+			console.log('📦 Running npm install to resolve package conflicts...')
+			execSync('npm install')
+
+			console.log('✅ Successfully resolved package conflicts with npm install')
+			return true
+		} catch (error) {
+			console.error('❌ Failed to resolve package conflicts:', error)
+			return false
+		}
+	}
+
+	/**
 	 * Gets the full commit hash from a short hash.
 	 * This is needed for git operations that require the full hash.
 	 *
@@ -270,17 +354,7 @@ export class GitOperations {
 	 * @returns True if the commit is already applied, false otherwise
 	 */
 	private isCommitAlreadyApplied(hash: string): boolean {
-		try {
-			const fullHash = this.getFullCommitHash(hash)
-			// Check if the commit exists in our current branch history by looking for the full hash
-			const output = execSync(`git log --oneline | grep "${hash}"`, {
-				encoding: 'utf8',
-			})
-			return output.trim().length > 0
-		} catch (error) {
-			// If the command fails, the commit is not in our history
-			return false
-		}
+		return this.commitParser.isCommitAlreadyApplied(hash)
 	}
 
 	/**
@@ -291,20 +365,7 @@ export class GitOperations {
 	 * @returns True if commit only affects package-lock.json
 	 */
 	private isPackageLockOnlyCommit(hash: string): boolean {
-		try {
-			const fullHash = this.getFullCommitHash(hash)
-			const files = execSync(
-				`git diff-tree --no-commit-id --name-only -r ${fullHash}`,
-				{ encoding: 'utf8' },
-			)
-				.trim()
-				.split('\n')
-				.filter(Boolean)
-
-			return files.length === 1 && files[0] === 'package-lock.json'
-		} catch (error) {
-			return false
-		}
+		return this.commitParser.isPackageLockOnlyCommit(hash)
 	}
 
 	/**
@@ -315,20 +376,6 @@ export class GitOperations {
 	 * @returns True if there are potential dependency conflicts
 	 */
 	private hasDependencyConflicts(hash: string): boolean {
-		try {
-			const fullHash = this.getFullCommitHash(hash)
-			const packageJsonDiff = execSync(`git show ${fullHash} -- package.json`, {
-				encoding: 'utf8',
-			})
-
-			// Check if the commit modifies dependencies in package.json
-			return (
-				packageJsonDiff.includes('"dependencies"') ||
-				packageJsonDiff.includes('"devDependencies"') ||
-				packageJsonDiff.includes('"peerDependencies"')
-			)
-		} catch (error) {
-			return false
-		}
+		return this.commitParser.hasDependencyConflicts(hash)
 	}
 }
