@@ -6,7 +6,7 @@ import { ip as ipAddress } from 'address'
 import closeWithGrace from 'close-with-grace'
 import compression from 'compression'
 import express from 'express'
-import rateLimit from 'express-rate-limit'
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit'
 import getPort, { portNumbers } from 'get-port'
 import morgan from 'morgan'
 import { type ServerBuild } from 'react-router'
@@ -129,7 +129,10 @@ const rateLimitDefault = {
 	// When sitting behind a CDN such as cloudflare, replace fly-client-ip with the CDN
 	// specific header such as cf-connecting-ip
 	keyGenerator: (req: express.Request) => {
-		return req.get('fly-client-ip') ?? `${req.ip}`
+		const customIp = req.get('fly-client-ip')
+		if (customIp) return customIp
+		// Use ipKeyGenerator helper to properly handle IPv6 addresses
+		return ipKeyGenerator(req.ip ?? 'unknown')
 	},
 }
 
