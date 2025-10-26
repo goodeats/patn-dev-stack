@@ -296,7 +296,11 @@ EXAMPLES:
 				'\n⚠️  Warning: This commit modifies dependencies and may cause conflicts.',
 			)
 			console.log(
-				'   Use --auto-resolve to automatically handle package-lock.json conflicts.',
+				'   Use --auto-resolve to automatically handle package conflicts.',
+			)
+		} else if (autoResolve) {
+			console.log(
+				'\n🤖 Auto-resolve mode enabled - package conflicts will be resolved automatically.',
 			)
 		}
 
@@ -305,8 +309,8 @@ EXAMPLES:
 			commit.hash,
 			async (prompt: string) => {
 				// For non-interactive mode, we'll use sensible defaults
-				if (autoResolve && isPackageLockOnly) {
-					return 'y' // Auto-accept package-lock resolution
+				if (autoResolve) {
+					return 'y' // Auto-accept all prompts when auto-resolve is enabled
 				}
 				// For other prompts, we need user input
 				const readline = await import('readline')
@@ -322,6 +326,7 @@ EXAMPLES:
 					})
 				})
 			},
+			autoResolve,
 		)
 
 		if (result.success) {

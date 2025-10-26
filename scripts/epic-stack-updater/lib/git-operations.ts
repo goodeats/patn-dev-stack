@@ -69,28 +69,18 @@ export class GitOperations {
 	 *
 	 * @param hash - The commit hash to apply
 	 * @param promptUser - Function to prompt user for input
+	 * @param autoResolve - Whether to automatically resolve package conflicts
 	 * @returns Promise resolving to ApplyResult indicating success/failure
 	 */
 	async applyCommit(
 		hash: string,
 		promptUser: (question: string) => Promise<string>,
+		autoResolve: boolean = false,
 	): Promise<ApplyResult> {
 		// Check if commit is already applied
 		if (this.isCommitAlreadyApplied(hash)) {
 			console.log(`✅ Commit ${hash} already applied, skipping`)
 			return { success: true, skipped: true }
-		}
-
-		// Check for potential dependency conflicts before applying
-		if (this.hasDependencyConflicts(hash)) {
-			console.log(
-				'⚠️  This commit modifies dependencies - potential conflicts ahead',
-			)
-			const proceed = await promptUser('❓ Continue anyway? (y/n): ')
-			if (proceed.toLowerCase() !== 'y' && proceed.toLowerCase() !== 'yes') {
-				console.log(`⏭️ Skipped commit ${hash} due to dependency concerns`)
-				return { success: false, skipped: true }
-			}
 		}
 
 		try {
@@ -107,90 +97,47 @@ export class GitOperations {
 		} catch (error) {
 			console.error(`❌ Failed to apply commit ${hash}:`, error)
 
-			// Check if we're in a cherry-pick state
+			// Check if we're in a cherry-pick state and handle conflicts automatically
 			try {
 				const status = execSync('git status --porcelain', { encoding: 'utf8' })
 				if (status.includes('CHERRY_PICKING')) {
-					console.log('🔄 Currently in cherry-pick state. Options:')
+					console.log(
+						'🔄 Currently in cherry-pick state - attempting automatic resolution...',
+					)
 
 					// Check if this commit affects package files
 					if (this.commitParser.affectsPackageFiles(hash)) {
 						console.log(
-							'📦 This commit affects package files (package.json, package-lock.json, etc.)',
+							'📦 This commit affects package files - attempting auto-resolution...',
 						)
 
-						// Check if it's only package-lock.json
-						if (this.commitParser.isPackageLockOnlyCommit(hash)) {
-							console.log('🔍 This commit only affects package-lock.json')
-							const autoResolve = await promptUser(
-								'❓ Auto-resolve by regenerating package-lock.json? (y/n): ',
-							)
-
-							if (
-								autoResolve.toLowerCase() === 'y' ||
-								autoResolve.toLowerCase() === 'yes'
-							) {
-								const resolved = await this.resolvePackageLockConflict()
-								if (resolved) {
-									try {
-										execSync('git add package-lock.json')
-										execSync('git cherry-pick --continue')
-										console.log(
-											`✅ Successfully applied commit ${hash} with auto-resolved package-lock.json`,
-										)
-										return { success: true }
-									} catch (continueError) {
-										console.error(
-											'❌ Cherry-pick continue failed after auto-resolution:',
-											continueError,
-										)
-										return { success: false, error: String(continueError) }
-									}
-								}
-							}
-						} else {
-							// This commit affects package.json or other package files
-							console.log(
-								'⚠️  This commit modifies package.json or other package files',
-							)
-							const autoResolve = await promptUser(
-								'❓ Auto-resolve package conflicts by running npm install? (y/n): ',
-							)
-
-							if (
-								autoResolve.toLowerCase() === 'y' ||
-								autoResolve.toLowerCase() === 'yes'
-							) {
-								const resolved = await this.resolvePackageConflicts()
-								if (resolved) {
-									try {
-										execSync('git add package.json package-lock.json')
-										execSync('git cherry-pick --continue')
-										console.log(
-											`✅ Successfully applied commit ${hash} with auto-resolved package conflicts`,
-										)
-										return { success: true }
-									} catch (continueError) {
-										console.error(
-											'❌ Cherry-pick continue failed after auto-resolution:',
-											continueError,
-										)
-										return { success: false, error: String(continueError) }
-									}
-								}
+						// Try automatic resolution first (or if autoResolve is enabled)
+						if (
+							autoResolve ||
+							this.commitParser.isPackageLockOnlyCommit(hash)
+						) {
+							const autoResolved = await this.attemptAutomaticResolution(hash)
+							if (autoResolved) {
+								console.log(
+									`✅ Successfully applied commit ${hash} with automatic resolution`,
+								)
+								return { success: true }
 							}
 						}
 					}
 
+					// If automatic resolution failed, provide manual options
+					console.log(
+						'⚠️  Automatic resolution failed. Manual intervention required:',
+					)
 					console.log(
 						'   1. Resolve conflicts manually and run: git cherry-pick --continue',
 					)
 					console.log('   2. Skip this commit: git cherry-pick --skip')
 					console.log('   3. Abort cherry-pick: git cherry-pick --abort')
-					console.log('   4. Auto-resolve package conflicts: npm install')
 
 					const answer = await promptUser(
-						'❓ What would you like to do? (continue/skip/abort/auto-resolve): ',
+						'❓ What would you like to do? (continue/skip/abort): ',
 					)
 
 					switch (answer.toLowerCase()) {
@@ -221,46 +168,6 @@ export class GitOperations {
 								console.error('❌ Cherry-pick abort failed:', abortError)
 								return { success: false, error: String(abortError) }
 							}
-						case 'auto-resolve':
-							// Determine which type of package conflict resolution to use
-							if (this.commitParser.isPackageLockOnlyCommit(hash)) {
-								const resolved = await this.resolvePackageLockConflict()
-								if (resolved) {
-									try {
-										execSync('git add package-lock.json')
-										execSync('git cherry-pick --continue')
-										console.log(
-											`✅ Successfully applied commit ${hash} with auto-resolved package-lock.json`,
-										)
-										return { success: true }
-									} catch (continueError) {
-										console.error(
-											'❌ Cherry-pick continue failed after auto-resolution:',
-											continueError,
-										)
-										return { success: false, error: String(continueError) }
-									}
-								}
-							} else {
-								const resolved = await this.resolvePackageConflicts()
-								if (resolved) {
-									try {
-										execSync('git add package.json package-lock.json')
-										execSync('git cherry-pick --continue')
-										console.log(
-											`✅ Successfully applied commit ${hash} with auto-resolved package conflicts`,
-										)
-										return { success: true }
-									} catch (continueError) {
-										console.error(
-											'❌ Cherry-pick continue failed after auto-resolution:',
-											continueError,
-										)
-										return { success: false, error: String(continueError) }
-									}
-								}
-							}
-							return { success: false, error: 'Auto-resolution failed' }
 						default:
 							console.log('Invalid choice. Aborting cherry-pick.')
 							try {
@@ -275,6 +182,111 @@ export class GitOperations {
 			}
 
 			return { success: false, error: String(error) }
+		}
+	}
+
+	/**
+	 * Attempts automatic resolution of conflicts based on the commit type.
+	 * This is the main entry point for automatic conflict resolution.
+	 *
+	 * @param hash - The commit hash being applied
+	 * @returns Promise resolving to true if resolution was successful, false otherwise
+	 */
+	private async attemptAutomaticResolution(hash: string): Promise<boolean> {
+		try {
+			// Check what files are in conflict
+			const conflictedFiles = this.getConflictedFiles()
+
+			if (conflictedFiles.length === 0) {
+				console.log('🔍 No conflicted files detected')
+				return false
+			}
+
+			console.log(`🔍 Detected conflicts in: ${conflictedFiles.join(', ')}`)
+
+			// Handle package.json conflicts by accepting incoming changes and regenerating lock file
+			if (conflictedFiles.includes('package.json')) {
+				console.log(
+					'📦 Resolving package.json conflicts by accepting incoming changes...',
+				)
+
+				// Accept incoming changes for package.json
+				execSync('git checkout --theirs package.json')
+
+				// Regenerate package-lock.json from the new package.json
+				console.log(
+					'📦 Regenerating package-lock.json from updated package.json...',
+				)
+				execSync('rm -f package-lock.json')
+				execSync('npm install --package-lock-only')
+
+				// Stage the resolved files
+				execSync('git add package.json package-lock.json')
+
+				// Continue the cherry-pick
+				execSync('git cherry-pick --continue')
+
+				console.log('✅ Successfully resolved package conflicts automatically')
+				return true
+			}
+
+			// Handle package-lock.json only conflicts
+			if (
+				conflictedFiles.includes('package-lock.json') &&
+				!conflictedFiles.includes('package.json')
+			) {
+				console.log(
+					'📦 Resolving package-lock.json conflicts by regenerating...',
+				)
+
+				// Accept incoming changes for package-lock.json
+				execSync('git checkout --theirs package-lock.json')
+
+				// Stage the resolved file
+				execSync('git add package-lock.json')
+
+				// Continue the cherry-pick
+				execSync('git cherry-pick --continue')
+
+				console.log(
+					'✅ Successfully resolved package-lock.json conflicts automatically',
+				)
+				return true
+			}
+
+			// For other file types, we can't automatically resolve
+			console.log(
+				'⚠️  Cannot automatically resolve conflicts in:',
+				conflictedFiles.join(', '),
+			)
+			return false
+		} catch (error) {
+			console.error('❌ Automatic resolution failed:', error)
+			return false
+		}
+	}
+
+	/**
+	 * Gets the list of files currently in conflict during cherry-pick.
+	 *
+	 * @returns Array of file paths that are in conflict
+	 */
+	private getConflictedFiles(): string[] {
+		try {
+			const status = execSync('git status --porcelain', { encoding: 'utf8' })
+			const conflictedFiles: string[] = []
+
+			status.split('\n').forEach((line) => {
+				if (line.includes('UU') || line.includes('AA') || line.includes('DD')) {
+					const file = line.substring(3).trim()
+					conflictedFiles.push(file)
+				}
+			})
+
+			return conflictedFiles
+		} catch (error) {
+			console.error('❌ Failed to get conflicted files:', error)
+			return []
 		}
 	}
 
