@@ -118,8 +118,12 @@ export class CommitParser {
 		// Filter out commits that have already been applied (same content, different hash)
 		let finalCommits = deduplicatedCommits
 		if (lastAppliedCommit) {
+			// Create a cache of applied commit content hashes for efficient lookup
+			const appliedContentHashes =
+				this.getAppliedContentHashes(lastAppliedCommit)
 			finalCommits = deduplicatedCommits.filter((commit) => {
-				return !this.hasChangesAlreadyApplied(commit.hash, lastAppliedCommit)
+				const contentHash = this.getCommitContentHash(commit.hash)
+				return !appliedContentHashes.has(contentHash)
 			})
 		}
 
@@ -244,55 +248,74 @@ export class CommitParser {
 	}
 
 	/**
-	 * Checks if a commit's changes have already been applied by comparing the actual file changes.
-	 * This helps avoid applying duplicate commits that have the same content but different hashes.
+	 * Gets a content hash for a commit by hashing its diff content.
+	 * This allows efficient comparison of commits with the same content but different hashes.
 	 *
-	 * @param hash - The commit hash to check
-	 * @param lastAppliedCommit - The hash of the last applied commit
-	 * @returns True if the commit's changes have already been applied
+	 * @param hash - The commit hash to get content hash for
+	 * @returns A hash of the commit's content
 	 */
-	hasChangesAlreadyApplied(hash: string, lastAppliedCommit: string): boolean {
+	private getCommitContentHash(hash: string): string {
 		try {
 			const fullHash = this.getFullCommitHash(hash)
+			const content = execSync(`git show ${fullHash} --format=""`, {
+				encoding: 'utf8',
+			})
+			// Use a simple hash of the content
+			return this.simpleHash(content)
+		} catch (error) {
+			return hash // Fallback to commit hash if content can't be retrieved
+		}
+	}
+
+	/**
+	 * Gets a set of content hashes for all commits that have been applied locally.
+	 * This is used to efficiently filter out duplicate commits.
+	 *
+	 * @param lastAppliedCommit - The hash of the last applied commit
+	 * @returns Set of content hashes for applied commits
+	 */
+	private getAppliedContentHashes(lastAppliedCommit: string): Set<string> {
+		const contentHashes = new Set<string>()
+		try {
 			const lastAppliedFullHash = this.getFullCommitHash(lastAppliedCommit)
 
-			// Get the diff of the commit we want to check
-			const commitDiff = execSync(
-				`git diff-tree --no-commit-id --name-only -r ${fullHash}`,
+			// Get all commits from the last applied commit to HEAD
+			const appliedCommits = execSync(
+				`git rev-list ${lastAppliedFullHash}..HEAD`,
 				{
 					encoding: 'utf8',
 				},
-			).trim()
+			)
+				.trim()
+				.split('\n')
+				.filter(Boolean)
 
-			// Get the diff of the last applied commit
-			const lastAppliedDiff = execSync(
-				`git diff-tree --no-commit-id --name-only -r ${lastAppliedFullHash}`,
-				{
-					encoding: 'utf8',
-				},
-			).trim()
+			// Limit to recent commits to avoid performance issues
+			const recentCommits = appliedCommits.slice(0, 50) // Check last 50 commits only
 
-			// If they modify the same files, check if the actual content is the same
-			if (commitDiff === lastAppliedDiff) {
-				// Compare only the actual diff content (not the commit metadata)
-				const commitContentDiff = execSync(`git show ${fullHash} --format=""`, {
-					encoding: 'utf8',
-				})
-
-				const lastAppliedContentDiff = execSync(
-					`git show ${lastAppliedFullHash} --format=""`,
-					{
-						encoding: 'utf8',
-					},
-				)
-
-				// If the content diffs are the same, the changes have already been applied
-				return commitContentDiff === lastAppliedContentDiff
+			for (const commitHash of recentCommits) {
+				const contentHash = this.getCommitContentHash(commitHash)
+				contentHashes.add(contentHash)
 			}
-
-			return false
 		} catch (error) {
-			return false
+			// If there's an error, return empty set
 		}
+		return contentHashes
+	}
+
+	/**
+	 * Simple hash function for content comparison.
+	 *
+	 * @param content - The content to hash
+	 * @returns A hash string
+	 */
+	private simpleHash(content: string): string {
+		let hash = 0
+		for (let i = 0; i < content.length; i++) {
+			const char = content.charCodeAt(i)
+			hash = (hash << 5) - hash + char
+			hash = hash & hash // Convert to 32-bit integer
+		}
+		return hash.toString()
 	}
 }
