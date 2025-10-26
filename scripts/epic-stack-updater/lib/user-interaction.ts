@@ -134,7 +134,7 @@ export class UserInteraction {
 		try {
 			execSync(`open "${url}"`, { stdio: 'ignore' })
 			return true
-		} catch (error) {
+		} catch {
 			return false
 		}
 	}

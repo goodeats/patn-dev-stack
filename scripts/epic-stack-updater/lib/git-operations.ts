@@ -7,7 +7,7 @@
 
 import { execSync } from 'child_process'
 import { CommitParser } from './commit-parser.js'
-import  { type ApplyResult } from './types.js'
+import { type ApplyResult } from './types.js'
 
 /**
  * Handles git operations and conflict resolution for Epic Stack updates
@@ -176,7 +176,7 @@ export class GitOperations {
 							return { success: false, error: 'Invalid choice' }
 					}
 				}
-			} catch (statusError) {
+			} catch {
 				// If we can't check status, assume we're not in cherry-pick state
 				console.log('⚠️ Could not check git status, assuming commit failed')
 			}
@@ -192,7 +192,7 @@ export class GitOperations {
 	 * @param hash - The commit hash being applied
 	 * @returns Promise resolving to true if resolution was successful, false otherwise
 	 */
-	private async attemptAutomaticResolution(hash: string): Promise<boolean> {
+	private async attemptAutomaticResolution(_hash: string): Promise<boolean> {
 		try {
 			// Check what files are in conflict
 			const conflictedFiles = this.getConflictedFiles()

@@ -24,7 +24,7 @@
 import { parseArgs } from 'node:util'
 import { CommitParser } from './lib/commit-parser.js'
 import { ConfigManager } from './lib/config-manager.js'
-import { GitOperations } from './lib/git-operations.js'
+import { GitOperations } from './lib/git-operations.ts'
 import { UIDisplay } from './lib/ui-display.js'
 import { EpicStackUpdater } from './index.js'
 
@@ -281,9 +281,6 @@ EXAMPLES:
 		console.log(`   ${commit.message}`)
 
 		// Check for special cases
-		const isPackageLockOnly = this.commitParser.isPackageLockOnlyCommit(
-			commit.hash,
-		)
 		const hasDependencyConflicts = this.commitParser.hasDependencyConflicts(
 			commit.hash,
 		)

@@ -6,7 +6,7 @@
  */
 
 import { execSync } from 'child_process'
-import  { type CommitInfo, type CommitDetails } from './types.js'
+import { type CommitInfo, type CommitDetails } from './types.js'
 
 /**
  * Parses git log output and extracts commit information from the Epic Stack repository
@@ -210,13 +210,12 @@ export class CommitParser {
 	 */
 	isCommitAlreadyApplied(hash: string): boolean {
 		try {
-			const fullHash = this.getFullCommitHash(hash)
 			// Check if the commit exists in our current branch history by looking for the full hash
 			const output = execSync(`git log --oneline | grep "${hash}"`, {
 				encoding: 'utf8',
 			})
 			return output.trim().length > 0
-		} catch (error) {
+		} catch {
 			// If the command fails, the commit is not in our history
 			return false
 		}
@@ -247,7 +246,7 @@ export class CommitParser {
 					file === 'yarn.lock' ||
 					file === 'pnpm-lock.yaml',
 			)
-		} catch (error) {
+		} catch {
 			return false
 		}
 	}
@@ -271,7 +270,7 @@ export class CommitParser {
 				.filter(Boolean)
 
 			return files.length === 1 && files[0] === 'package-lock.json'
-		} catch (error) {
+		} catch {
 			return false
 		}
 	}
@@ -296,7 +295,7 @@ export class CommitParser {
 				packageJsonDiff.includes('"devDependencies"') ||
 				packageJsonDiff.includes('"peerDependencies"')
 			)
-		} catch (error) {
+		} catch {
 			return false
 		}
 	}
@@ -316,7 +315,7 @@ export class CommitParser {
 			})
 			// Use a simple hash of the content
 			return this.simpleHash(content)
-		} catch (error) {
+		} catch {
 			return hash // Fallback to commit hash if content can't be retrieved
 		}
 	}
@@ -351,7 +350,7 @@ export class CommitParser {
 				const contentHash = this.getCommitContentHash(commitHash)
 				contentHashes.add(contentHash)
 			}
-		} catch (error) {
+		} catch {
 			// If there's an error, return empty set
 		}
 		return contentHashes

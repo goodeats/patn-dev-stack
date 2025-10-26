@@ -15,7 +15,11 @@ export function Header() {
 					<ThemeSwitch userPreference={requestInfo.userPrefs.theme} />
 					{user && (
 						<Button variant="default" asChild>
-							<Link id="header-user-button" to="/dashboard">
+							<Link
+								id="header-user-button"
+								to="/dashboard"
+								aria-label="Dashboard nav"
+							>
 								{user?.name}
 							</Link>
 						</Button>

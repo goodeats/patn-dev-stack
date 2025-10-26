@@ -18,7 +18,7 @@ test('displays sidebar links for authenticated user', async ({
 	await navigate('/')
 
 	// Navigate to dashboard
-	await page.locator('#header-user-button').click()
+	await page.getByRole('link', { name: 'Dashboard nav' }).click()
 	await expect(page).toHaveURL('/dashboard')
 
 	// Check for main navigation links

@@ -7,7 +7,7 @@
 
 import { execSync } from 'child_process'
 import { readFileSync, writeFileSync } from 'fs'
-import  { type EpicStackConfig } from './types.js'
+import { type EpicStackConfig } from './types.js'
 
 /**
  * Manages Epic Stack configuration stored in package.json
@@ -60,7 +60,7 @@ export class ConfigManager {
 		try {
 			readFileSync(this.packageJsonPath, 'utf8')
 			return true
-		} catch (error) {
+		} catch {
 			return false
 		}
 	}
@@ -96,7 +96,7 @@ export class ConfigManager {
 			)
 			execSync('npm install --package-lock-only')
 			console.log('✅ Package-lock.json regenerated successfully')
-		} catch (error) {
+		} catch {
 			console.log(
 				'⚠️  Could not regenerate package-lock.json - you may need to run npm install manually',
 			)
