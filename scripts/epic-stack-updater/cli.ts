@@ -301,6 +301,12 @@ EXAMPLES:
 			)
 		}
 
+		// Update tracking before applying commit so it's included
+		if (!noTrack) {
+			this.configManager.updateEpicStackConfig(commit.hash, commit.date)
+			console.log(`📍 Updated tracking to ${commit.hash}`)
+		}
+
 		// Apply the commit
 		const result = await this.gitOperations.applyCommit(
 			commit.hash,
@@ -328,12 +334,6 @@ EXAMPLES:
 
 		if (result.success) {
 			console.log(`✅ Successfully applied commit ${commit.hash}`)
-
-			if (!noTrack) {
-				// Update tracking
-				this.configManager.updateEpicStackConfig(commit.hash, commit.date)
-				console.log(`📍 Updated tracking to ${commit.hash}`)
-			}
 		} else if (result.skipped) {
 			console.log(`⏭️  Skipped commit ${commit.hash}`)
 		} else {
