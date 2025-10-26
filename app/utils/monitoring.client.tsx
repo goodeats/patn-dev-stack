@@ -1,11 +1,6 @@
 import * as Sentry from '@sentry/react-router'
 
 export function init() {
-	if (!ENV.SENTRY_DSN || ENV.SENTRY_DSN === 'your-dsn') {
-		console.log('🔶 Sentry disabled: No valid DSN provided')
-		return
-	}
-
 	Sentry.init({
 		dsn: ENV.SENTRY_DSN,
 		environment: ENV.MODE,

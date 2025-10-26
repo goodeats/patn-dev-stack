@@ -3,12 +3,6 @@ import { nodeProfilingIntegration } from '@sentry/profiling-node'
 import * as Sentry from '@sentry/react-router'
 
 export function init() {
-	// Only initialize Sentry if we have a valid DSN
-	if (!process.env.SENTRY_DSN || process.env.SENTRY_DSN === 'your-dsn') {
-		console.log('🔶 Sentry disabled: No valid DSN provided')
-		return
-	}
-
 	Sentry.init({
 		dsn: process.env.SENTRY_DSN,
 		environment: process.env.NODE_ENV,
