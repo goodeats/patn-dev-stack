@@ -1,10 +1,11 @@
 import { type Page, expect } from '@playwright/test'
+import { navigate } from '#tests/playwright-utils.ts'
 
 export async function login(
 	page: Page,
 	credentials: { username: string; password: string; name: string },
 ) {
-	await page.goto('/login')
+	await navigate(page, '/login')
 	await page
 		.getByRole('textbox', { name: /username/i })
 		.fill(credentials.username)
@@ -14,7 +15,7 @@ export async function login(
 }
 
 export async function logout(page: Page) {
-	await page.goto('/dashboard')
+	await navigate(page, '/dashboard')
 	// Click the user menu button first
 	await page.locator('#sidebar-user-button').click()
 	// Then click the logout button

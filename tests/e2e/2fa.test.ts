@@ -6,10 +6,11 @@ import { expect, test } from '#tests/playwright-utils.ts'
 test('Users can add 2FA to their account and use it when logging in', async ({
 	page,
 	login,
+	navigate,
 }) => {
 	const password = faker.internet.password()
 	const user = await login({ password })
-	await page.goto('/settings/profile')
+	await navigate('/settings/profile')
 
 	await page.getByRole('link', { name: /enable 2fa/i }).click()
 
@@ -39,7 +40,7 @@ test('Users can add 2FA to their account and use it when logging in', async ({
 
 	await logout(page)
 
-	await page.goto('/login')
+	await navigate('/login')
 	await expect(page).toHaveURL(`/login`)
 	await page.getByRole('textbox', { name: /username/i }).fill(user.username)
 	await page.getByLabel(/^password$/i).fill(password)

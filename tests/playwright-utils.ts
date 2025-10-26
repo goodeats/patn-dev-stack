@@ -1,4 +1,5 @@
 import { test as base } from '@playwright/test'
+import { href, type Register } from 'react-router'
 import * as setCookieParser from 'set-cookie-parser'
 import { getSessionExpirationDate, sessionKey } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
@@ -45,6 +46,8 @@ import {
 export * from './models/index.ts'
 export * from './db-utils.ts'
 
+export type AppPages = keyof Register['pages']
+
 export const test = base.extend<{
 	insertNewUser(options?: GetOrInsertUserOptions): Promise<UserPlaywright>
 	login(options?: GetOrInsertUserOptions): Promise<UserPlaywright>
@@ -59,6 +62,9 @@ export const test = base.extend<{
 	insertNewSkill(options: CreateSkillOptions): Promise<SkillPlaywright>
 	insertNewContact(options: CreateContactOptions): Promise<ContactPlaywright>
 	insertNewProject(options: CreateProjectOptions): Promise<ProjectPlaywright>
+	navigate: <Path extends AppPages>(
+		...args: Parameters<typeof href<Path>>
+	) => Promise<null | Response>
 }>({
 	insertNewUser: async ({}, use) => {
 		let userId: string | undefined = undefined
@@ -195,6 +201,11 @@ export const test = base.extend<{
 		if (projectId) {
 			await prisma.project.delete({ where: { id: projectId } }).catch(() => {})
 		}
+	},
+	navigate: async ({ page }, use) => {
+		await use((...args) => {
+			return page.goto(href(...args))
+		})
 	},
 })
 export const { expect } = test

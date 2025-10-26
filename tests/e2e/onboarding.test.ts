@@ -61,12 +61,12 @@ const test = base.extend<{
 	},
 })
 
-test('onboarding with link', async ({ page, getOnboardingData }) => {
+test('onboarding with link', async ({ page, getOnboardingData, navigate }) => {
 	const onboardingData = getOnboardingData({ deleteAllUsers: true })
 
-	await page.goto('/')
+	await navigate('/')
 	await expect(page.getByRole('link', { name: /log in/i })).not.toBeVisible()
-	await page.goto(`/login`)
+	await navigate('/login')
 
 	const createAccountLink = page.getByRole('link', {
 		name: /create an account/i,
@@ -121,10 +121,14 @@ test('onboarding with link', async ({ page, getOnboardingData }) => {
 	await logout(page)
 })
 
-test('onboarding with a short code', async ({ page, getOnboardingData }) => {
+test('onboarding with a short code', async ({
+	page,
+	getOnboardingData,
+	navigate,
+}) => {
 	const onboardingData = getOnboardingData({ deleteAllUsers: true })
 
-	await page.goto('/signup')
+	await navigate('/signup')
 
 	const emailTextbox = page.getByRole('textbox', { name: /email/i })
 	await emailTextbox.click()
@@ -151,6 +155,7 @@ test('completes onboarding after GitHub OAuth given valid user details', async (
 	page,
 	prepareGitHubUser,
 	getOnboardingData,
+	navigate,
 }) => {
 	getOnboardingData({ deleteAllUsers: true })
 	const ghUser = await prepareGitHubUser()
@@ -162,7 +167,7 @@ test('completes onboarding after GitHub OAuth given valid user details', async (
 		}),
 	).toBeNull()
 
-	await page.goto('/signup')
+	await navigate('/signup')
 	await page.getByRole('button', { name: /signup with github/i }).click()
 
 	await expect(page).toHaveURL(/\/onboarding\/github/)
@@ -202,6 +207,7 @@ test('logs user in after GitHub OAuth if they are already registered', async ({
 	page,
 	prepareGitHubUser,
 	getOnboardingData,
+	navigate,
 }) => {
 	getOnboardingData({ deleteAllUsers: true })
 	const ghUser = await prepareGitHubUser()
@@ -230,7 +236,7 @@ test('logs user in after GitHub OAuth if they are already registered', async ({
 	})
 	expect(connection).toBeNull()
 
-	await page.goto('/signup')
+	await navigate('/signup')
 	await page.getByRole('button', { name: /signup with github/i }).click()
 
 	await expect(page).toHaveURL(`/`)
@@ -253,11 +259,12 @@ test('shows help texts on entering invalid details on onboarding page after GitH
 	page,
 	prepareGitHubUser,
 	getOnboardingData,
+	navigate,
 }) => {
 	getOnboardingData({ deleteAllUsers: true })
 	const ghUser = await prepareGitHubUser()
 
-	await page.goto('/signup')
+	await navigate('/signup')
 	await page.getByRole('button', { name: /signup with github/i }).click()
 
 	await expect(page).toHaveURL(/\/onboarding\/github/)
@@ -360,11 +367,15 @@ test('login as existing user', async ({ page, insertNewUser }) => {
 	await expect(page.getByRole('link', { name: user.name })).toBeVisible()
 })
 
-test('reset password with a link', async ({ page, insertNewUser }) => {
+test('reset password with a link', async ({
+	page,
+	insertNewUser,
+	navigate,
+}) => {
 	const originalPassword = faker.internet.password()
 	const user = await insertNewUser({ password: originalPassword })
 	invariant(user.name, 'User name not found')
-	await page.goto('/login')
+	await navigate('/login')
 
 	await page.getByRole('link', { name: /forgot password/i }).click()
 	await expect(page).toHaveURL('/forgot-password')
@@ -419,9 +430,13 @@ test('reset password with a link', async ({ page, insertNewUser }) => {
 	await expect(page.getByRole('link', { name: user.name })).toBeVisible()
 })
 
-test('reset password with a short code', async ({ page, insertNewUser }) => {
+test('reset password with a short code', async ({
+	page,
+	insertNewUser,
+	navigate,
+}) => {
 	const user = await insertNewUser()
-	await page.goto('/login')
+	await navigate('/login')
 
 	await page.getByRole('link', { name: /forgot password/i }).click()
 	await expect(page).toHaveURL('/forgot-password')
