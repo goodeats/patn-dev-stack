@@ -45,7 +45,7 @@ import {
 	createToastHeaders,
 	redirectWithToast,
 } from '#app/utils/toast.server.ts'
-import { type Route, type Info } from './+types/about.index.ts'
+import { type Route } from './+types/about.index.ts'
 import { handleCategoryAction } from './__about-category-editor.server.tsx'
 import { AboutCategoryEditor } from './__about-category-editor.tsx'
 
@@ -91,8 +91,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	return { aboutMeData, aboutMeCategoryData }
 }
 
-type AboutMeDataItem = Info['loaderData']['aboutMeData'][number]
-type AboutMeCategoryDataItem = Info['loaderData']['aboutMeCategoryData'][number]
+type AboutMeDataItem = Route.ComponentProps['loaderData']['aboutMeData'][number]
+type AboutMeCategoryDataItem =
+	Route.ComponentProps['loaderData']['aboutMeCategoryData'][number]
 
 export const DashboardAboutIntent = {
 	ABOUT_ME_DELETE: 'about-me-delete',
