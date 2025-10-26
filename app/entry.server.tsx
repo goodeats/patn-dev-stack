@@ -19,8 +19,10 @@ import { makeTimings } from './utils/timing.server.ts'
 
 export const streamTimeout = 5000
 
+console.log('DEBUG PAT: Server entry point starting...')
 init()
 global.ENV = getEnv()
+console.log('DEBUG PAT: Server ENV initialized - MODE:', global.ENV.MODE, 'SENTRY_DSN:', global.ENV.SENTRY_DSN ? 'SET' : 'NOT SET')
 
 const MODE = process.env.NODE_ENV ?? 'development'
 
@@ -99,9 +101,11 @@ export default async function handleRequest(...args: DocRequestArgs) {
 					pipe(body)
 				},
 				onShellError: (err: unknown) => {
+					console.error('DEBUG PAT: Server shell error:', err)
 					reject(err)
 				},
 				onError: () => {
+					console.error('DEBUG PAT: Server render error occurred')
 					didError = true
 				},
 				nonce,
@@ -126,16 +130,18 @@ export function handleError(
 	error: unknown,
 	{ request }: LoaderFunctionArgs | ActionFunctionArgs,
 ): void {
+	console.log('DEBUG PAT: Server error handler called')
 	// Skip capturing if the request is aborted as Remix docs suggest
 	// Ref: https://remix.run/docs/en/main/file-conventions/entry.server#handleerror
 	if (request.signal.aborted) {
+		console.log('DEBUG PAT: Request aborted, skipping error capture')
 		return
 	}
 
 	if (error instanceof Error) {
-		console.error(styleText('red', String(error.stack)))
+		console.error('DEBUG PAT: Server error:', styleText('red', String(error.stack)))
 	} else {
-		console.error(error)
+		console.error('DEBUG PAT: Server error:', error)
 	}
 
 	Sentry.captureException(error)

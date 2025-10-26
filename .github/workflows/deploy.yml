@@ -134,6 +134,8 @@ jobs:
 
       - name: 🎭 Playwright tests
         run: npx playwright test
+        env:
+          DEBUG: "*"
 
       - name: 📊 Upload report
         uses: actions/upload-artifact@v4
