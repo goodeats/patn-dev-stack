@@ -5,6 +5,10 @@
   "license": "MIT",
   "author": "Kent C. Dodds <me@kentcdodds.com> (https://kentcdodds.com/)",
   "type": "module",
+  "epic-stack": {
+    "head": "ec0efe56",
+    "date": "2025-08-20"
+  },
   "imports": {
     "#app/*": "./app/*",
     "#tests/*": "./tests/*"
@@ -28,6 +32,8 @@
     "test:e2e:run": "cross-env CI=true playwright test",
     "test:e2e:install": "npx playwright install --with-deps chromium",
     "typecheck": "react-router typegen && tsc",
+    "epic-stack-updater": "tsx ./scripts/epic-stack-updater/cli.ts",
+    "update:epic-stack": "tsx ./scripts/update-epic-stack.ts",
     "validate": "run-p \"test -- --run\" lint typecheck test:e2e:run"
   },
   "eslintIgnore": [
