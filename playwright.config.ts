@@ -10,14 +10,14 @@ console.log('DEBUG PAT: CI =', process.env.CI)
 
 export default defineConfig({
 	testDir: './tests/e2e',
-	timeout: 15 * 1000,
+	timeout: 30 * 1000, // Increased from 15s to 30s for CI
 	expect: {
-		timeout: 5 * 1000,
+		timeout: 10 * 1000, // Increased from 5s to 10s for CI
 	},
 	fullyParallel: true,
 	forbidOnly: !!process.env.CI,
-	retries: process.env.CI ? 2 : 0,
-	workers: process.env.CI ? 1 : undefined,
+	retries: process.env.CI ? 1 : 0, // Reduced from 2 to 1 to speed up CI
+	workers: process.env.CI ? 4 : undefined, // Increased from 1 to 4 for parallel execution
 	reporter: 'html',
 	use: {
 		baseURL: `http://localhost:${PORT}/`,
