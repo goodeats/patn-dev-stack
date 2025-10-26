@@ -3,9 +3,15 @@ import { type NoteImage, type Note } from '@prisma/client'
 import { prisma } from '#app/utils/db.server.ts'
 import { expect, test } from '#tests/playwright-utils.ts'
 
-test('Users can create note with an image', async ({ page, login }) => {
+test('Users can create note with an image', async ({
+	page,
+	login,
+	navigate,
+}) => {
 	const user = await login()
-	await page.goto(`/users/${user.username}/notes`)
+	await navigate(`/users/:username/notes`, {
+		username: user.username,
+	})
 
 	const newNote = createNote()
 	const altText = 'cute koala'
