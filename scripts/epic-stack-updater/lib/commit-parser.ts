@@ -199,6 +199,36 @@ export class CommitParser {
 	}
 
 	/**
+	 * Checks if a commit affects package files (package.json, package-lock.json).
+	 * This helps identify commits that may require running npm install to resolve conflicts.
+	 *
+	 * @param hash - The commit hash to check
+	 * @returns True if commit affects package files
+	 */
+	affectsPackageFiles(hash: string): boolean {
+		try {
+			const fullHash = this.getFullCommitHash(hash)
+			const files = execSync(
+				`git diff-tree --no-commit-id --name-only -r ${fullHash}`,
+				{ encoding: 'utf8' },
+			)
+				.trim()
+				.split('\n')
+				.filter(Boolean)
+
+			return files.some(
+				(file) =>
+					file === 'package.json' ||
+					file === 'package-lock.json' ||
+					file === 'yarn.lock' ||
+					file === 'pnpm-lock.yaml',
+			)
+		} catch (error) {
+			return false
+		}
+	}
+
+	/**
 	 * Checks if a commit only affects package-lock.json and provides smart resolution.
 	 * This helps avoid unnecessary conflicts when the lock file is regenerated.
 	 *
