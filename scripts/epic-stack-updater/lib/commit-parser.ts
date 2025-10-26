@@ -48,7 +48,7 @@ export class CommitParser {
 			{ encoding: 'utf8' },
 		)
 		const commits = this.parseCommits(output)
-		return this.processCommits(commits, pullRequestsOnly)
+		return this.processCommits(commits, pullRequestsOnly, lastCommit)
 	}
 
 	/**
@@ -93,11 +93,13 @@ export class CommitParser {
 	 *
 	 * @param commits - Array of parsed commit information objects
 	 * @param pullRequestsOnly - If true, only return commits with associated PRs
+	 * @param lastAppliedCommit - The hash of the last applied commit to check for duplicates
 	 * @returns Array of processed commit information objects in chronological order
 	 */
 	private processCommits(
 		commits: CommitInfo[],
 		pullRequestsOnly: boolean,
+		lastAppliedCommit?: string,
 	): CommitInfo[] {
 		// Filter for PR commits if requested
 		let filteredCommits = pullRequestsOnly
@@ -113,8 +115,16 @@ export class CommitParser {
 			return true
 		})
 
+		// Filter out commits that have already been applied (same content, different hash)
+		let finalCommits = deduplicatedCommits
+		if (lastAppliedCommit) {
+			finalCommits = deduplicatedCommits.filter((commit) => {
+				return !this.hasChangesAlreadyApplied(commit.hash, lastAppliedCommit)
+			})
+		}
+
 		// Sort by date to ensure proper chronological order
-		return deduplicatedCommits.sort((a, b) => {
+		return finalCommits.sort((a, b) => {
 			const dateA = new Date(a.date)
 			const dateB = new Date(b.date)
 			return dateA.getTime() - dateB.getTime()
@@ -228,6 +238,59 @@ export class CommitParser {
 				packageJsonDiff.includes('"devDependencies"') ||
 				packageJsonDiff.includes('"peerDependencies"')
 			)
+		} catch (error) {
+			return false
+		}
+	}
+
+	/**
+	 * Checks if a commit's changes have already been applied by comparing the actual file changes.
+	 * This helps avoid applying duplicate commits that have the same content but different hashes.
+	 *
+	 * @param hash - The commit hash to check
+	 * @param lastAppliedCommit - The hash of the last applied commit
+	 * @returns True if the commit's changes have already been applied
+	 */
+	hasChangesAlreadyApplied(hash: string, lastAppliedCommit: string): boolean {
+		try {
+			const fullHash = this.getFullCommitHash(hash)
+			const lastAppliedFullHash = this.getFullCommitHash(lastAppliedCommit)
+
+			// Get the diff of the commit we want to check
+			const commitDiff = execSync(
+				`git diff-tree --no-commit-id --name-only -r ${fullHash}`,
+				{
+					encoding: 'utf8',
+				},
+			).trim()
+
+			// Get the diff of the last applied commit
+			const lastAppliedDiff = execSync(
+				`git diff-tree --no-commit-id --name-only -r ${lastAppliedFullHash}`,
+				{
+					encoding: 'utf8',
+				},
+			).trim()
+
+			// If they modify the same files, check if the actual content is the same
+			if (commitDiff === lastAppliedDiff) {
+				// Compare only the actual diff content (not the commit metadata)
+				const commitContentDiff = execSync(`git show ${fullHash} --format=""`, {
+					encoding: 'utf8',
+				})
+
+				const lastAppliedContentDiff = execSync(
+					`git show ${lastAppliedFullHash} --format=""`,
+					{
+						encoding: 'utf8',
+					},
+				)
+
+				// If the content diffs are the same, the changes have already been applied
+				return commitContentDiff === lastAppliedContentDiff
+			}
+
+			return false
 		} catch (error) {
 			return false
 		}
