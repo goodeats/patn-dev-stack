@@ -4,7 +4,7 @@ export function init() {
 	console.log('DEBUG PAT: Client monitoring initialization starting...')
 	console.log('DEBUG PAT: ENV.MODE =', ENV.MODE)
 	console.log('DEBUG PAT: ENV.SENTRY_DSN =', ENV.SENTRY_DSN ? 'SET' : 'NOT SET')
-	
+
 	try {
 		Sentry.init({
 			dsn: ENV.SENTRY_DSN,
@@ -26,13 +26,28 @@ export function init() {
 				Sentry.replayIntegration(),
 				(() => {
 					try {
-						console.log('DEBUG PAT: Adding browserProfilingIntegration...')
-						const integration = Sentry.browserProfilingIntegration()
-						console.log('DEBUG PAT: browserProfilingIntegration added successfully')
+						console.log('DEBUG PAT: Adding browserTracingIntegration...')
+						// browserProfilingIntegration() has been deprecated in favor of browserTracingIntegration()
+						const integration = Sentry.browserTracingIntegration()
+						console.log(
+							'DEBUG PAT: browserTracingIntegration added successfully',
+						)
 						return integration
 					} catch (error) {
-						console.error('DEBUG PAT: browserProfilingIntegration failed:', error)
-						throw error
+						console.error(
+							'DEBUG PAT: browserTracingIntegration failed:',
+							error,
+						)
+						// Fallback: try the old method if new one fails
+						try {
+							console.log('DEBUG PAT: Trying deprecated browserProfilingIntegration as fallback...')
+							const fallbackIntegration = Sentry.browserProfilingIntegration()
+							console.log('DEBUG PAT: browserProfilingIntegration fallback succeeded')
+							return fallbackIntegration
+						} catch (fallbackError) {
+							console.error('DEBUG PAT: Both browserTracingIntegration and browserProfilingIntegration failed:', fallbackError)
+							throw fallbackError
+						}
 					}
 				})(),
 			],
@@ -47,7 +62,9 @@ export function init() {
 			replaysSessionSampleRate: 0.1,
 			replaysOnErrorSampleRate: 1.0,
 		})
-		console.log('DEBUG PAT: Client Sentry initialization completed successfully')
+		console.log(
+			'DEBUG PAT: Client Sentry initialization completed successfully',
+		)
 	} catch (error) {
 		console.error('DEBUG PAT: Client Sentry initialization failed:', error)
 		throw error
