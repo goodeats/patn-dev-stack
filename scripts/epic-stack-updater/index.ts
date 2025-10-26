@@ -8,13 +8,13 @@
  * the Epic Stack repository.
  */
 
-import { ConfigManager } from './lib/config-manager.js'
 import { CommitParser } from './lib/commit-parser.js'
+import { CommitReviewer } from './lib/commit-reviewer.js'
+import { ConfigManager } from './lib/config-manager.js'
 import { GitOperations } from './lib/git-operations.js'
+import  { type UpdateSummary, type UpdaterOptions } from './lib/types.js'
 import { UIDisplay } from './lib/ui-display.js'
 import { UserInteraction } from './lib/user-interaction.js'
-import { CommitReviewer } from './lib/commit-reviewer.js'
-import type { UpdateSummary, UpdaterOptions } from './lib/types.js'
 
 /**
  * Epic Stack Updater - A tool for systematically reviewing and applying

@@ -5,7 +5,7 @@
  * warning generation, and coordination between UI, user interaction, and git operations.
  */
 
-import type { CommitInfo, CommitDetails } from './types.js'
+import  { type CommitInfo, type CommitDetails } from './types.js'
 import { UIDisplay } from './ui-display.js'
 import { UserInteraction } from './user-interaction.js'
 

@@ -6,8 +6,8 @@
  */
 
 import { execSync } from 'child_process'
-import type { ApplyResult } from './types.js'
 import { CommitParser } from './commit-parser.js'
+import  { type ApplyResult } from './types.js'
 
 /**
  * Handles git operations and conflict resolution for Epic Stack updates

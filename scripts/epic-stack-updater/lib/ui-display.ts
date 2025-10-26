@@ -6,7 +6,7 @@
  * logic and presentation concerns.
  */
 
-import type { CommitInfo, UpdateSummary } from './types.js'
+import  { type CommitInfo, type UpdateSummary } from './types.js'
 
 /**
  * Handles all UI display and formatting for the Epic Stack updater

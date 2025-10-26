@@ -6,7 +6,7 @@
  */
 
 import { execSync } from 'child_process'
-import type { CommitInfo, CommitDetails } from './types.js'
+import  { type CommitInfo, type CommitDetails } from './types.js'
 
 /**
  * Parses git log output and extracts commit information from the Epic Stack repository

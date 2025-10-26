@@ -5,9 +5,9 @@
  * stored in package.json, including automatic package-lock.json regeneration.
  */
 
-import { readFileSync, writeFileSync } from 'fs'
 import { execSync } from 'child_process'
-import type { EpicStackConfig } from './types.js'
+import { readFileSync, writeFileSync } from 'fs'
+import  { type EpicStackConfig } from './types.js'
 
 /**
  * Manages Epic Stack configuration stored in package.json

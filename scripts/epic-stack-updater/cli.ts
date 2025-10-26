@@ -22,8 +22,8 @@
  */
 
 import { parseArgs } from 'node:util'
-import { ConfigManager } from './lib/config-manager.js'
 import { CommitParser } from './lib/commit-parser.js'
+import { ConfigManager } from './lib/config-manager.js'
 import { GitOperations } from './lib/git-operations.js'
 import { UIDisplay } from './lib/ui-display.js'
 import { EpicStackUpdater } from './index.js'

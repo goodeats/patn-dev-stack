@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker'
-import { logout } from '#tests/actions/auth.ts'
 import { type Page } from '@playwright/test'
+import { logout } from '#tests/actions/auth.ts'
 import { expect, test } from '#tests/playwright-utils.ts'
 
 async function setupWebAuthn(page: Page) {
