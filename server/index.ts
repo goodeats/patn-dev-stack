@@ -52,7 +52,7 @@ app.use((req, res, next) => {
 
 // no ending slashes for SEO reasons
 // https://github.com/epicweb-dev/epic-stack/discussions/108
-app.get('/:path(*)', (req, res, next) => {
+app.get('/*splat', (req, res, next) => {
 	if (req.path.endsWith('/') && req.path.length > 1) {
 		const query = req.url.slice(req.path.length)
 		const safepath = req.path.slice(0, -1).replace(/\/+/g, '/')
@@ -91,7 +91,7 @@ if (viteDevServer) {
 	app.use(express.static('build/client', { maxAge: '1h' }))
 }
 
-app.get(['/img/*', '/favicons/*'], (_req, res) => {
+app.get(['/img/*imgPath', '/favicons/*faviconPath'], (_req, res) => {
 	// if we made it past the express.static for these, then we're missing something.
 	// So we'll just send a 404 and won't bother calling other middleware.
 	return res.status(404).send('Not found')
@@ -197,7 +197,7 @@ if (!ALLOW_INDEXING) {
 }
 
 app.all(
-	'/:path(*)',
+	'/*splat',
 	createRequestHandler({
 		getLoadContext: () => ({ serverBuild: getBuild() }),
 		mode: MODE,
