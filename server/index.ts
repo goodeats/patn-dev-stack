@@ -52,7 +52,7 @@ app.use((req, res, next) => {
 
 // no ending slashes for SEO reasons
 // https://github.com/epicweb-dev/epic-stack/discussions/108
-app.get('/*', (req, res, next) => {
+app.get('/:path(*)', (req, res, next) => {
 	if (req.path.endsWith('/') && req.path.length > 1) {
 		const query = req.url.slice(req.path.length)
 		const safepath = req.path.slice(0, -1).replace(/\/+/g, '/')
@@ -79,7 +79,11 @@ if (viteDevServer) {
 	// Remix fingerprints its assets so we can cache forever.
 	app.use(
 		'/assets',
-		express.static('build/client/assets', { immutable: true, maxAge: '1y', fallthrough: false }),
+		express.static('build/client/assets', {
+			immutable: true,
+			maxAge: '1y',
+			fallthrough: false,
+		}),
 	)
 
 	// Everything else (like favicon.ico) is cached for an hour. You may want to be
@@ -193,7 +197,7 @@ if (!ALLOW_INDEXING) {
 }
 
 app.all(
-	'/*',
+	'/:path(*)',
 	createRequestHandler({
 		getLoadContext: () => ({ serverBuild: getBuild() }),
 		mode: MODE,
