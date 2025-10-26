@@ -12,7 +12,7 @@ export default defineConfig({
 	fullyParallel: true,
 	forbidOnly: !!process.env.CI,
 	retries: process.env.CI ? 1 : 0, // Reduced from 2 to 1 to speed up CI
-	workers: process.env.CI ? 2 : undefined, // Increased to 2 for moderate parallel execution
+	workers: process.env.CI ? 1 : undefined, // Back to 1 for stability
 	reporter: 'html',
 	use: {
 		baseURL: `http://localhost:${PORT}/`,
