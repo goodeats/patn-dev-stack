@@ -10,10 +10,10 @@ export function init() {
 		process.env.SENTRY_DSN ? 'SET' : 'NOT SET',
 	)
 
-	// Skip Sentry initialization in test environment
-	if (process.env.NODE_ENV === 'test') {
+	// Skip Sentry initialization in test environment or when DSN is invalid
+	if (process.env.NODE_ENV === 'test' || !process.env.SENTRY_DSN || process.env.SENTRY_DSN === 'your-dsn') {
 		console.log(
-			'DEBUG PAT: Skipping server Sentry initialization in test environment',
+			'DEBUG PAT: Skipping server Sentry initialization - NODE_ENV:', process.env.NODE_ENV, 'DSN valid:', process.env.SENTRY_DSN !== 'your-dsn' && !!process.env.SENTRY_DSN,
 		)
 		return
 	}
