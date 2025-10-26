@@ -129,23 +129,25 @@ class EpicStackUpdater {
 
 	/**
 	 * Retrieves commits from the upstream repository since the last processed commit.
+	 * Returns commits in chronological order (oldest first) to ensure proper sequential updates.
 	 * If no previous commit is found, it returns the last 20 commits for initial setup.
 	 *
 	 * @param {string} lastCommit - The hash of the last processed commit, or empty string if none
-	 * @returns {CommitInfo[]} Array of commit information objects
+	 * @returns {CommitInfo[]} Array of commit information objects in chronological order
 	 */
 	private getCommitsSince(lastCommit: string): CommitInfo[] {
 		if (!lastCommit) {
 			console.log('⚠️  No previous commit found. Showing last 20 commits.')
 			const output = execSync(
-				`git log ${this.upstreamRemote}/main --oneline -20 --format="%H|%s|%an|%ad" --date=short`,
+				`git log ${this.upstreamRemote}/main --oneline -20 --format="%H|%s|%an|%ad" --date=short --reverse`,
 				{ encoding: 'utf8' },
 			)
 			return this.parseCommits(output)
 		}
 
+		// Get commits after the last processed commit in chronological order
 		const output = execSync(
-			`git log ${this.upstreamRemote}/main --oneline --since="${lastCommit}" --format="%H|%s|%an|%ad" --date=short`,
+			`git log ${this.upstreamRemote}/main --oneline --reverse --format="%H|%s|%an|%ad" --date=short ${lastCommit}..HEAD`,
 			{ encoding: 'utf8' },
 		)
 		return this.parseCommits(output)
@@ -230,21 +232,22 @@ class EpicStackUpdater {
 
 	/**
 	 * Displays commits in a formatted table before starting the review process.
+	 * Shows commits in chronological order (oldest first) with sequence numbers.
 	 * Shows commit hash, message, author, date, PR number, file count, and PR link.
 	 *
-	 * @param {CommitInfo[]} commits - Array of commits to display
+	 * @param {CommitInfo[]} commits - Array of commits to display in chronological order
 	 */
 	private displayCommitsTable(commits: CommitInfo[]): void {
-		console.log('\n📋 Commits to Review:')
-		console.log('='.repeat(180))
+		console.log('\n📋 Commits to Review (in chronological order):')
+		console.log('='.repeat(190))
 
 		// Table header
 		console.log(
-			`${'Hash'.padEnd(10)} ${'PR'.padEnd(6)} ${'Author'.padEnd(20)} ${'Date'.padEnd(12)} ${'Files'.padEnd(6)} ${'Message'.padEnd(40)} ${'PR Link'}`,
+			`${'#'.padEnd(3)} ${'Hash'.padEnd(10)} ${'PR'.padEnd(6)} ${'Author'.padEnd(20)} ${'Date'.padEnd(12)} ${'Files'.padEnd(6)} ${'Message'.padEnd(40)} ${'PR Link'}`,
 		)
-		console.log('-'.repeat(180))
+		console.log('-'.repeat(190))
 
-		// Display each commit
+		// Display each commit with sequence number
 		for (let i = 0; i < commits.length; i++) {
 			const commit = commits[i]
 			if (!commit) continue
@@ -252,6 +255,7 @@ class EpicStackUpdater {
 			const details = this.getCommitDetails(commit.hash)
 			const fileCount = details.files.length
 
+			const seq = (i + 1).toString().padEnd(3)
 			const hash = commit.hash.padEnd(10)
 			const pr = (commit.pr || 'N/A').padEnd(6)
 			const author = commit.author.substring(0, 20).padEnd(20)
@@ -263,12 +267,12 @@ class EpicStackUpdater {
 				: 'N/A'
 
 			console.log(
-				`${hash} ${pr} ${author} ${date} ${files} ${message} ${prLink}`,
+				`${seq} ${hash} ${pr} ${author} ${date} ${files} ${message} ${prLink}`,
 			)
 		}
 
-		console.log('-'.repeat(180))
-		console.log(`Total: ${commits.length} commits`)
+		console.log('-'.repeat(190))
+		console.log(`Total: ${commits.length} commits (oldest to newest)`)
 	}
 
 	/**
@@ -311,14 +315,20 @@ class EpicStackUpdater {
 
 	/**
 	 * Presents commit information to the user and prompts for a decision.
-	 * Shows commit details including hash, message, author, date, PR link, and file changes.
+	 * Shows commit details including sequence number, hash, message, author, date, PR link, and file changes.
 	 *
 	 * @param {CommitInfo} commit - The commit information to review
+	 * @param {number} sequence - The sequence number of this commit in chronological order
+	 * @param {number} total - The total number of commits to review
 	 * @returns {Promise<boolean|string>} User's decision: true (apply), false (skip), 'skip' (skip remaining), or 'quit'
 	 */
-	private async reviewCommit(commit: CommitInfo): Promise<boolean | string> {
+	private async reviewCommit(
+		commit: CommitInfo,
+		sequence: number,
+		total: number,
+	): Promise<boolean | string> {
 		console.log('\n' + '='.repeat(80))
-		console.log(`📋 Commit: ${commit.hash}`)
+		console.log(`📋 Commit ${sequence}/${total}: ${commit.hash}`)
 		console.log(`📝 Message: ${commit.message}`)
 		console.log(`👤 Author: ${commit.author}`)
 		console.log(`📅 Date: ${commit.date}`)
@@ -354,14 +364,14 @@ class EpicStackUpdater {
 			case 'open':
 				if (commit.pr) {
 					this.openPRInBrowser(commit.pr)
-					return this.reviewCommit(commit) // Re-prompt after opening PR
+					return this.reviewCommit(commit, sequence, total) // Re-prompt after opening PR
 				} else {
 					console.log('❌ No PR associated with this commit')
-					return this.reviewCommit(commit)
+					return this.reviewCommit(commit, sequence, total)
 				}
 			default:
 				console.log('Invalid choice. Please enter y/n/s/q/o')
-				return this.reviewCommit(commit)
+				return this.reviewCommit(commit, sequence, total)
 		}
 	}
 
@@ -463,8 +473,13 @@ class EpicStackUpdater {
 		let appliedCount = 0
 		let skippedCount = 0
 
-		for (const commit of commits) {
-			const decision = await this.reviewCommit(commit)
+		for (let i = 0; i < commits.length; i++) {
+			const commit = commits[i]
+			if (!commit) continue
+
+			const sequence = i + 1
+			const total = commits.length
+			const decision = await this.reviewCommit(commit, sequence, total)
 
 			if (decision === 'quit') {
 				console.log('👋 Stopping review process')
