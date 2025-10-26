@@ -6,8 +6,8 @@
   "author": "Kent C. Dodds <me@kentcdodds.com> (https://kentcdodds.com/)",
   "type": "module",
   "epic-stack": {
-    "head": "ec0efe56",
-    "date": "2025-08-20"
+    "head": "fb1f753e",
+    "date": "2025-08-25"
   },
   "imports": {
     "#app/*": "./app/*",

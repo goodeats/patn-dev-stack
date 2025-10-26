@@ -36,7 +36,6 @@ export class ConfigManager {
 	/**
 	 * Updates the Epic Stack configuration in package.json with the latest processed commit.
 	 * This allows the tool to resume from where it left off on subsequent runs.
-	 * Also handles potential conflicts with package-lock.json when updating tracking.
 	 *
 	 * @param newHead - The commit hash of the latest processed commit
 	 * @param newDate - The date of the latest processed commit
@@ -50,19 +49,6 @@ export class ConfigManager {
 			this.packageJsonPath,
 			JSON.stringify(packageJson, null, 2) + '\n',
 		)
-
-		// If we updated package.json, we should regenerate package-lock.json to avoid conflicts
-		try {
-			console.log(
-				'🔄 Regenerating package-lock.json after package.json update...',
-			)
-			execSync('npm install --package-lock-only')
-			console.log('✅ Package-lock.json regenerated successfully')
-		} catch (error) {
-			console.log(
-				'⚠️  Could not regenerate package-lock.json - you may need to run npm install manually',
-			)
-		}
 	}
 
 	/**
@@ -92,7 +78,8 @@ export class ConfigManager {
 	}
 
 	/**
-	 * Updates the package.json file with new content
+	 * Updates the package.json file with new content.
+	 * Regenerates package-lock.json when dependencies are changed.
 	 *
 	 * @param packageJson - The updated package.json object
 	 */
@@ -101,5 +88,18 @@ export class ConfigManager {
 			this.packageJsonPath,
 			JSON.stringify(packageJson, null, 2) + '\n',
 		)
+
+		// Regenerate package-lock.json when dependencies are updated
+		try {
+			console.log(
+				'🔄 Regenerating package-lock.json after dependency update...',
+			)
+			execSync('npm install --package-lock-only')
+			console.log('✅ Package-lock.json regenerated successfully')
+		} catch (error) {
+			console.log(
+				'⚠️  Could not regenerate package-lock.json - you may need to run npm install manually',
+			)
+		}
 	}
 }
