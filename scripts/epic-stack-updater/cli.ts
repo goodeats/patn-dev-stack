@@ -153,12 +153,10 @@ EXAMPLES:
 			this.commitParser.getCommitDetails(hash),
 		)
 
-		console.log(
-			'\n💡 Use "npm run epic-stack-updater -- show <hash>" for details',
-		)
-		console.log(
-			'💡 Use "npm run epic-stack-updater -- apply <hash>" to apply a commit',
-		)
+		console.log('\n💡 Use for details:')
+		console.log('npm run epic-stack-updater -- show <hash>')
+		console.log('\n💡 Use to apply a commit:')
+		console.log('npm run epic-stack-updater -- apply <hash>')
 	}
 
 	/**
