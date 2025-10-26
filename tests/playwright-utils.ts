@@ -68,29 +68,23 @@ export const test = base.extend<{
 }>({
 	navigate: async ({ page }, use) => {
 		await use((...args) => {
-			console.log('DEBUG PAT: Navigating to:', href(...args))
 			return page.goto(href(...args))
 		})
 	},
 	insertNewUser: async ({}, use) => {
 		let userId: string | undefined = undefined
 		await use(async (options) => {
-			console.log('DEBUG PAT: Creating new user with options:', options)
 			const user = await getOrInsertUser(options)
 			userId = user.id
-			console.log('DEBUG PAT: User created with ID:', userId)
 			return user
 		})
-		console.log('DEBUG PAT: Cleaning up user with ID:', userId)
 		await prisma.user.delete({ where: { id: userId } }).catch(() => {})
 	},
 	login: async ({ page }, use) => {
 		let userId: string | undefined = undefined
 		await use(async (options) => {
-			console.log('DEBUG PAT: Logging in user with options:', options)
 			const user = await getOrInsertUser(options)
 			userId = user.id
-			console.log('DEBUG PAT: User logged in with ID:', userId)
 			const session = await prisma.session.create({
 				data: {
 					expirationDate: getSessionExpirationDate(),
@@ -110,15 +104,12 @@ export const test = base.extend<{
 				expires: cookieConfig.expires?.getTime(),
 				sameSite: cookieConfig.sameSite as 'Strict' | 'Lax' | 'None',
 			}
-			console.log('DEBUG PAT: Adding auth cookie to browser')
 			await page.context().addCookies([newConfig])
 			return user
 		})
-		console.log('DEBUG PAT: Cleaning up logged in user with ID:', userId)
 		await prisma.user.deleteMany({ where: { id: userId } })
 	},
 	prepareGitHubUser: async ({ page }, use, testInfo) => {
-		console.log('DEBUG PAT: Preparing GitHub user for test:', testInfo.testId)
 		await page.route(/\/auth\/github(?!\/callback)/, async (route, request) => {
 			const headers = {
 				...request.headers(),
@@ -129,14 +120,11 @@ export const test = base.extend<{
 
 		let ghUser: GitHubUser | null = null
 		await use(async () => {
-			console.log('DEBUG PAT: Creating GitHub user')
 			const newGitHubUser = await insertGitHubUser(testInfo.testId)!
 			ghUser = newGitHubUser
-			console.log('DEBUG PAT: GitHub user created:', newGitHubUser.primaryEmail)
 			return newGitHubUser
 		})
 
-		console.log('DEBUG PAT: Cleaning up GitHub user:', ghUser!.primaryEmail)
 		const user = await prisma.user.findUnique({
 			select: { id: true, name: true },
 			where: { email: normalizeEmail(ghUser!.primaryEmail) },
