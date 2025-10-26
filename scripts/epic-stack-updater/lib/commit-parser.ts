@@ -39,7 +39,7 @@ export class CommitParser {
 				{ encoding: 'utf8' },
 			)
 			const commits = this.parseCommits(output)
-			return pullRequestsOnly ? commits.filter((commit) => commit.pr) : commits
+			return this.processCommits(commits, pullRequestsOnly)
 		}
 
 		// Get commits after the last processed commit in chronological order
@@ -48,7 +48,7 @@ export class CommitParser {
 			{ encoding: 'utf8' },
 		)
 		const commits = this.parseCommits(output)
-		return pullRequestsOnly ? commits.filter((commit) => commit.pr) : commits
+		return this.processCommits(commits, pullRequestsOnly)
 	}
 
 	/**
@@ -84,6 +84,41 @@ export class CommitParser {
 				} as CommitInfo
 			})
 			.filter((commit): commit is CommitInfo => commit !== null)
+	}
+
+	/**
+	 * Processes commits by removing duplicates and ensuring proper chronological sorting.
+	 * Removes duplicate commits based on PR number (keeping the earliest occurrence)
+	 * and sorts all commits by date to ensure proper chronological order.
+	 *
+	 * @param commits - Array of parsed commit information objects
+	 * @param pullRequestsOnly - If true, only return commits with associated PRs
+	 * @returns Array of processed commit information objects in chronological order
+	 */
+	private processCommits(
+		commits: CommitInfo[],
+		pullRequestsOnly: boolean,
+	): CommitInfo[] {
+		// Filter for PR commits if requested
+		let filteredCommits = pullRequestsOnly
+			? commits.filter((commit) => commit.pr)
+			: commits
+
+		// Remove duplicates based on PR number (keep the earliest occurrence)
+		const seenPRs = new Set<string>()
+		const deduplicatedCommits = filteredCommits.filter((commit) => {
+			if (!commit.pr) return true // Keep commits without PR numbers
+			if (seenPRs.has(commit.pr)) return false // Skip duplicate PR commits
+			seenPRs.add(commit.pr)
+			return true
+		})
+
+		// Sort by date to ensure proper chronological order
+		return deduplicatedCommits.sort((a, b) => {
+			const dateA = new Date(a.date)
+			const dateB = new Date(b.date)
+			return dateA.getTime() - dateB.getTime()
+		})
 	}
 
 	/**
