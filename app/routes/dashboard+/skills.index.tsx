@@ -45,7 +45,7 @@ import {
 	createToastHeaders,
 	redirectWithToast,
 } from '#app/utils/toast.server.ts'
-import { type Route, type Info } from './+types/skills.index.ts'
+import { type Route } from './+types/skills.index.ts'
 import { handleCategoryAction } from './__skill-category-editor.server.tsx'
 import { SkillCategoryEditor } from './__skill-category-editor.tsx'
 
@@ -90,8 +90,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	return data({ skillsData, skillCategoryData })
 }
 
-type SkillDataItem = Info['loaderData']['skillsData'][number]
-type SkillCategoryDataItem = Info['loaderData']['skillCategoryData'][number]
+type SkillDataItem = Route.ComponentProps['loaderData']['skillsData'][number]
+type SkillCategoryDataItem =
+	Route.ComponentProps['loaderData']['skillCategoryData'][number]
 
 export const DashboardSkillsIntent = {
 	SKILL_CREATE: 'skill-create',

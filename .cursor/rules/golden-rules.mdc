@@ -24,7 +24,6 @@ Follow these rules when you prepare your responses:
 - Feel free to ask questions first if you are confused or feel like it is important to bring up something before implementing.
 - Feel free to ask follow-up questions after completing changes.
 
-
 ### Code Implementation Guidelines
 
 Follow these rules when you write code:
@@ -38,4 +37,5 @@ Follow these rules when you write code:
 
 ## Finally
 
+- Sacrifice grammar for the sake of concision.
 - At the end of each answer in the chat add "Golden Rules Applied 🫡" so the user knows you followed these rules.

@@ -35,13 +35,13 @@ import {
 import { useRootLoaderData } from '#app/root.tsx'
 import { ThemeSwitch } from '#app/routes/resources+/theme-switch.tsx'
 import { useRequestInfo } from '#app/utils/request-info.ts'
-import { type Info as userInfo } from './+types/route.ts'
+import { type Route as UserRoute } from './+types/route.ts'
 
 export function DashboardLayout({
 	user,
 	children,
 }: {
-	user: userInfo['loaderData']['user']
+	user: UserRoute.ComponentProps['loaderData']['user']
 	children: React.ReactNode
 }) {
 	const requestInfo = useRequestInfo()
@@ -156,7 +156,7 @@ export function DashboardSidebar({
 	user,
 	...props
 }: React.ComponentProps<typeof Sidebar> & {
-	user: userInfo['loaderData']['user']
+	user: UserRoute.ComponentProps['loaderData']['user']
 }) {
 	return (
 		<Sidebar collapsible="icon" {...props}>

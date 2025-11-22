@@ -41,30 +41,33 @@ export default function UsersRoute({ loaderData }: Route.ComponentProps) {
 								{ 'opacity-50': isPending },
 							)}
 						>
-							{loaderData.users.map((user) => (
-								<li key={user.id}>
-									<Link
-										to={user.username}
-										className="bg-muted flex h-36 w-44 flex-col items-center justify-center rounded-lg px-5 py-3"
-									>
-										<Img
-											alt={user.name ?? user.username}
-											src={getUserImgSrc(user.imageObjectKey)}
-											className="size-16 rounded-full"
-											width={256}
-											height={256}
-										/>
-										{user.name ? (
-											<span className="text-body-md w-full overflow-hidden text-center text-ellipsis whitespace-nowrap">
-												{user.name}
+							{loaderData.users.map(
+								(user: Route.ComponentProps['loaderData']['users'][number]) => (
+									<li key={user.id}>
+										<Link
+											to={user.username}
+											className="bg-muted flex h-36 w-44 flex-col items-center justify-center rounded-lg px-5 py-3"
+											aria-label={`${user.name ?? user.username}'s profile`}
+										>
+											<Img
+												alt={user.name ?? user.username}
+												src={getUserImgSrc(user.imageObjectKey)}
+												className="size-16 rounded-full"
+												width={256}
+												height={256}
+											/>
+											{user.name ? (
+												<span className="text-body-md w-full overflow-hidden text-center text-ellipsis whitespace-nowrap">
+													{user.name}
+												</span>
+											) : null}
+											<span className="text-body-sm text-muted-foreground w-full overflow-hidden text-center text-ellipsis">
+												{user.username}
 											</span>
-										) : null}
-										<span className="text-body-sm text-muted-foreground w-full overflow-hidden text-center text-ellipsis">
-											{user.username}
-										</span>
-									</Link>
-								</li>
-							))}
+										</Link>
+									</li>
+								),
+							)}
 						</ul>
 					) : (
 						<p>No users found</p>

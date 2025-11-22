@@ -6,7 +6,7 @@ import { ip as ipAddress } from 'address'
 import closeWithGrace from 'close-with-grace'
 import compression from 'compression'
 import express from 'express'
-import rateLimit from 'express-rate-limit'
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit'
 import getPort, { portNumbers } from 'get-port'
 import morgan from 'morgan'
 import { type ServerBuild } from 'react-router'
@@ -52,7 +52,7 @@ app.use((req, res, next) => {
 
 // no ending slashes for SEO reasons
 // https://github.com/epicweb-dev/epic-stack/discussions/108
-app.get('*', (req, res, next) => {
+app.get('/*splat', (req, res, next) => {
 	if (req.path.endsWith('/') && req.path.length > 1) {
 		const query = req.url.slice(req.path.length)
 		const safepath = req.path.slice(0, -1).replace(/\/+/g, '/')
@@ -79,7 +79,11 @@ if (viteDevServer) {
 	// Remix fingerprints its assets so we can cache forever.
 	app.use(
 		'/assets',
-		express.static('build/client/assets', { immutable: true, maxAge: '1y' }),
+		express.static('build/client/assets', {
+			immutable: true,
+			maxAge: '1y',
+			fallthrough: false,
+		}),
 	)
 
 	// Everything else (like favicon.ico) is cached for an hour. You may want to be
@@ -87,7 +91,7 @@ if (viteDevServer) {
 	app.use(express.static('build/client', { maxAge: '1h' }))
 }
 
-app.get(['/img/*', '/favicons/*'], (_req, res) => {
+app.get(['/img/*imgPath', '/favicons/*faviconPath'], (_req, res) => {
 	// if we made it past the express.static for these, then we're missing something.
 	// So we'll just send a 404 and won't bother calling other middleware.
 	return res.status(404).send('Not found')
@@ -125,7 +129,10 @@ const rateLimitDefault = {
 	// When sitting behind a CDN such as cloudflare, replace fly-client-ip with the CDN
 	// specific header such as cf-connecting-ip
 	keyGenerator: (req: express.Request) => {
-		return req.get('fly-client-ip') ?? `${req.ip}`
+		const customIp = req.get('fly-client-ip')
+		if (customIp) return customIp
+		// Use ipKeyGenerator helper to properly handle IPv6 addresses
+		return ipKeyGenerator(req.ip ?? 'unknown')
 	},
 }
 
@@ -193,7 +200,7 @@ if (!ALLOW_INDEXING) {
 }
 
 app.all(
-	'*',
+	'/*splat',
 	createRequestHandler({
 		getLoadContext: () => ({ serverBuild: getBuild() }),
 		mode: MODE,

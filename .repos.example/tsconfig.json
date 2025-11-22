@@ -1,0 +1,15 @@
+{
+	"extends": "../tsconfig.json",
+	"compilerOptions": {
+		// Override module to support import.meta in Node.js ESM files
+		// "preserve" doesn't support import.meta during type checking
+		// "nodenext" provides full ESM support including import.meta
+		"module": "nodenext",
+		"moduleResolution": "nodenext",
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true
+	},
+	"include": ["repo-*.ts"],
+	"exclude": []
+}
+

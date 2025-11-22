@@ -25,7 +25,7 @@ import {
 	CheckboxFieldSchema,
 	StringMinMaxLengthSchema,
 } from '#app/utils/zod-helpers.tsx'
-import { type Info } from './+types/about.$aboutId_.edit.ts'
+import { type Route } from './+types/about.$aboutId_.edit.ts'
 import { DashboardAboutIntent } from './about.index.tsx'
 
 export const AboutEditorSchema = z.object({
@@ -42,9 +42,9 @@ export function AboutEditor({
 	categories,
 	actionData,
 }: {
-	aboutMe?: Info['loaderData']['aboutMe']
-	categories: Info['loaderData']['categories']
-	actionData?: Info['actionData']
+	aboutMe?: Route.ComponentProps['loaderData']['aboutMe']
+	categories: Route.ComponentProps['loaderData']['categories']
+	actionData?: Route.ComponentProps['actionData']
 }) {
 	const isPending = useIsPending()
 

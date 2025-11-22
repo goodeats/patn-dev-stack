@@ -2,9 +2,11 @@ import { faker } from '@faker-js/faker'
 import { prisma } from '#app/utils/db.server.ts'
 import { expect, test } from '#tests/playwright-utils.ts'
 
-test('Users can create notes', async ({ page, login }) => {
+test('Users can create notes', async ({ page, login, navigate }) => {
 	const user = await login()
-	await page.goto(`/users/${user.username}/notes`)
+	await navigate(`/users/:username/notes`, {
+		username: user.username,
+	})
 
 	const newNote = createNote()
 	await page.getByRole('link', { name: /New Note/i }).click()
@@ -17,14 +19,17 @@ test('Users can create notes', async ({ page, login }) => {
 	await expect(page).toHaveURL(new RegExp(`/users/${user.username}/notes/.*`))
 })
 
-test('Users can edit notes', async ({ page, login }) => {
+test('Users can edit notes', async ({ page, login, navigate }) => {
 	const user = await login()
 
 	const note = await prisma.note.create({
 		select: { id: true },
 		data: { ...createNote(), ownerId: user.id },
 	})
-	await page.goto(`/users/${user.username}/notes/${note.id}`)
+	await navigate(`/users/:username/notes/:noteId`, {
+		username: user.username,
+		noteId: note.id,
+	})
 
 	// edit the note
 	await page.getByRole('link', { name: 'Edit', exact: true }).click()
@@ -62,8 +67,8 @@ test('Users can delete notes', async ({ page, login }) => {
 		page.getByText('Your note has been deleted.', { exact: true }),
 	).toBeVisible()
 	await expect(page).toHaveURL(`/users/${user.username}/notes`)
-	const countAfter = await noteLinks.count()
-	expect(countAfter).toEqual(countBefore - 1)
+	const countAfter = noteLinks
+	await expect(countAfter).toHaveCount(countBefore - 1)
 })
 
 function createNote() {

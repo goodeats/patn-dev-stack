@@ -10,12 +10,22 @@ export const prisma = remember('prisma', () => {
 	// Feel free to change this log threshold to something that makes sense for you
 	const logThreshold = 20
 
+	// In test mode, suppress Prisma error/warn logging to reduce log noise.
+	// Test fixtures intentionally catch and handle errors (e.g., cleanup of non-existent
+	// records in teardown), but Prisma still logs these expected errors to stdout.
+	// This makes test output harder to read and obscures actual test failures.
+	const isTest = process.env.NODE_ENV === 'test'
 	const client = new PrismaClient({
-		log: [
-			{ level: 'query', emit: 'event' },
-			{ level: 'error', emit: 'stdout' },
-			{ level: 'warn', emit: 'stdout' },
-		],
+		log: isTest
+			? [
+					{ level: 'query', emit: 'event' },
+					// Query logging still enabled for debugging slow queries in tests
+				]
+			: [
+					{ level: 'query', emit: 'event' },
+					{ level: 'error', emit: 'stdout' },
+					{ level: 'warn', emit: 'stdout' },
+				],
 	})
 	client.$on('query', async (e) => {
 		if (e.duration < logThreshold) return

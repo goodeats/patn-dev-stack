@@ -10,5 +10,11 @@
 	],
 	"workbench.editorAssociations": {
 		"*.db": "sqlite-viewer.view"
-	}
+	},
+	"eslint.validate": [
+		"javascript",
+		"javascriptreact",
+		"typescript",
+		"typescriptreact"
+	]
 }

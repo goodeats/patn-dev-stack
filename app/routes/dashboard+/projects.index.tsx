@@ -40,7 +40,7 @@ import {
 	createToastHeaders,
 	redirectWithToast,
 } from '#app/utils/toast.server.ts'
-import { type Route, type Info } from './+types/projects.index.ts'
+import { type Route } from './+types/projects.index.ts'
 
 export const handle: SEOHandle = {
 	getSitemapEntries: () => null,
@@ -73,7 +73,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	return data({ projectsData })
 }
 
-type ProjectDataItem = Info['loaderData']['projectsData'][number]
+type ProjectDataItem =
+	Route.ComponentProps['loaderData']['projectsData'][number]
 
 export const DashboardProjectIntent = {
 	PROJECT_CREATE: 'project-create',

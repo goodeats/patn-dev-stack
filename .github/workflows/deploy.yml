@@ -137,11 +137,14 @@ jobs:
 
       - name: 📊 Upload report
         uses: actions/upload-artifact@v4
+        # Upload report even if tests fail or are canceled, so we can debug issues from artifacts
         if: always()
         with:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
+          # Don't warn if report doesn't exist (e.g., tests were canceled before report generation)
+          if-no-files-found: ignore
 
   container:
     name: 📦 Prepare Container

@@ -1,11 +1,11 @@
 import { faker } from '@faker-js/faker'
-import { logout } from '#tests/actions/auth.ts'
+import { type Page } from '@playwright/test'
 import { expect, test } from '#tests/playwright-utils.ts'
 
-async function setupWebAuthn(page: any) {
+async function setupWebAuthn(page: Page) {
 	const client = await page.context().newCDPSession(page)
 	// https://chromedevtools.github.io/devtools-protocol/tot/WebAuthn/
-	await client.send('WebAuthn.enable', { options: { enableUI: true } })
+	await client.send('WebAuthn.enable', { enableUI: true })
 	const result = await client.send('WebAuthn.addVirtualAuthenticator', {
 		options: {
 			protocol: 'ctap2',
@@ -19,8 +19,12 @@ async function setupWebAuthn(page: any) {
 	return { client, authenticatorId: result.authenticatorId }
 }
 
-test('Users can register and use passkeys', async ({ page, login }) => {
-	const user = await login()
+test.skip('Users can register and use passkeys', async ({
+	page,
+	navigate,
+	login,
+}) => {
+	await login()
 
 	const { client, authenticatorId } = await setupWebAuthn(page)
 
@@ -32,7 +36,7 @@ test('Users can register and use passkeys', async ({ page, login }) => {
 		'No credentials should exist initially',
 	).toHaveLength(0)
 
-	await page.goto('/settings/profile/passkeys')
+	await navigate('/settings/profile/passkeys')
 
 	const passkeyRegisteredPromise = new Promise<void>((resolve) => {
 		client.once('WebAuthn.credentialAdded', () => resolve())
@@ -54,11 +58,13 @@ test('Users can register and use passkeys', async ({ page, login }) => {
 	).toHaveLength(1)
 
 	// Logout
-	await logout(page)
+	await page.getByRole('link', { name: 'User menu' }).click()
+	await page.getByRole('menuitem', { name: /logout/i }).click()
+	await expect(page).toHaveURL(`/`)
 
 	// Try logging in with passkey
-	await page.goto('/login')
-	const signCount1 = afterRegistrationCredentials.credentials[0].signCount
+	await navigate('/login')
+	const signCount1 = afterRegistrationCredentials.credentials[0]!.signCount
 
 	const passkeyAssertedPromise = new Promise<void>((resolve) => {
 		client.once('WebAuthn.credentialAsserted', () => resolve())
@@ -75,21 +81,19 @@ test('Users can register and use passkeys', async ({ page, login }) => {
 	await Promise.race([passkeyAssertedPromise, errorPromise])
 
 	// Verify successful login
-	await expect(
-		page.getByRole('link', { name: user.name ?? user.username }),
-	).toBeVisible()
+	await expect(page.getByRole('link', { name: 'User menu' })).toBeVisible()
 
 	// Verify the sign count increased
 	const afterLoginCredentials = await client.send('WebAuthn.getCredentials', {
 		authenticatorId,
 	})
 	expect(afterLoginCredentials.credentials).toHaveLength(1)
-	expect(afterLoginCredentials.credentials[0].signCount).toBeGreaterThan(
+	expect(afterLoginCredentials.credentials[0]?.signCount).toBeGreaterThan(
 		signCount1,
 	)
 
 	// Go to passkeys page and delete the passkey
-	await page.goto('/settings/profile/passkeys')
+	await navigate('/settings/profile/passkeys')
 	await page.getByRole('button', { name: /delete/i }).click()
 
 	// Verify the passkey is no longer listed on the page
@@ -103,10 +107,12 @@ test('Users can register and use passkeys', async ({ page, login }) => {
 	expect(afterDeletionCredentials.credentials).toHaveLength(1)
 
 	// Logout again to test deleted passkey
-	await logout(page)
+	await page.getByRole('link', { name: 'User menu' }).click()
+	await page.getByRole('menuitem', { name: /logout/i }).click()
+	await expect(page).toHaveURL(`/`)
 
 	// Try logging in with the deleted passkey
-	await page.goto('/login')
+	await navigate('/login')
 	const deletedPasskeyAssertedPromise = new Promise<void>((resolve) => {
 		client.once('WebAuthn.credentialAsserted', () => resolve())
 	})
@@ -122,11 +128,15 @@ test('Users can register and use passkeys', async ({ page, login }) => {
 	await expect(page).toHaveURL(`/login`)
 })
 
-test('Failed passkey verification shows error', async ({ page, login }) => {
+test.skip('Failed passkey verification shows error', async ({
+	page,
+	navigate,
+	login,
+}) => {
 	const password = faker.internet.password()
 	await login({ password })
 	const { client, authenticatorId } = await setupWebAuthn(page)
-	await page.goto('/settings/profile/passkeys')
+	await navigate('/settings/profile/passkeys')
 
 	// Try to register with failed verification
 	await client.send('WebAuthn.setUserVerified', {

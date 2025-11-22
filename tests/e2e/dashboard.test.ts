@@ -2,22 +2,23 @@ import { faker } from '@faker-js/faker'
 import { getLoginRedirectUrl } from '#tests/actions/auth.ts'
 import { expect, test } from '#tests/playwright-utils.ts'
 
-test('redirects to /login if not logged in', async ({ page }) => {
-	await page.goto('/dashboard')
+test('redirects to /login if not logged in', async ({ page, navigate }) => {
+	await navigate('/dashboard')
 	await expect(page).toHaveURL(getLoginRedirectUrl('/dashboard'))
 })
 
 test('displays sidebar links for authenticated user', async ({
 	page,
 	login,
+	navigate,
 }) => {
 	const userName = faker.person.firstName()
 	await login({ name: userName })
 
-	await page.goto('/')
+	await navigate('/')
 
 	// Navigate to dashboard
-	await page.locator('#header-user-button').click()
+	await page.getByRole('link', { name: 'Dashboard nav' }).click()
 	await expect(page).toHaveURL('/dashboard')
 
 	// Check for main navigation links

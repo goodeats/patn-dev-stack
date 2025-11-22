@@ -122,7 +122,7 @@ export default function CacheAdminRoute({ loaderData }: Route.ComponentProps) {
 								defaultValue: query,
 							}}
 						/>
-						<div className="flex h-16 w-14 items-center text-lg font-medium text-muted-foreground">
+						<div className="text-muted-foreground flex h-16 w-14 items-center text-lg font-medium">
 							<span title="Total results shown">
 								{loaderData.cacheKeys.sqlite.length +
 									loaderData.cacheKeys.lru.length}
@@ -168,7 +168,7 @@ export default function CacheAdminRoute({ loaderData }: Route.ComponentProps) {
 			<Spacer size="2xs" />
 			<div className="flex flex-col gap-4">
 				<h2 className="text-h2">LRU Cache:</h2>
-				{loaderData.cacheKeys.lru.map((key) => (
+				{loaderData.cacheKeys.lru.map((key: string) => (
 					<CacheKeyRow
 						key={key}
 						cacheKey={key}
@@ -180,7 +180,7 @@ export default function CacheAdminRoute({ loaderData }: Route.ComponentProps) {
 			<Spacer size="3xs" />
 			<div className="flex flex-col gap-4">
 				<h2 className="text-h2">SQLite Cache:</h2>
-				{loaderData.cacheKeys.sqlite.map((key) => (
+				{loaderData.cacheKeys.sqlite.map((key: string) => (
 					<CacheKeyRow
 						key={key}
 						cacheKey={key}
