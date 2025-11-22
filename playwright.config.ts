@@ -13,7 +13,21 @@ export default defineConfig({
 	forbidOnly: !!process.env.CI,
 	retries: process.env.CI ? 1 : 0, // Reduced from 2 to 1 to speed up CI
 	workers: process.env.CI ? 1 : undefined, // Back to 1 for stability
-	reporter: 'html',
+	// In CI, use both 'list' (for real-time progress in GitHub Actions logs) and 'html'
+	// (for detailed reports uploaded as artifacts). The HTML reporter output is explicitly
+	// set to ensure it's generated even if tests fail, allowing debugging from artifacts.
+	reporter: process.env.CI
+		? [
+				['list'],
+				[
+					'html',
+					{
+						outputFolder: 'playwright-report',
+						open: 'never',
+					},
+				],
+			]
+		: 'html',
 	use: {
 		baseURL: `http://localhost:${PORT}/`,
 		trace: 'on-first-retry',
