@@ -23,6 +23,11 @@ export default [
 		},
 	},
 	{
-		ignores: ['.react-router/*'],
+		ignores: [
+			'.react-router/*',
+			// .repos.example contains template files used as examples
+			// These files use common ESM patterns that don't need linting
+			'.repos.example/**/*',
+		],
 	},
 ]
