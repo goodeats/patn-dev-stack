@@ -27,4 +27,5 @@ node_modules
 /app/components/ui/icons
 .react-router/
 
+# clone repos here to use as examples for coding with an LLM
 .repos
