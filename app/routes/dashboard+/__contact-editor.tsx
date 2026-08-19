@@ -18,7 +18,7 @@ import {
 	CheckboxFieldSchema,
 	StringMinMaxLengthSchema,
 } from '#app/utils/zod-helpers.tsx'
-import { type Info } from './+types/contacts.$contactId_.edit.ts'
+import { type Route } from './+types/contacts.$contactId_.edit.ts'
 import { DashboardContactIntent } from './contacts.index'
 
 export const ContactEditorSchema = z.object({
@@ -34,8 +34,8 @@ export function ContactEditor({
 	contact,
 	actionData,
 }: {
-	contact?: Info['loaderData']['contact']
-	actionData?: Info['actionData']
+	contact?: Route.ComponentProps['loaderData']['contact']
+	actionData?: Route.ComponentProps['actionData']
 }) {
 	const isPending = useIsPending()
 

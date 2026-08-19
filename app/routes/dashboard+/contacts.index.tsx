@@ -40,7 +40,7 @@ import {
 	createToastHeaders,
 	redirectWithToast,
 } from '#app/utils/toast.server.ts'
-import { type Route, type Info } from './+types/contacts.index.ts'
+import { type Route } from './+types/contacts.index.ts'
 
 export const handle: SEOHandle = {
 	getSitemapEntries: () => null,
@@ -67,7 +67,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	return data({ contactsData })
 }
 
-type ContactDataItem = Info['loaderData']['contactsData'][number]
+type ContactDataItem = Route.ComponentProps['loaderData']['contactsData'][number]
 
 export const DashboardContactIntent = {
 	CONTACT_CREATE: 'contact-create',

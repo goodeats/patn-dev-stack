@@ -16,7 +16,7 @@ import { SkillBadge } from '#app/components/skill-badge.tsx'
 import { CardContent, CardFooter } from '#app/components/ui/card.tsx'
 import { useFadeInOnScroll } from '#app/hooks/use-fade-in-on-scroll.ts'
 import { prisma } from '#app/utils/db.server.ts'
-import { type Info, type Route } from './+types/index.ts'
+import { type Route } from './+types/index.ts'
 
 export const meta: Route.MetaFunction = () => [{ title: 'Pat N | Web Dev' }]
 
@@ -167,8 +167,8 @@ function AboutSection({
 	professionalAboutMe,
 	personalAboutMe,
 }: {
-	professionalAboutMe: Info['loaderData']['professionalAboutMe']
-	personalAboutMe: Info['loaderData']['personalAboutMe']
+	professionalAboutMe: Route.ComponentProps['loaderData']['professionalAboutMe']
+	personalAboutMe: Route.ComponentProps['loaderData']['personalAboutMe']
 }) {
 	return (
 		<MarketingSection
@@ -195,7 +195,7 @@ function AboutSection({
 function SkillCard({
 	category,
 }: {
-	category: Info['loaderData']['skillCategories'][number]
+	category: Route.ComponentProps['loaderData']['skillCategories'][number]
 }) {
 	return (
 		<MarketingCard title={category.name} className="text-left">
@@ -211,7 +211,7 @@ function SkillCard({
 function SkillsSection({
 	skillCategories,
 }: {
-	skillCategories: Info['loaderData']['skillCategories']
+	skillCategories: Route.ComponentProps['loaderData']['skillCategories']
 }) {
 	return (
 		<MarketingSection sectionId="skills">
@@ -239,7 +239,7 @@ function SkillsSection({
 function ProjectCard({
 	project,
 }: {
-	project: Info['loaderData']['projects'][number]
+	project: Route.ComponentProps['loaderData']['projects'][number]
 }) {
 	const { title, description, skills, liveDemoUrl, sourceCodeUrl, comments } =
 		project
@@ -287,7 +287,7 @@ function ProjectCard({
 function ProjectsSection({
 	projects,
 }: {
-	projects: Info['loaderData']['projects']
+	projects: Route.ComponentProps['loaderData']['projects']
 }) {
 	return (
 		<MarketingSection sectionId="projects">
