@@ -1,0 +1,6 @@
+---
+description: Pointer to the Epic Stack catch-up cloud-agent skill for issues #23–#30 and Playwright CI #33.
+alwaysApply: true
+---
+
+If this task is (or links to) GitHub issues **#23–#30**, **#33**, **#34**, Playwright CI catch-up, or “Epic Stack catch-up”, read and follow `.cursor/skills/epic-stack-catch-up/SKILL.md` before coding. One child issue per PR, branch off `origin/dev`, PR into `dev` (never `main`).
