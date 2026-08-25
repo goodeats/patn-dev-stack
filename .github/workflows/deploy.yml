@@ -151,6 +151,9 @@ jobs:
         run: npm run build
 
       - name: 🎭 Playwright tests
+        env:
+          PW_TEST_SOURCE_TRANSFORM: ${{ github.workspace }}/tests/svg-import-stub.cjs
+          PW_TEST_SOURCE_TRANSFORM_SCOPE: ${{ github.workspace }}
         run: npx playwright test
 
       - name: 📊 Upload report

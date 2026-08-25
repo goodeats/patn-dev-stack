@@ -2,15 +2,16 @@ import path from 'node:path'
 import { defineConfig, devices } from '@playwright/test'
 import 'dotenv/config'
 
-process.env.PW_TEST_SOURCE_TRANSFORM = path.join(
-	process.cwd(),
-	'tests/svg-import-stub.cjs',
-)
+const svgImportStubPath = path.join(process.cwd(), 'tests/svg-import-stub.cjs')
+
+// Playwright's ESM loader thread does not see env vars set after process start,
+// so also pass the plugin via babelPlugins (copied onto the loader channel).
+process.env.PW_TEST_SOURCE_TRANSFORM = svgImportStubPath
 process.env.PW_TEST_SOURCE_TRANSFORM_SCOPE = process.cwd()
 
 const PORT = process.env.PORT || '3000'
 
-export default defineConfig({
+const playwrightConfig = defineConfig({
 	testDir: './tests/e2e',
 	timeout: 15 * 1000,
 	expect: {
@@ -48,3 +49,10 @@ export default defineConfig({
 		},
 	},
 })
+
+export default {
+	...playwrightConfig,
+	'@playwright/test': {
+		babelPlugins: [[svgImportStubPath]],
+	},
+}
