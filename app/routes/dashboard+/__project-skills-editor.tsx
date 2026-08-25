@@ -14,7 +14,7 @@ import {
 } from '#app/components/ui/card.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { useIsPending } from '#app/utils/misc.tsx'
-import { type Info } from './+types/projects.$projectId.tsx'
+import { type Route } from './+types/projects.$projectId.ts'
 
 export const ProjectSkillActionIntent = {
 	SKILL_ADD: 'skill-add',
@@ -31,8 +31,8 @@ export function ProjectSkillsEditor({
 	project,
 	userSkills,
 }: {
-	project: Info['loaderData']['project']
-	userSkills: Info['loaderData']['userSkills']
+	project: Route.ComponentProps['loaderData']['project']
+	userSkills: Route.ComponentProps['loaderData']['userSkills']
 }) {
 	const fetcher = useFetcher()
 	const isPending = useIsPending()

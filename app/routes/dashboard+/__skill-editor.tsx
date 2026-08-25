@@ -23,7 +23,7 @@ import {
 	CheckboxFieldSchema,
 	StringMinMaxLengthSchema,
 } from '#app/utils/zod-helpers.tsx'
-import { type Info } from './+types/skills.$skillId_.edit.ts'
+import { type Route } from './+types/skills.$skillId_.edit.ts'
 import { DashboardSkillsIntent } from './skills.index'
 
 export const SkillEditorSchema = z.object({
@@ -39,9 +39,9 @@ export function SkillEditor({
 	categories,
 	actionData,
 }: {
-	skill?: Info['loaderData']['skill']
-	categories: Info['loaderData']['categories']
-	actionData?: Info['actionData']
+	skill?: Route.ComponentProps['loaderData']['skill']
+	categories: Route.ComponentProps['loaderData']['categories']
+	actionData?: Route.ComponentProps['actionData']
 }) {
 	const isPending = useIsPending()
 

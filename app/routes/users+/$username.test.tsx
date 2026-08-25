@@ -38,7 +38,9 @@ test('The user profile when not logged in as self', async () => {
 		await loader({
 			request,
 			params: { username: user.username },
-			context: {}, // Provide an empty context or mock as needed
+			context: {},
+			url: new URL(request.url),
+			pattern: '/users/:username',
 		})
 		// If the loader does not throw, this test should fail,
 		// as we expect a redirect.
