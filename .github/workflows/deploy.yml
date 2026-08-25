@@ -154,6 +154,9 @@ jobs:
         env:
           PW_TEST_SOURCE_TRANSFORM: ${{ github.workspace }}/tests/svg-import-stub.cjs
           PW_TEST_SOURCE_TRANSFORM_SCOPE: ${{ github.workspace }}
+          # Node 22.18+ strips types by default and rejects parameter properties.
+          # Playwright 1.51 has its own TS transform; disable Node strip-types.
+          NODE_OPTIONS: --no-experimental-strip-types
         run: npx playwright test
 
       - name: 📊 Upload report
