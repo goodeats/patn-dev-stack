@@ -151,10 +151,6 @@ jobs:
         run: npm run build
 
       - name: 🎭 Playwright tests
-        env:
-          # Node cannot load Vite SVG assets during Playwright collection on CI
-          # (`Unknown file extension ".svg"`). Stub them via a custom ESM loader.
-          NODE_OPTIONS: --import ./tests/svg-esm-loader.mjs
         run: npx playwright test
 
       - name: 📊 Upload report
