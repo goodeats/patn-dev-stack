@@ -109,8 +109,26 @@ jobs:
       - name: 📥 Download deps
         uses: bahmutov/npm-install@v1
 
+      - name: 📥 Get Playwright version
+        id: playwright-version
+        run: echo "version=$(node -e "console.log(require('@playwright/test/package.json').version)")" >> "$GITHUB_OUTPUT"
+
+      - name: 🏦 Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+
       - name: 📥 Install Playwright Browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        timeout-minutes: 15
         run: npm run test:e2e:install
+
+      - name: 📥 Install Playwright OS deps
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        timeout-minutes: 10
+        run: npx playwright install-deps chromium
 
       - name: 🛠 Setup Database
         run: npx prisma migrate deploy && npx prisma generate --sql
@@ -133,6 +151,10 @@ jobs:
         run: npm run build
 
       - name: 🎭 Playwright tests
+        env:
+          # Node cannot load Vite SVG assets during Playwright collection on CI
+          # (`Unknown file extension ".svg"`). Stub them via a custom ESM loader.
+          NODE_OPTIONS: --import ./tests/svg-esm-loader.mjs
         run: npx playwright test
 
       - name: 📊 Upload report
