@@ -1,5 +1,12 @@
+import path from 'node:path'
 import { defineConfig, devices } from '@playwright/test'
 import 'dotenv/config'
+
+process.env.PW_TEST_SOURCE_TRANSFORM = path.join(
+	process.cwd(),
+	'tests/svg-import-stub.cjs',
+)
+process.env.PW_TEST_SOURCE_TRANSFORM_SCOPE = process.cwd()
 
 const PORT = process.env.PORT || '3000'
 
