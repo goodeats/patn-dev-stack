@@ -1,11 +1,11 @@
+import path from 'node:path'
 import { defineConfig, devices } from '@playwright/test'
 import 'dotenv/config'
 
-process.env.PW_TEST_SOURCE_TRANSFORM = new URL(
-	'./tests/svg-import-stub.cjs',
-	import.meta.url,
-).pathname
-process.env.PW_TEST_SOURCE_TRANSFORM_SCOPE = process.cwd()
+const svgImportStubPath = path.join(process.cwd(), 'tests/svg-import-stub.cjs')
+
+process.env.PW_TEST_SOURCE_TRANSFORM ??= svgImportStubPath
+process.env.PW_TEST_SOURCE_TRANSFORM_SCOPE ??= process.cwd()
 
 const PORT = process.env.PORT || '3000'
 
@@ -20,9 +20,6 @@ export default defineConfig({
 	retries: process.env.CI ? 2 : 0,
 	workers: process.env.CI ? 1 : undefined,
 	reporter: 'html',
-	build: {
-		external: ['**/*.svg'],
-	},
 	use: {
 		baseURL: `http://localhost:${PORT}/`,
 		trace: 'on-first-retry',
@@ -40,6 +37,7 @@ export default defineConfig({
 	webServer: {
 		command: process.env.CI ? 'npm run start:mocks' : 'npm run dev',
 		port: Number(PORT),
+		timeout: 60 * 1000,
 		reuseExistingServer: true,
 		stdout: 'pipe',
 		stderr: 'pipe',
